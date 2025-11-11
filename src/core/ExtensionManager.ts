@@ -8,10 +8,11 @@ export class ExtensionManager {
   private commands: Map<string, ICommand> = new Map()
   private extensionActions: Map<string, IAction[]> = new Map() // 存储扩展返回的 actions
   private stores: Map<string, ExtensionStore> = new Map()
+  private extensionPackages: Map<string, ExtensionPackage> = new Map() // 存储包配置
   private extensionsDir: string
-  private panelController: IPanelController | null = null
+  private panelController: any | null = null  // 使用 any 来包含 setCurrentExtension
 
-  constructor(extensionsDir: string, panelController?: IPanelController) {
+  constructor(extensionsDir: string, panelController?: any) {
     this.extensionsDir = extensionsDir
     this.panelController = panelController || null
   }
@@ -74,6 +75,9 @@ export class ExtensionManager {
       if (this.panelController) {
         extension.panel = this.panelController
       }
+
+      // 保存包配置
+      this.extensionPackages.set(pkg.id, pkg)
 
       // 注册扩展
       this.extensions.set(pkg.id, extension)
@@ -138,19 +142,40 @@ export class ExtensionManager {
 
     const extType = action.ext.type
     let extension = this.extensions.get(extType)
+    let extensionId = extType
 
     // 如果找不到，尝试用完整 ID 格式查找（com.keyer.{type}）
     if (!extension) {
       const fullExtId = `com.keyer.${extType}`
       extension = this.extensions.get(fullExtId)
+      extensionId = fullExtId
     }
 
     if (!extension) {
       throw new Error(`Extension ${extType} not found for action: ${action.id}`)
     }
 
+    // 设置当前扩展 ID 到 PanelController
+    if (this.panelController && this.panelController.setCurrentExtension) {
+      this.panelController.setCurrentExtension(extensionId)
+    }
+
     const keepOpen = await extension.doAction(action)
     console.log(`Action ${action.id} executed successfully, keepOpen: ${keepOpen}`)
     return keepOpen
+  }
+
+  // 获取有 UI 入口的扩展列表
+  getUIExtensions(): Array<{ id: string, uiPath: string }> {
+    const result: Array<{ id: string, uiPath: string }> = []
+
+    for (const [id, pkg] of this.extensionPackages) {
+      if (pkg.ui) {
+        const uiPath = path.join(this.extensionsDir, path.dirname(pkg.main), pkg.ui)
+        result.push({ id, uiPath })
+      }
+    }
+
+    return result
   }
 }

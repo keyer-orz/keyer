@@ -143,6 +143,17 @@ function setupIPC() {
     return scripts
   })
 
+  // 加载 UI 扩展列表
+  ipcMain.handle('load-ui-extensions', () => {
+    if (!commandManager) {
+      console.log('CommandManager not initialized')
+      return []
+    }
+    const uiExtensions = commandManager.getUIExtensions()
+    console.log('Returning UI extensions:', uiExtensions)
+    return uiExtensions
+  })
+
   // 获取配置
   ipcMain.handle('get-config', () => {
     if (!configManager) {

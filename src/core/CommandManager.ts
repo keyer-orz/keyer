@@ -90,4 +90,9 @@ export class CommandManager {
   getScripts() {
     return this.scriptManager.getCommands()
   }
+
+  // 获取 UI 扩展列表
+  getUIExtensions() {
+    return this.extensionManager.getUIExtensions()
+  }
 }

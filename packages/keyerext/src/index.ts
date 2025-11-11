@@ -45,27 +45,11 @@ export interface IListItem {
   action?: IAction  // 点击时执行的动作
 }
 
-// Board 卡片项
-export interface IBoardItem {
-  id: string
-  title: string
-  description?: string
-  icon?: string
-  metadata?: Record<string, string>  // 元数据键值对
-  action?: IAction
-}
-
-// Panel 类型
-export type PanelType = 'list' | 'board'
-
-// Panel 配置
+// Panel 配置（只支持自定义 React 组件）
 export interface IPanelConfig {
-  type: PanelType
   title: string
-  items: IListItem[] | IBoardItem[]
-  placeholder?: string  // 搜索占位符
-  onSearch?: (query: string) => Promise<IListItem[] | IBoardItem[]>  // 搜索回调
-  onAction?: (item: IListItem | IBoardItem) => Promise<void>  // 点击回调
+  component: string  // 组件名称（需要在扩展的 UI 入口中导出）
+  props?: Record<string, any>  // 传递给组件的 props
 }
 
 // Panel 控制器
@@ -77,7 +61,7 @@ export interface IPanelController {
   closePanel(): void
 
   // 更新面板内容
-  updatePanel(items: IListItem[] | IBoardItem[]): void
+  updatePanel(props: Record<string, any>): void
 }
 
 export interface IExtension {
@@ -102,5 +86,6 @@ export interface ExtensionPackage {
   name: string
   version: string
   commands: ICommand[]
-  main: string  // 扩展的入口文件
+  main: string  // 主进程入口文件
+  ui?: string   // 渲染进程 UI 组件入口文件（可选）
 }

@@ -1,46 +1,27 @@
-import { BrowserWindow, ipcMain } from 'electron'
-import { IPanelController, IPanelConfig, IListItem, IBoardItem } from 'keyerext'
+import { BrowserWindow } from 'electron'
+import { IPanelController, IPanelConfig } from 'keyerext'
 
 export class PanelController implements IPanelController {
   private mainWindow: BrowserWindow | null = null
-  private currentConfig: IPanelConfig | null = null
+  private currentExtensionId: string | null = null  // 跟踪当前扩展 ID
 
   constructor(mainWindow: BrowserWindow) {
     this.mainWindow = mainWindow
-    this.setupIpcHandlers()
   }
 
-  private setupIpcHandlers(): void {
-    // 处理来自渲染进程的搜索请求
-    ipcMain.handle('panel-search', async (_event, query: string) => {
-      if (this.currentConfig?.onSearch) {
-        return await this.currentConfig.onSearch(query)
-      }
-      return []
-    })
-
-    // 处理来自渲染进程的动作请求
-    ipcMain.handle('panel-action', async (_event, item: IListItem | IBoardItem) => {
-      if (this.currentConfig?.onAction) {
-        await this.currentConfig.onAction(item)
-      }
-    })
+  // 设置当前扩展 ID（在 executeAction 时调用）
+  setCurrentExtension(extensionId: string) {
+    this.currentExtensionId = extensionId
   }
 
   showPanel(config: IPanelConfig): void {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      // 保存配置（包含回调函数）
-      this.currentConfig = config
-
-      // 发送可序列化的配置（移除函数）
+      // 发送可序列化的配置
       const serializableConfig = {
-        type: config.type,
         title: config.title,
-        items: config.items,
-        placeholder: config.placeholder,
-        // 只标记是否有回调，不传递函数本身
-        hasSearch: !!config.onSearch,
-        hasAction: !!config.onAction
+        component: config.component,
+        extensionId: this.currentExtensionId,
+        props: config.props
       }
 
       this.mainWindow.webContents.send('show-panel', serializableConfig)
@@ -49,14 +30,13 @@ export class PanelController implements IPanelController {
 
   closePanel(): void {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      this.currentConfig = null
       this.mainWindow.webContents.send('close-panel')
     }
   }
 
-  updatePanel(items: IListItem[] | IBoardItem[]): void {
+  updatePanel(props: Record<string, any>): void {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      this.mainWindow.webContents.send('update-panel', items)
+      this.mainWindow.webContents.send('update-panel', props)
     }
   }
 }

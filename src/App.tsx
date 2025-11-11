@@ -3,7 +3,8 @@ import './App.css'
 import { IAction } from './types'
 import Settings from './components/Settings'
 import Panel from './components/Panel'
-import { IPanelConfig, IListItem, IBoardItem } from 'keyerext'
+import { IPanelConfig, IListItem } from 'keyerext'
+import { uiExtensionLoader } from './core/UIExtensionLoader'
 
 declare global {
   interface Window {
@@ -19,7 +20,8 @@ declare global {
       onThemeChanged: (callback: (theme: string) => void) => void
       onShowPanel: (callback: (config: IPanelConfig) => void) => void
       onClosePanel: (callback: () => void) => void
-      onUpdatePanel: (callback: (items: IListItem[] | IBoardItem[]) => void) => void
+      onUpdatePanel: (callback: (items: IListItem[]) => void) => void
+      loadUIExtensions: () => Promise<Array<{ id: string, uiPath: string }>>
     }
   }
 }
@@ -51,6 +53,13 @@ function App() {
         if (config && config.theme) {
           setTheme(config.theme)
         }
+      })
+
+      // 加载 UI 扩展
+      window.electronAPI.loadUIExtensions().then(extensions => {
+        extensions.forEach(({ id, uiPath }) => {
+          uiExtensionLoader.loadExtension(id, uiPath)
+        })
       })
 
       // 监听主题变化

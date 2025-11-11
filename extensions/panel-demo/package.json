@@ -3,6 +3,7 @@
   "name": "Panel Demo",
   "version": "1.0.0",
   "main": "dist/index.js",
+  "ui": "dist/ui.js",
   "scripts": {
     "build": "tsc"
   },
@@ -10,6 +11,7 @@
   "devDependencies": {
     "keyerext": "file:../../packages/keyerext",
     "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0"
   }
 }
