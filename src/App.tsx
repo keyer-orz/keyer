@@ -51,11 +51,11 @@ function App() {
   useEffect(() => {
     if (selectedItemRef.current) {
       selectedItemRef.current.scrollIntoView({
-        behavior: 'smooth',
+        behavior: 'auto',
         block: 'nearest',
       })
     }
-  }, [selectedIndex])
+  }, [selectedIndex, results])
 
   // 键盘事件处理
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -126,7 +126,7 @@ function App() {
         >
           {results.map((result, index) => (
             <div
-              key={result.id}
+              key={`${result.id}-${index}`}
               ref={index === selectedIndex ? selectedItemRef : null}
               className={`result-item ${index === selectedIndex ? 'selected' : ''}`}
               onClick={() => handleExecute(result)}
