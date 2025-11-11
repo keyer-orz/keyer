@@ -74,4 +74,14 @@ export class CommandManager {
       await this.extensionManager.executeAction(action)
     }
   }
+
+  // 获取扩展列表
+  getExtensions() {
+    return this.extensionManager.getAllExtensions()
+  }
+
+  // 获取脚本列表
+  getScripts() {
+    return this.scriptManager.getCommands()
+  }
 }

@@ -145,3 +145,39 @@ body {
   background: rgba(255, 255, 255, 0.2);
   background-clip: content-box;
 }
+
+/* 底部条 */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: transparent;
+  min-height: 32px;
+}
+
+.footer-desc {
+  flex: 1;
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.footer-settings {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.footer-settings:hover {
+  background-color: #252525;
+}

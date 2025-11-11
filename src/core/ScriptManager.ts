@@ -12,6 +12,8 @@ export class ScriptManager {
 
   // 扫描并注册所有 script
   async scanScripts(): Promise<void> {
+    console.log('Scanning scripts directory:', this.scriptsDir)
+
     if (!fs.existsSync(this.scriptsDir)) {
       console.log('Scripts directory not found, creating:', this.scriptsDir)
       fs.mkdirSync(this.scriptsDir, { recursive: true })
@@ -19,17 +21,20 @@ export class ScriptManager {
     }
 
     const files = fs.readdirSync(this.scriptsDir)
+    console.log('Found files in scripts directory:', files)
 
     for (const file of files) {
       const filePath = path.join(this.scriptsDir, file)
       const stat = fs.statSync(filePath)
 
       if (stat.isFile() && (file.endsWith('.sh') || file.endsWith('.js') || file.endsWith('.py'))) {
+        console.log('Parsing script file:', filePath)
         await this.parseScriptFile(filePath)
       }
     }
 
     console.log(`Loaded ${this.commands.size} script commands`)
+    console.log('Script commands:', Array.from(this.commands.values()))
   }
 
   // 解析 script 文件，提取命令信息

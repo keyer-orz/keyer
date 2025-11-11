@@ -8,7 +8,9 @@
       "Bash(sw_vers:*)",
       "Bash(open \"x-apple.systempreferences:com.apple.wifi-settings-extension\")",
       "Bash(npm run build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Read(//private/tmp/**)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

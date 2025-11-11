@@ -44,11 +44,17 @@ function createWindow() {
 // 初始化命令管理器
 async function initializeCommandManager() {
   // 在开发模式下使用项目内的 scripts 目录，在生产模式下也使用打包后的 scripts 目录
+  console.log('Current __dirname:', __dirname)
+  console.log('Is dev mode:', !!process.env.VITE_DEV_SERVER_URL)
+
   const scriptsDir = process.env.VITE_DEV_SERVER_URL
-    ? path.join(__dirname, '../../scripts')  // 开发模式：electron/main.ts -> 项目根目录/scripts
+    ? path.join(__dirname, '../scripts')  // 开发模式：dist-electron -> 项目根目录/scripts
     : path.join(process.resourcesPath, 'scripts')  // 生产模式：app.asar -> resources/scripts
 
   const extensionsDir = path.join(__dirname, '../extensions')
+
+  console.log('Scripts directory:', scriptsDir)
+  console.log('Extensions directory:', extensionsDir)
 
   commandManager = new CommandManager(scriptsDir, extensionsDir)
   await commandManager.initialize()
@@ -103,6 +109,28 @@ function setupIPC() {
     if (mainWindow) {
       mainWindow.hide()
     }
+  })
+
+  // 获取扩展列表
+  ipcMain.handle('get-extensions', () => {
+    if (!commandManager) {
+      console.log('CommandManager not initialized')
+      return []
+    }
+    const extensions = commandManager.getExtensions()
+    console.log('Returning extensions:', extensions)
+    return extensions
+  })
+
+  // 获取脚本列表
+  ipcMain.handle('get-scripts', () => {
+    if (!commandManager) {
+      console.log('CommandManager not initialized')
+      return []
+    }
+    const scripts = commandManager.getScripts()
+    console.log('Returning scripts:', scripts)
+    return scripts
   })
 }
 

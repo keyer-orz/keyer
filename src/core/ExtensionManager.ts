@@ -80,6 +80,19 @@ export class ExtensionManager {
     return Array.from(this.commands.values())
   }
 
+  // 获取所有扩展信息
+  getAllExtensions() {
+    const result: any[] = []
+    for (const [extId, extension] of this.extensions) {
+      const extCommands = Array.from(this.commands.values()).filter(cmd => cmd.id.startsWith(extId))
+      result.push({
+        id: extId,
+        commands: extCommands
+      })
+    }
+    return result
+  }
+
   // 根据输入搜索所有扩展
   async search(input: string): Promise<IAction[]> {
     const results: IAction[] = []

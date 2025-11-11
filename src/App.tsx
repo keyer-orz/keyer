@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { IAction } from './types'
+import Settings from './components/Settings'
 
 declare global {
   interface Window {
@@ -9,6 +10,8 @@ declare global {
       execute: (action: IAction) => Promise<void>
       hideWindow: () => Promise<void>
       onFocusInput: (callback: () => void) => void
+      getExtensions: () => Promise<any[]>
+      getScripts: () => Promise<any[]>
     }
   }
 }
@@ -18,6 +21,7 @@ function App() {
   const [results, setResults] = useState<IAction[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isMouseActive, setIsMouseActive] = useState(true)
+  const [showSettings, setShowSettings] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const selectedItemRef = useRef<HTMLDivElement>(null)
 
@@ -106,43 +110,56 @@ function App() {
 
   return (
     <div className="app">
-      <div className="search-container">
-        <input
-          ref={inputRef}
-          type="text"
-          className="search-input"
-          placeholder="Search for apps and commands..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          autoFocus
-        />
-      </div>
+      {!showSettings ? (
+        <>
+          <div className="search-container">
+            <input
+              ref={inputRef}
+              type="text"
+              className="search-input"
+              placeholder="Search for apps and commands..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+            />
+          </div>
 
-      {results.length > 0 && (
-        <div
-          className={`results-container ${isMouseActive ? 'mouse-active' : ''}`}
-          onMouseMove={() => setIsMouseActive(true)}
-        >
-          {results.map((result, index) => (
-            <div
-              key={`${result.id}-${index}`}
-              ref={index === selectedIndex ? selectedItemRef : null}
-              className={`result-item ${index === selectedIndex ? 'selected' : ''}`}
-              onClick={() => handleExecute(result)}
-            >
-              <div className="result-icon">
-                {getIcon(result)}
-              </div>
-              <div className="result-content">
-                <div className="result-info">
-                  <div className="result-name">{result.name}</div>
+          <div
+            className={`results-container ${isMouseActive ? 'mouse-active' : ''}`}
+            onMouseMove={() => setIsMouseActive(true)}
+          >
+            {results.map((result, index) => (
+              <div
+                key={`${result.id}-${index}`}
+                ref={index === selectedIndex ? selectedItemRef : null}
+                className={`result-item ${index === selectedIndex ? 'selected' : ''}`}
+                onClick={() => handleExecute(result)}
+              >
+                <div className="result-icon">
+                  {getIcon(result)}
                 </div>
-                <div className="result-tag">{result.typeLabel || 'Extension'}</div>
+                <div className="result-content">
+                  <div className="result-info">
+                    <div className="result-name">{result.name}</div>
+                  </div>
+                  <div className="result-tag">{result.typeLabel || 'Extension'}</div>
+                </div>
               </div>
+            ))}
+          </div>
+
+          <div className="footer">
+            <div className="footer-desc">
+              {results[selectedIndex]?.desc || ''}
             </div>
-          ))}
-        </div>
+            <div className="footer-settings" onClick={() => setShowSettings(true)}>
+              ⚙️
+            </div>
+          </div>
+        </>
+      ) : (
+        <Settings onClose={() => setShowSettings(false)} />
       )}
     </div>
   )

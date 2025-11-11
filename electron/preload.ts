@@ -7,5 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   hideWindow: () => ipcRenderer.invoke('hide-window'),
   onFocusInput: (callback: () => void) => {
     ipcRenderer.on('focus-input', callback)
-  }
+  },
+  getExtensions: () => ipcRenderer.invoke('get-extensions'),
+  getScripts: () => ipcRenderer.invoke('get-scripts')
 })
