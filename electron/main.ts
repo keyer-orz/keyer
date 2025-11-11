@@ -9,7 +9,7 @@ let commandManager: CommandManager | null = null
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 500,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
