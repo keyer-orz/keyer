@@ -1,9 +1,11 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
 import { CommandManager } from '../src/core/CommandManager'
+import { ConfigManager } from '../src/core/ConfigManager'
 
 let mainWindow: BrowserWindow | null = null
 let commandManager: CommandManager | null = null
+let configManager: ConfigManager | null = null
 
 // 创建主窗口
 function createWindow() {
@@ -132,10 +134,36 @@ function setupIPC() {
     console.log('Returning scripts:', scripts)
     return scripts
   })
+
+  // 获取配置
+  ipcMain.handle('get-config', () => {
+    if (!configManager) {
+      console.log('ConfigManager not initialized')
+      return null
+    }
+    return configManager.getConfig()
+  })
+
+  // 更新配置
+  ipcMain.handle('update-config', (_, updates) => {
+    if (!configManager) {
+      console.log('ConfigManager not initialized')
+      return false
+    }
+    configManager.updateConfig(updates)
+
+    // 如果更新了主题，通知渲染进程
+    if (updates.theme && mainWindow) {
+      mainWindow.webContents.send('theme-changed', updates.theme)
+    }
+
+    return true
+  })
 }
 
 // 应用就绪
 app.whenReady().then(async () => {
+  configManager = new ConfigManager()
   await initializeCommandManager()
   createWindow()
   registerGlobalShortcut()

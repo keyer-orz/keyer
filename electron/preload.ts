@@ -9,5 +9,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('focus-input', callback)
   },
   getExtensions: () => ipcRenderer.invoke('get-extensions'),
-  getScripts: () => ipcRenderer.invoke('get-scripts')
+  getScripts: () => ipcRenderer.invoke('get-scripts'),
+  getConfig: () => ipcRenderer.invoke('get-config'),
+  updateConfig: (updates: any) => ipcRenderer.invoke('update-config', updates),
+  onThemeChanged: (callback: (theme: string) => void) => {
+    ipcRenderer.on('theme-changed', (_, theme) => callback(theme))
+  }
 })

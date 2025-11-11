@@ -12,6 +12,9 @@ declare global {
       onFocusInput: (callback: () => void) => void
       getExtensions: () => Promise<any[]>
       getScripts: () => Promise<any[]>
+      getConfig: () => Promise<any>
+      updateConfig: (updates: any) => Promise<boolean>
+      onThemeChanged: (callback: (theme: string) => void) => void
     }
   }
 }
@@ -22,6 +25,7 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isMouseActive, setIsMouseActive] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const inputRef = useRef<HTMLInputElement>(null)
   const selectedItemRef = useRef<HTMLDivElement>(null)
 
@@ -33,6 +37,18 @@ function App() {
         setInput('')
         setResults([])
         setSelectedIndex(0)
+      })
+
+      // 加载配置
+      window.electronAPI.getConfig().then(config => {
+        if (config && config.theme) {
+          setTheme(config.theme)
+        }
+      })
+
+      // 监听主题变化
+      window.electronAPI.onThemeChanged((newTheme: string) => {
+        setTheme(newTheme as 'dark' | 'light')
       })
     }
   }, [])
@@ -109,7 +125,7 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app theme-${theme}`}>
       {!showSettings ? (
         <>
           <div className="search-container">

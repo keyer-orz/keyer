@@ -12,20 +12,35 @@ function Settings({ onClose }: SettingsProps) {
   const [extensions, setExtensions] = useState<any[]>([])
   const [scripts, setScripts] = useState<any[]>([])
   const [expandedExt, setExpandedExt] = useState<string | null>(null)
+  const [config, setConfig] = useState<any>(null)
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
   useEffect(() => {
     const loadData = async () => {
       if (window.electronAPI) {
         const exts = await window.electronAPI.getExtensions()
         const scrs = await window.electronAPI.getScripts()
+        const cfg = await window.electronAPI.getConfig()
         console.log('Loaded extensions:', exts)
         console.log('Loaded scripts:', scrs)
+        console.log('Loaded config:', cfg)
         setExtensions(exts)
         setScripts(scrs)
+        setConfig(cfg)
+        if (cfg && cfg.theme) {
+          setTheme(cfg.theme)
+        }
       }
     }
     loadData()
   }, [])
+
+  const handleThemeChange = async (newTheme: 'dark' | 'light') => {
+    setTheme(newTheme)
+    if (window.electronAPI) {
+      await window.electronAPI.updateConfig({ theme: newTheme })
+    }
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -75,7 +90,11 @@ function Settings({ onClose }: SettingsProps) {
               <div className="setting-item">
                 <div className="setting-label">主题</div>
                 <div className="setting-control">
-                  <select className="setting-select">
+                  <select
+                    className="setting-select"
+                    value={theme}
+                    onChange={(e) => handleThemeChange(e.target.value as 'dark' | 'light')}
+                  >
                     <option value="dark">Dark</option>
                     <option value="light">Light</option>
                   </select>
@@ -88,7 +107,7 @@ function Settings({ onClose }: SettingsProps) {
                   <input
                     type="text"
                     className="setting-input"
-                    value="Shift+Space"
+                    value={config?.globalShortcut || 'Shift+Space'}
                     readOnly
                   />
                 </div>

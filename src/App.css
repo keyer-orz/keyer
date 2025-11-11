@@ -12,21 +12,49 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Dark theme (default) */
+.app.theme-dark {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #252525;
+  --bg-tertiary: #2a2a2a;
+  --bg-highlight: #3a3a3a;
+  --text-primary: #fff;
+  --text-secondary: #999;
+  --text-tertiary: #666;
+  --text-placeholder: #666;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+}
+
+/* Light theme */
+.app.theme-light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #e5e5e5;
+  --bg-highlight: #d5d5d5;
+  --text-primary: #000;
+  --text-secondary: #666;
+  --text-tertiary: #999;
+  --text-placeholder: #999;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-subtle: rgba(0, 0, 0, 0.05);
+}
+
 .app {
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #1a1a1a;
+  background-color: var(--bg-primary);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
 }
 
 .search-container {
   background-color: transparent;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .search-input {
@@ -35,12 +63,12 @@ body {
   border: none;
   outline: none;
   background: transparent;
-  color: #999;
+  color: var(--text-secondary);
   font-weight: 400;
 }
 
 .search-input::placeholder {
-  color: #666;
+  color: var(--text-placeholder);
 }
 
 .results-container {
@@ -63,17 +91,17 @@ body {
 
 /* 键盘导航选中 - 深色高亮 */
 .result-item.selected {
-  background-color: #3a3a3a;
+  background-color: var(--bg-highlight);
 }
 
 /* 鼠标悬停 - 浅色高亮（仅在鼠标活跃时） */
 .results-container.mouse-active .result-item:hover {
-  background-color: #252525;
+  background-color: var(--bg-secondary);
 }
 
 /* 键盘选中时，鼠标悬停保持深色 */
 .results-container.mouse-active .result-item.selected:hover {
-  background-color: #3a3a3a;
+  background-color: var(--bg-highlight);
 }
 
 .result-icon {
@@ -102,7 +130,7 @@ body {
 .result-name {
   font-size: 14px;
   font-weight: 500;
-  color: #fff;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -111,7 +139,7 @@ body {
 
 .result-desc {
   font-size: 12px;
-  color: #888;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -120,7 +148,7 @@ body {
 
 .result-tag {
   font-size: 12px;
-  color: #888;
+  color: var(--text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -152,7 +180,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 8px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-subtle);
   background-color: transparent;
   min-height: 32px;
 }
@@ -160,7 +188,7 @@ body {
 .footer-desc {
   flex: 1;
   font-size: 12px;
-  color: #666;
+  color: var(--text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -179,5 +207,5 @@ body {
 }
 
 .footer-settings:hover {
-  background-color: #252525;
+  background-color: var(--bg-secondary);
 }
