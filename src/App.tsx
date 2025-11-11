@@ -120,6 +120,7 @@ function App() {
       }
     } else if (e.key === 'Escape') {
       e.preventDefault()
+      console.log("Escape key pressed")
       if (window.electronAPI) {
         window.electronAPI.hideWindow()
       }
@@ -150,29 +151,18 @@ function App() {
     return '📦'
   }
 
-  // 处理面板操作
-  const handlePanelAction = async (item: IListItem | IBoardItem) => {
-    if (panelConfig?.onAction) {
-      await panelConfig.onAction(item)
-    }
-    // 如果item有action，执行它
-    if (item.action) {
-      await handleExecute(item.action)
-    }
-  }
-
   return (
     <div className={`app theme-${theme}`}>
-      {showPanel && panelConfig ? (
+      {showPanel && panelConfig && (
         <Panel
           config={panelConfig}
           onClose={() => {
             setShowPanel(false)
             setPanelConfig(null)
           }}
-          onAction={handlePanelAction}
         />
-      ) : !showSettings ? (
+      )}
+      {!showPanel && !showSettings && (
         <>
           <div className="search-container">
             <input
@@ -220,7 +210,8 @@ function App() {
             </div>
           </div>
         </>
-      ) : (
+      )}
+      {!showPanel && showSettings && (
         <Settings onClose={() => setShowSettings(false)} />
       )}
     </div>

@@ -91,7 +91,9 @@ export interface IExtension {
   onPrepare(): Promise<IAction[]> | IAction[]
 
   // 执行命令
-  doAction(action: IAction): Promise<void> | void
+  // 返回 true: 保持主面板打开
+  // 返回 false: 自动关闭主面板
+  doAction(action: IAction): Promise<boolean> | boolean
 }
 
 // Extension 的包配置定义

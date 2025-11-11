@@ -1,14 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './Panel.css'
-import { IListItem, IBoardItem, IPanelConfig } from 'keyerext'
+import { IListItem, IBoardItem } from 'keyerext'
 
-interface PanelProps {
-  config: IPanelConfig
-  onClose: () => void
-  onAction: (item: IListItem | IBoardItem) => void
+// 可序列化的 Panel 配置（不包含函数）
+interface SerializablePanelConfig {
+  type: 'list' | 'board'
+  title: string
+  items: IListItem[] | IBoardItem[]
+  placeholder?: string
+  hasSearch?: boolean
+  hasAction?: boolean
 }
 
-function Panel({ config, onClose, onAction }: PanelProps) {
+interface PanelProps {
+  config: SerializablePanelConfig
+  onClose: () => void
+}
+
+function Panel({ config, onClose }: PanelProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [items, setItems] = useState(config.items)
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -35,9 +44,14 @@ function Panel({ config, onClose, onAction }: PanelProps) {
 
   useEffect(() => {
     const handleSearch = async () => {
-      if (config.onSearch) {
-        const results = await config.onSearch(searchQuery)
+      if (config.hasSearch && searchQuery) {
+        // 通过 IPC 调用主进程的搜索回调
+        const results = await window.electron.invoke('panel-search', searchQuery)
         setItems(results)
+        setSelectedIndex(0)
+      } else if (!searchQuery) {
+        // 如果搜索为空，恢复原始列表
+        setItems(config.items)
         setSelectedIndex(0)
       }
     }
@@ -45,6 +59,13 @@ function Panel({ config, onClose, onAction }: PanelProps) {
     const debounce = setTimeout(handleSearch, 150)
     return () => clearTimeout(debounce)
   }, [searchQuery, config])
+
+  const handleAction = async (item: IListItem | IBoardItem) => {
+    if (config.hasAction) {
+      // 通过 IPC 调用主进程的动作回调
+      await window.electron.invoke('panel-action', item)
+    }
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
@@ -56,7 +77,7 @@ function Panel({ config, onClose, onAction }: PanelProps) {
     } else if (e.key === 'Enter') {
       e.preventDefault()
       if (items[selectedIndex]) {
-        onAction(items[selectedIndex])
+        handleAction(items[selectedIndex])
       }
     } else if (e.key === 'Escape') {
       e.preventDefault()
@@ -91,7 +112,7 @@ function Panel({ config, onClose, onAction }: PanelProps) {
                 key={item.id}
                 ref={index === selectedIndex ? selectedItemRef : null}
                 className={`list-item ${index === selectedIndex ? 'selected' : ''}`}
-                onClick={() => onAction(item)}
+                onClick={() => handleAction(item)}
               >
                 {item.icon && <div className="list-item-icon">{item.icon}</div>}
                 <div className="list-item-content">
@@ -117,7 +138,7 @@ function Panel({ config, onClose, onAction }: PanelProps) {
                 key={item.id}
                 ref={index === selectedIndex ? selectedItemRef : null}
                 className={`board-item ${index === selectedIndex ? 'selected' : ''}`}
-                onClick={() => onAction(item)}
+                onClick={() => handleAction(item)}
               >
                 {item.icon && <div className="board-item-icon">{item.icon}</div>}
                 <div className="board-item-title">{item.title}</div>

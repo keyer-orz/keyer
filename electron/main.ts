@@ -99,15 +99,19 @@ function setupIPC() {
   // 执行命令
   ipcMain.handle('execute', async (_, action) => {
     if (!commandManager) {
-      throw new Error('Command manager not initialized')
+      throw new Error('Command manager not initialized1')
     }
 
-    await commandManager.execute(action)
+    const keepOpen = await commandManager.execute(action)
 
-    // 执行后隐藏窗口
-    if (mainWindow) {
+    // 根据返回值决定是否隐藏窗口
+    // true: 保持窗口打开
+    // false: 自动关闭窗口
+    if (!keepOpen && mainWindow) {
       mainWindow.hide()
     }
+
+    return keepOpen
   })
 
   // 隐藏窗口

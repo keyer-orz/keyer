@@ -65,16 +65,19 @@ export class CommandManager {
   }
 
   // 执行命令
-  async execute(action: IAction): Promise<void> {
+  // 返回 true: 保持主面板打开
+  // 返回 false: 自动关闭主面板
+  async execute(action: IAction): Promise<boolean> {
     // 判断是 script 还是 extension
     const scriptCommand = this.scriptManager.getCommand(action.id)
 
     if (scriptCommand) {
-      // 执行 script
+      // 执行 script（脚本执行后默认关闭主面板）
       await this.scriptManager.executeScript(action.id)
+      return false
     } else {
-      // 执行 extension
-      await this.extensionManager.executeAction(action)
+      // 执行 extension（由扩展决定是否关闭）
+      return await this.extensionManager.executeAction(action)
     }
   }
 

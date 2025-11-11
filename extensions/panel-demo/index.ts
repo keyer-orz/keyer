@@ -32,7 +32,8 @@ class PanelDemoExtension implements IExtension {
     ]
   }
 
-  async doAction(action: IAction): Promise<void> {
+  async doAction(action: IAction): Promise<boolean> {
+    console.log('Executing panel demo action:', action)
     if (!action.ext || action.ext.type !== 'panel-demo') {
       throw new Error('Not a panel-demo action')
     }
@@ -42,6 +43,9 @@ class PanelDemoExtension implements IExtension {
     } else if (action.ext.panelType === 'board') {
       this.showBoardPanel()
     }
+
+    // 显示面板后保持主面板打开
+    return true
   }
 
   private showListPanel(): void {

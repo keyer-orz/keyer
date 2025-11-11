@@ -55,7 +55,7 @@ class SystemPreferencesExtension implements IExtension {
     }))
   }
 
-  async doAction(action: IAction): Promise<void> {
+  async doAction(action: IAction): Promise<boolean> {
     console.log('System Preferences: Executing action', action)
 
     // 如果不是 system-preferences 类型的 action，抛出错误让其他扩展处理
@@ -90,12 +90,14 @@ class SystemPreferencesExtension implements IExtension {
                 reject(error)
               } else {
                 console.log('Opened System Settings (fallback)')
-                resolve()
+                // 打开系统设置后自动关闭主面板
+                resolve(false)
               }
             })
           } else {
             console.log('Opened preference pane:', pane)
-            resolve()
+            // 打开系统设置后自动关闭主面板
+            resolve(false)
           }
         })
       })

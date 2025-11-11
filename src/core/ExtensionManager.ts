@@ -126,7 +126,9 @@ export class ExtensionManager {
   }
 
   // 执行命令
-  async executeAction(action: IAction): Promise<void> {
+  // 返回 true: 保持主面板打开
+  // 返回 false: 自动关闭主面板
+  async executeAction(action: IAction): Promise<boolean> {
     console.log('Executing action:', action)
 
     // 根据 action.ext.type 查找对应的扩展
@@ -147,7 +149,8 @@ export class ExtensionManager {
       throw new Error(`Extension ${extType} not found for action: ${action.id}`)
     }
 
-    await extension.doAction(action)
-    console.log(`Action ${action.id} executed successfully`)
+    const keepOpen = await extension.doAction(action)
+    console.log(`Action ${action.id} executed successfully, keepOpen: ${keepOpen}`)
+    return keepOpen
   }
 }

@@ -88,7 +88,7 @@ class AppLauncherExtension implements IExtension {
     }
   }
 
-  async doAction(action: IAction): Promise<void> {
+  async doAction(action: IAction): Promise<boolean> {
     if (!action.ext || action.ext.type !== 'app-launcher') {
       throw new Error('Not an app-launcher action')
     }
@@ -96,7 +96,7 @@ class AppLauncherExtension implements IExtension {
     if (action.ext && action.ext.type === 'app-launcher') {
       const appPath = action.ext.appPath
 
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<boolean>((resolve, reject) => {
         exec(`open "${appPath}"`, (error, _stdout, stderr) => {
           if (error) {
             console.error('Failed to open app:', stderr)
@@ -112,11 +112,14 @@ class AppLauncherExtension implements IExtension {
             const appLaunches = this.store?.get(`app:${appPath}`, 0) as number
             this.store?.set(`app:${appPath}`, appLaunches + 1)
 
-            resolve()
+            // 打开应用后自动关闭主面板
+            resolve(false)
           }
         })
       })
     }
+
+    return false
   }
 }
 
