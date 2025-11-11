@@ -1,0 +1,61 @@
+{
+  "name": "keyer",
+  "version": "1.0.0",
+  "description": "快捷键呼出命令面板，快捷执行命令",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && electron-builder",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-builder"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "typescript",
+    "keyer"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "concurrently": "^8.0.0",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-electron": "^0.28.0",
+    "vite-plugin-electron-renderer": "^0.14.0",
+    "wait-on": "^7.0.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "build": {
+    "appId": "com.keyer.app",
+    "productName": "Keyer",
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "extensions/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "scripts",
+        "to": "scripts",
+        "filter": ["**/*"]
+      }
+    ],
+    "directories": {
+      "output": "release"
+    }
+  }
+}

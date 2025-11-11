@@ -1,0 +1,13 @@
+{
+  "id": "com.keyer.app-launcher",
+  "name": "App Launcher",
+  "version": "1.0.0",
+  "commands": [
+    {
+      "id": "com.keyer.app-launcher.search",
+      "name": "打开应用",
+      "desc": "搜索并打开应用程序"
+    }
+  ],
+  "main": "index.js"
+}

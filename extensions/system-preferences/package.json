@@ -1,0 +1,13 @@
+{
+  "id": "com.keyer.system-preferences",
+  "name": "System Preferences",
+  "version": "1.0.0",
+  "commands": [
+    {
+      "id": "com.keyer.system-preferences",
+      "name": "打开系统设置",
+      "desc": "搜索并打开系统设置项"
+    }
+  ],
+  "main": "index.js"
+}

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(npm install)",
+      "Bash(tree:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(sw_vers:*)",
+      "Bash(open \"x-apple.systempreferences:com.apple.wifi-settings-extension\")",
+      "Bash(npm run build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
