@@ -6,6 +6,11 @@ import Panel from './components/Panel'
 import { IPanelConfig, IListItem } from 'keyerext'
 import { uiExtensionLoader } from './core/UIExtensionLoader'
 
+// 可序列化的 Panel 配置（包含 extensionId）
+interface SerializablePanelConfig extends IPanelConfig {
+  extensionId: string
+}
+
 declare global {
   interface Window {
     electronAPI: {
@@ -18,7 +23,7 @@ declare global {
       getConfig: () => Promise<any>
       updateConfig: (updates: any) => Promise<boolean>
       onThemeChanged: (callback: (theme: string) => void) => void
-      onShowPanel: (callback: (config: IPanelConfig) => void) => void
+      onShowPanel: (callback: (config: SerializablePanelConfig) => void) => void
       onClosePanel: (callback: () => void) => void
       onUpdatePanel: (callback: (items: IListItem[]) => void) => void
       loadUIExtensions: () => Promise<Array<{ id: string, uiPath: string }>>
@@ -33,7 +38,7 @@ function App() {
   const [isMouseActive, setIsMouseActive] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
   const [showPanel, setShowPanel] = useState(false)
-  const [panelConfig, setPanelConfig] = useState<IPanelConfig | null>(null)
+  const [panelConfig, setPanelConfig] = useState<SerializablePanelConfig | null>(null)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const inputRef = useRef<HTMLInputElement>(null)
   const selectedItemRef = useRef<HTMLDivElement>(null)
@@ -68,7 +73,7 @@ function App() {
       })
 
       // 监听面板显示
-      window.electronAPI.onShowPanel((config: IPanelConfig) => {
+      window.electronAPI.onShowPanel((config: SerializablePanelConfig) => {
         setPanelConfig(config)
         setShowPanel(true)
       })
@@ -80,9 +85,9 @@ function App() {
       })
 
       // 监听面板更新
-      window.electronAPI.onUpdatePanel((items: IListItem[] | IBoardItem[]) => {
+      window.electronAPI.onUpdatePanel((items: IListItem[]) => {
         if (panelConfig) {
-          setPanelConfig({ ...panelConfig, items })
+          setPanelConfig({ ...panelConfig, props: { ...panelConfig.props, items } })
         }
       })
     }
