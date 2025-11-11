@@ -1,4 +1,4 @@
-import { ICommand, IAction } from '../types'
+import { ICommand, IAction, IPanelController } from '../types'
 import { ScriptManager } from './ScriptManager'
 import { ExtensionManager } from './ExtensionManager'
 
@@ -6,9 +6,9 @@ export class CommandManager {
   private scriptManager: ScriptManager
   private extensionManager: ExtensionManager
 
-  constructor(scriptsDir: string, extensionsDir: string) {
+  constructor(scriptsDir: string, extensionsDir: string, panelController?: IPanelController) {
     this.scriptManager = new ScriptManager(scriptsDir)
-    this.extensionManager = new ExtensionManager(extensionsDir)
+    this.extensionManager = new ExtensionManager(extensionsDir, panelController)
   }
 
   // 初始化：扫描所有脚本和扩展

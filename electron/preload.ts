@@ -14,5 +14,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateConfig: (updates: any) => ipcRenderer.invoke('update-config', updates),
   onThemeChanged: (callback: (theme: string) => void) => {
     ipcRenderer.on('theme-changed', (_, theme) => callback(theme))
+  },
+  onShowPanel: (callback: (config: any) => void) => {
+    ipcRenderer.on('show-panel', (_, config) => callback(config))
+  },
+  onClosePanel: (callback: () => void) => {
+    ipcRenderer.on('close-panel', callback)
+  },
+  onUpdatePanel: (callback: (items: any) => void) => {
+    ipcRenderer.on('update-panel', (_, items) => callback(items))
   }
 })

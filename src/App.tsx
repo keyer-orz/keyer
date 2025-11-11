@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { IAction } from './types'
 import Settings from './components/Settings'
+import Panel from './components/Panel'
+import { IPanelConfig, IListItem, IBoardItem } from 'keyerext'
 
 declare global {
   interface Window {
@@ -15,6 +17,9 @@ declare global {
       getConfig: () => Promise<any>
       updateConfig: (updates: any) => Promise<boolean>
       onThemeChanged: (callback: (theme: string) => void) => void
+      onShowPanel: (callback: (config: IPanelConfig) => void) => void
+      onClosePanel: (callback: () => void) => void
+      onUpdatePanel: (callback: (items: IListItem[] | IBoardItem[]) => void) => void
     }
   }
 }
@@ -25,6 +30,8 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isMouseActive, setIsMouseActive] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
+  const [showPanel, setShowPanel] = useState(false)
+  const [panelConfig, setPanelConfig] = useState<IPanelConfig | null>(null)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const inputRef = useRef<HTMLInputElement>(null)
   const selectedItemRef = useRef<HTMLDivElement>(null)
@@ -50,8 +57,27 @@ function App() {
       window.electronAPI.onThemeChanged((newTheme: string) => {
         setTheme(newTheme as 'dark' | 'light')
       })
+
+      // 监听面板显示
+      window.electronAPI.onShowPanel((config: IPanelConfig) => {
+        setPanelConfig(config)
+        setShowPanel(true)
+      })
+
+      // 监听面板关闭
+      window.electronAPI.onClosePanel(() => {
+        setShowPanel(false)
+        setPanelConfig(null)
+      })
+
+      // 监听面板更新
+      window.electronAPI.onUpdatePanel((items: IListItem[] | IBoardItem[]) => {
+        if (panelConfig) {
+          setPanelConfig({ ...panelConfig, items })
+        }
+      })
     }
-  }, [])
+  }, [panelConfig])
 
   // 搜索
   useEffect(() => {
@@ -124,9 +150,29 @@ function App() {
     return '📦'
   }
 
+  // 处理面板操作
+  const handlePanelAction = async (item: IListItem | IBoardItem) => {
+    if (panelConfig?.onAction) {
+      await panelConfig.onAction(item)
+    }
+    // 如果item有action，执行它
+    if (item.action) {
+      await handleExecute(item.action)
+    }
+  }
+
   return (
     <div className={`app theme-${theme}`}>
-      {!showSettings ? (
+      {showPanel && panelConfig ? (
+        <Panel
+          config={panelConfig}
+          onClose={() => {
+            setShowPanel(false)
+            setPanelConfig(null)
+          }}
+          onAction={handlePanelAction}
+        />
+      ) : !showSettings ? (
         <>
           <div className="search-container">
             <input

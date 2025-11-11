@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
 import { CommandManager } from '../src/core/CommandManager'
 import { ConfigManager } from '../src/core/ConfigManager'
+import { PanelController } from '../src/core/PanelController'
 
 let mainWindow: BrowserWindow | null = null
 let commandManager: CommandManager | null = null
@@ -58,7 +59,10 @@ async function initializeCommandManager() {
   console.log('Scripts directory:', scriptsDir)
   console.log('Extensions directory:', extensionsDir)
 
-  commandManager = new CommandManager(scriptsDir, extensionsDir)
+  // 创建 PanelController
+  const panelController = mainWindow ? new PanelController(mainWindow) : undefined
+
+  commandManager = new CommandManager(scriptsDir, extensionsDir, panelController)
   await commandManager.initialize()
 }
 
@@ -164,8 +168,8 @@ function setupIPC() {
 // 应用就绪
 app.whenReady().then(async () => {
   configManager = new ConfigManager()
-  await initializeCommandManager()
   createWindow()
+  await initializeCommandManager()
   registerGlobalShortcut()
   setupIPC()
 

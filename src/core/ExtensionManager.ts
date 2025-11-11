@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { ICommand, IAction, IExtension, ExtensionPackage } from '../types'
+import { ICommand, IAction, IExtension, ExtensionPackage, IPanelController } from '../types'
 import { ExtensionStore } from './ExtensionStore'
 
 export class ExtensionManager {
@@ -8,9 +8,11 @@ export class ExtensionManager {
   private commands: Map<string, ICommand> = new Map()
   private stores: Map<string, ExtensionStore> = new Map()
   private extensionsDir: string
+  private panelController: IPanelController | null = null
 
-  constructor(extensionsDir: string) {
+  constructor(extensionsDir: string, panelController?: IPanelController) {
     this.extensionsDir = extensionsDir
+    this.panelController = panelController || null
   }
 
   // 扫描并加载所有 extension
@@ -67,6 +69,11 @@ export class ExtensionManager {
       // 注入 Store 到扩展实例
       extension.store = store
 
+      // 注入 PanelController 到扩展实例
+      if (this.panelController) {
+        extension.panel = this.panelController
+      }
+
       // 注册扩展
       this.extensions.set(pkg.id, extension)
 
@@ -92,7 +99,7 @@ export class ExtensionManager {
   // 获取所有扩展信息
   getAllExtensions() {
     const result: any[] = []
-    for (const [extId, extension] of this.extensions) {
+    for (const [extId, _] of this.extensions) {
       const extCommands = Array.from(this.commands.values()).filter(cmd => cmd.id.startsWith(extId))
       result.push({
         id: extId,
@@ -120,18 +127,18 @@ export class ExtensionManager {
 
   // 执行命令
   async executeAction(action: IAction): Promise<void> {
-    // 找到对应的扩展
     console.log('Executing action:', action)
-    try {
-      let extension = this.extensions.get(action.id || '')
-      if (extension) {
+
+    // 遍历所有扩展，让它们尝试处理这个 action
+    for (const [extId, extension] of this.extensions) {
+      try {
         await extension.doAction(action)
-        console.log(`Action ${action.id} executed by extension ${action.id}`)
+        console.log(`Action ${action.id} executed by extension ${extId}`)
         return
+      } catch (error) {
+        // 继续尝试下一个扩展
+        console.log(`Extension ${extId} cannot handle action:`, error instanceof Error ? error.message : error)
       }
-    } catch (error) {
-      // 继续尝试下一个扩展
-      console.log(`Extension ${action.id} cannot handle action:`, error instanceof Error ? error.message : error)
     }
 
     throw new Error(`No extension can handle action: ${action.id}`)

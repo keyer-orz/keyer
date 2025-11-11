@@ -33,9 +33,59 @@ export interface IStore {
   has(key: string): boolean
 }
 
+// Panel 相关接口
+
+// List 列表项
+export interface IListItem {
+  id: string
+  title: string
+  subtitle?: string
+  icon?: string
+  accessories?: string[]  // 右侧附加信息
+  action?: IAction  // 点击时执行的动作
+}
+
+// Board 卡片项
+export interface IBoardItem {
+  id: string
+  title: string
+  description?: string
+  icon?: string
+  metadata?: Record<string, string>  // 元数据键值对
+  action?: IAction
+}
+
+// Panel 类型
+export type PanelType = 'list' | 'board'
+
+// Panel 配置
+export interface IPanelConfig {
+  type: PanelType
+  title: string
+  items: IListItem[] | IBoardItem[]
+  placeholder?: string  // 搜索占位符
+  onSearch?: (query: string) => Promise<IListItem[] | IBoardItem[]>  // 搜索回调
+  onAction?: (item: IListItem | IBoardItem) => Promise<void>  // 点击回调
+}
+
+// Panel 控制器
+export interface IPanelController {
+  // 显示面板
+  showPanel(config: IPanelConfig): void
+
+  // 关闭面板
+  closePanel(): void
+
+  // 更新面板内容
+  updatePanel(items: IListItem[] | IBoardItem[]): void
+}
+
 export interface IExtension {
   // 扩展的存储实例（由框架注入）
   store?: IStore
+
+  // 面板控制器（由框架注入）
+  panel?: IPanelController
 
   // 准备阶段
   onPrepare(): Promise<void> | void

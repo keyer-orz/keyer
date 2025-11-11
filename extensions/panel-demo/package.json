@@ -1,0 +1,15 @@
+{
+  "id": "com.keyer.panel-demo",
+  "name": "Panel Demo",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "commands": [],
+  "devDependencies": {
+    "keyerext": "file:../../packages/keyerext",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
