@@ -45,37 +45,43 @@ body {
   flex: 1;
   background-color: #1a1a1a;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: 8px 12px;
 }
 
 .result-item {
-  padding: 10px 20px;
+  padding: 6px 12px;
   cursor: pointer;
   transition: background-color 0.15s ease;
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 48px;
+  min-height: 36px;
+  border-radius: 6px;
 }
 
+/* 键盘导航选中 - 深色高亮 */
 .result-item.selected {
-  background-color: #2a2a2a;
+  background-color: #3a3a3a;
 }
 
-.result-item:hover {
-  background-color: #2a2a2a;
+/* 鼠标悬停 - 浅色高亮（仅在鼠标活跃时） */
+.results-container.mouse-active .result-item:hover {
+  background-color: #252525;
+}
+
+/* 键盘选中时，鼠标悬停保持深色 */
+.results-container.mouse-active .result-item.selected:hover {
+  background-color: #3a3a3a;
 }
 
 .result-icon {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
-  background-color: #ff5f57;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .result-content {

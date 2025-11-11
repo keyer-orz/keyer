@@ -17,7 +17,9 @@ function App() {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<IAction[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [isMouseActive, setIsMouseActive] = useState(true)
   const inputRef = useRef<HTMLInputElement>(null)
+  const selectedItemRef = useRef<HTMLDivElement>(null)
 
   // 监听焦点输入事件
   useEffect(() => {
@@ -45,13 +47,25 @@ function App() {
     return () => clearTimeout(debounce)
   }, [input])
 
+  // 键盘导航时自动滚动到选中项
+  useEffect(() => {
+    if (selectedItemRef.current) {
+      selectedItemRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      })
+    }
+  }, [selectedIndex])
+
   // 键盘事件处理
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
+      setIsMouseActive(false)
       setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
+      setIsMouseActive(false)
       setSelectedIndex((prev) => Math.max(prev - 1, 0))
     } else if (e.key === 'Enter') {
       e.preventDefault()
@@ -90,11 +104,6 @@ function App() {
     return '📦'
   }
 
-  // 获取标签
-  const getTagLabel = (action: IAction) => {
-    return action.desc || ''
-  }
-
   return (
     <div className="app">
       <div className="search-container">
@@ -111,13 +120,16 @@ function App() {
       </div>
 
       {results.length > 0 && (
-        <div className="results-container">
+        <div
+          className={`results-container ${isMouseActive ? 'mouse-active' : ''}`}
+          onMouseMove={() => setIsMouseActive(true)}
+        >
           {results.map((result, index) => (
             <div
               key={result.id}
+              ref={index === selectedIndex ? selectedItemRef : null}
               className={`result-item ${index === selectedIndex ? 'selected' : ''}`}
               onClick={() => handleExecute(result)}
-              onMouseEnter={() => setSelectedIndex(index)}
             >
               <div className="result-icon">
                 {getIcon(result)}
@@ -125,7 +137,6 @@ function App() {
               <div className="result-content">
                 <div className="result-info">
                   <div className="result-name">{result.name}</div>
-                  <div className="result-desc">{getTagLabel(result)}</div>
                 </div>
                 <div className="result-tag">{result.typeLabel || 'Extension'}</div>
               </div>
