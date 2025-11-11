@@ -2,6 +2,11 @@
   "id": "com.keyer.system-preferences",
   "name": "System Preferences",
   "version": "1.0.0",
+  "description": "Open macOS System Preferences",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
   "commands": [
     {
       "id": "com.keyer.system-preferences",
@@ -9,5 +14,9 @@
       "desc": "搜索并打开系统设置项"
     }
   ],
-  "main": "index.js"
+  "devDependencies": {
+    "keyerext": "file:../../packages/keyerext",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
 }

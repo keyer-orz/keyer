@@ -1,9 +1,17 @@
-const fs = require('fs')
-const path = require('path')
-const { exec } = require('child_process')
+import * as fs from 'fs'
+import * as path from 'path'
+import { exec } from 'child_process'
+import { IExtension, IAction } from 'keyerext'
 
 // 应用数据库（包含中英文名称）
-const appDatabase = [
+interface AppInfo {
+  name: string
+  enName: string
+  path: string
+  category: string
+}
+
+const appDatabase: AppInfo[] = [
   // 实用工具
   { name: '计算器', enName: 'Calculator', path: '/System/Applications/Calculator.app', category: 'Utilities' },
   { name: '日历', enName: 'Calendar', path: '/System/Applications/Calendar.app', category: 'Utilities' },
@@ -22,18 +30,16 @@ const appDatabase = [
   { name: '音乐', enName: 'Music', path: '/System/Applications/Music.app', category: 'Entertainment' },
 ]
 
-class AppLauncherExtension {
-  constructor() {
-    this.apps = []
-  }
+class AppLauncherExtension implements IExtension {
+  private apps: AppInfo[] = []
 
-  async onPrepare() {
+  async onPrepare(): Promise<void> {
     // 扫描应用程序目录
     await this.scanApplications()
     console.log(`App Launcher: Loaded ${this.apps.length} applications`)
   }
 
-  async scanApplications() {
+  private async scanApplications(): Promise<void> {
     // 从预定义数据库加载
     this.apps = appDatabase.filter(app => fs.existsSync(app.path))
 
@@ -65,7 +71,7 @@ class AppLauncherExtension {
     }
   }
 
-  async onSearch(input) {
+  async onSearch(input: string): Promise<IAction[]> {
     if (!input) {
       return []
     }
@@ -86,6 +92,7 @@ class AppLauncherExtension {
       id: `com.keyer.app-launcher.open.${app.enName}`,
       name: `打开 ${app.name}`,
       desc: `${app.enName} - ${app.category}`,
+      typeLabel: 'App',
       ext: {
         type: 'app-launcher',
         appPath: app.path
@@ -93,12 +100,16 @@ class AppLauncherExtension {
     }))
   }
 
-  async doAction(action) {
+  async doAction(action: IAction): Promise<void> {
+    if (!action.ext || action.ext.type !== 'app-launcher') {
+      throw new Error('Not an app-launcher action')
+    }
+
     if (action.ext && action.ext.type === 'app-launcher') {
       const appPath = action.ext.appPath
 
-      return new Promise((resolve, reject) => {
-        exec(`open "${appPath}"`, (error, stdout, stderr) => {
+      return new Promise<void>((resolve, reject) => {
+        exec(`open "${appPath}"`, (error, _stdout, stderr) => {
           if (error) {
             console.error('Failed to open app:', stderr)
             reject(error)
@@ -112,4 +123,4 @@ class AppLauncherExtension {
   }
 }
 
-module.exports = new AppLauncherExtension()
+export default new AppLauncherExtension()

@@ -1,7 +1,15 @@
-const { exec } = require('child_process')
+import { exec } from 'child_process'
+import { IExtension, IAction } from 'keyerext'
 
 // 系统设置项数据库（支持中英文）
-const preferencesDatabase = [
+interface PreferenceItem {
+  name: string
+  enName: string
+  pane: string
+  desc: string
+}
+
+const preferencesDatabase: PreferenceItem[] = [
   // 网络相关
   { name: '网络', enName: 'Network', pane: 'Network', desc: '配置网络连接和设置' },
   { name: 'Wi-Fi', enName: 'Wi-Fi', pane: 'Network', desc: '管理无线网络连接' },
@@ -24,16 +32,18 @@ const preferencesDatabase = [
   { name: 'iCloud', enName: 'iCloud', pane: 'iCloud', desc: '管理iCloud设置' },
 ]
 
-class SystemPreferencesExtension {
+class SystemPreferencesExtension implements IExtension {
+  private preferences: PreferenceItem[]
+
   constructor() {
     this.preferences = preferencesDatabase
   }
 
-  async onPrepare() {
+  async onPrepare(): Promise<void> {
     console.log(`System Preferences: Loaded ${this.preferences.length} preference panes`)
   }
 
-  async onSearch(input) {
+  async onSearch(input: string): Promise<IAction[]> {
     if (!input) {
       return []
     }
@@ -62,7 +72,7 @@ class SystemPreferencesExtension {
     }))
   }
 
-  async doAction(action) {
+  async doAction(action: IAction): Promise<void> {
     console.log('System Preferences: Executing action', action)
 
     // 如果不是 system-preferences 类型的 action，抛出错误让其他扩展处理
@@ -109,4 +119,4 @@ class SystemPreferencesExtension {
   }
 }
 
-module.exports = new SystemPreferencesExtension()
+export default new SystemPreferencesExtension()

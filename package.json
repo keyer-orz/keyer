@@ -33,6 +33,7 @@
     "wait-on": "^7.0.0"
   },
   "dependencies": {
+    "keyerext": "file:packages/keyerext",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -51,7 +52,9 @@
       {
         "from": "scripts",
         "to": "scripts",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "directories": {
