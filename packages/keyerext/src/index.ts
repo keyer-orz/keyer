@@ -87,11 +87,8 @@ export interface IExtension {
   // 面板控制器（由框架注入）
   panel?: IPanelController
 
-  // 准备阶段
-  onPrepare(): Promise<void> | void
-
-  // 根据关键字返回结果
-  onSearch(input: string): Promise<IAction[]> | IAction[]
+  // 准备阶段，返回扩展提供的 actions
+  onPrepare(): Promise<IAction[]> | IAction[]
 
   // 执行命令
   doAction(action: IAction): Promise<void> | void

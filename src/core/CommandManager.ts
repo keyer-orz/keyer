@@ -27,36 +27,39 @@ export class CommandManager {
 
   // 搜索命令和扩展结果
   async search(input: string): Promise<IAction[]> {
-    const results: IAction[] = []
-
-    // 如果输入为空，返回所有命令
-    if (!input || input.trim() === '') {
-      const allCommands = this.getAllCommands()
-      return allCommands.map(cmd => ({
+    // 获取所有可搜索的 actions：
+    // 1. extension 返回的 actions (来自 onPrepare)
+    // 2. extension 配置的 actions (来自 package.json commands)
+    // 3. script 配置的 actions
+    const allActions: IAction[] = [
+      // extension 返回的 actions
+      ...this.extensionManager.getExtensionActions(),
+      // extension 配置的 actions (commands)
+      ...this.extensionManager.getCommands().map(cmd => ({
         ...cmd,
         typeLabel: 'Command',
         ext: { type: 'command' }
+      })),
+      // script 配置的 actions
+      ...this.scriptManager.getCommands().map(cmd => ({
+        ...cmd,
+        typeLabel: 'Script',
+        ext: { type: 'script' }
       }))
+    ]
+
+    // 如果输入为空，返回所有 actions
+    if (!input || input.trim() === '') {
+      return allActions
     }
 
     const lowerInput = input.toLowerCase()
 
-    // 1. 从已注册的命令中匹配
-    const allCommands = this.getAllCommands()
-    const matchedCommands = allCommands.filter(cmd =>
-      cmd.name.toLowerCase().includes(lowerInput) ||
-      cmd.desc.toLowerCase().includes(lowerInput)
+    // 进行一级搜索：在所有 actions 中匹配
+    const results = allActions.filter(action =>
+      action.name.toLowerCase().includes(lowerInput) ||
+      action.desc.toLowerCase().includes(lowerInput)
     )
-
-    results.push(...matchedCommands.map(cmd => ({
-      ...cmd,
-      typeLabel: 'Command',
-      ext: { type: 'command' }
-    })))
-
-    // 2. 从扩展的 onSearch 中获取结果
-    const extensionResults = await this.extensionManager.search(input)
-    results.push(...extensionResults)
 
     return results
   }

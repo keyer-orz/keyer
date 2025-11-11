@@ -34,7 +34,7 @@ class AppLauncherExtension implements IExtension {
   store?: IStore
   private apps: AppInfo[] = []
 
-  async onPrepare(): Promise<void> {
+  async onPrepare(): Promise<IAction[]> {
     // 扫描应用程序目录
     await this.scanApplications()
     console.log(`App Launcher: Loaded ${this.apps.length} applications`)
@@ -42,6 +42,18 @@ class AppLauncherExtension implements IExtension {
     // 显示启动统计
     const launchCount = this.store?.get('totalLaunches', 0) || 0
     console.log(`App Launcher: Total app launches: ${launchCount}`)
+
+    // 返回所有应用的 actions
+    return this.apps.map(app => ({
+      id: `com.keyer.app-launcher.open.${app.enName}`,
+      name: `打开 ${app.name}`,
+      desc: `${app.enName} - ${app.category}`,
+      typeLabel: 'App',
+      ext: {
+        type: 'app-launcher',
+        appPath: app.path
+      }
+    }))
   }
 
   private async scanApplications(): Promise<void> {
@@ -74,35 +86,6 @@ class AppLauncherExtension implements IExtension {
     } catch (error) {
       console.error('Error scanning applications:', error)
     }
-  }
-
-  async onSearch(input: string): Promise<IAction[]> {
-    if (!input) {
-      return []
-    }
-
-    const lowerInput = input.toLowerCase()
-
-    // 搜索匹配的应用（支持中英文）
-    const matchedApps = this.apps.filter(app => {
-      const matchName = app.name.toLowerCase().includes(lowerInput)
-      const matchEnName = app.enName.toLowerCase().includes(lowerInput)
-      const matchCategory = app.category.toLowerCase().includes(lowerInput)
-
-      return matchName || matchEnName || matchCategory
-    })
-
-    // 返回搜索结果
-    return matchedApps.map(app => ({
-      id: `com.keyer.app-launcher.open.${app.enName}`,
-      name: `打开 ${app.name}`,
-      desc: `${app.enName} - ${app.category}`,
-      typeLabel: 'App',
-      ext: {
-        type: 'app-launcher',
-        appPath: app.path
-      }
-    }))
   }
 
   async doAction(action: IAction): Promise<void> {

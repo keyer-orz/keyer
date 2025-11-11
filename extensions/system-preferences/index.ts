@@ -39,28 +39,11 @@ class SystemPreferencesExtension implements IExtension {
     this.preferences = preferencesDatabase
   }
 
-  async onPrepare(): Promise<void> {
+  async onPrepare(): Promise<IAction[]> {
     console.log(`System Preferences: Loaded ${this.preferences.length} preference panes`)
-  }
 
-  async onSearch(input: string): Promise<IAction[]> {
-    if (!input) {
-      return []
-    }
-
-    const lowerInput = input.toLowerCase()
-
-    // 搜索匹配的设置项（支持中英文）
-    const matched = this.preferences.filter(pref => {
-      const matchName = pref.name.toLowerCase().includes(lowerInput)
-      const matchEnName = pref.enName.toLowerCase().includes(lowerInput)
-      const matchDesc = pref.desc.toLowerCase().includes(lowerInput)
-
-      return matchName || matchEnName || matchDesc
-    })
-
-    // 返回搜索结果
-    return matched.map(pref => ({
+    // 返回所有系统设置项的 actions
+    return this.preferences.map(pref => ({
       id: `com.keyer.system-preferences`,
       name: `打开 ${pref.name}`,
       desc: pref.desc,

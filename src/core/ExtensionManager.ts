@@ -6,6 +6,7 @@ import { ExtensionStore } from './ExtensionStore'
 export class ExtensionManager {
   private extensions: Map<string, IExtension> = new Map()
   private commands: Map<string, ICommand> = new Map()
+  private extensionActions: Map<string, IAction[]> = new Map() // 存储扩展返回的 actions
   private stores: Map<string, ExtensionStore> = new Map()
   private extensionsDir: string
   private panelController: IPanelController | null = null
@@ -82,8 +83,12 @@ export class ExtensionManager {
         this.commands.set(command.id, command)
       }
 
-      // 调用准备阶段
-      await extension.onPrepare()
+      // 调用准备阶段，获取扩展返回的 actions
+      const actions = await extension.onPrepare()
+      if (actions && Array.isArray(actions)) {
+        this.extensionActions.set(pkg.id, actions)
+        console.log(`Extension ${pkg.id} returned ${actions.length} actions`)
+      }
 
       console.log(`Loaded extension: ${pkg.id} - ${pkg.name} (with store)`)
     } catch (error) {
@@ -109,17 +114,12 @@ export class ExtensionManager {
     return result
   }
 
-  // 根据输入搜索所有扩展
-  async search(input: string): Promise<IAction[]> {
+  // 获取所有扩展返回的 actions
+  getExtensionActions(): IAction[] {
     const results: IAction[] = []
 
-    for (const [_, extension] of this.extensions) {
-      try {
-        const actions = await extension.onSearch(input)
-        results.push(...actions)
-      } catch (error) {
-        console.error('Extension search error:', error)
-      }
+    for (const [_, actions] of this.extensionActions) {
+      results.push(...actions)
     }
 
     return results
@@ -129,18 +129,25 @@ export class ExtensionManager {
   async executeAction(action: IAction): Promise<void> {
     console.log('Executing action:', action)
 
-    // 遍历所有扩展，让它们尝试处理这个 action
-    for (const [extId, extension] of this.extensions) {
-      try {
-        await extension.doAction(action)
-        console.log(`Action ${action.id} executed by extension ${extId}`)
-        return
-      } catch (error) {
-        // 继续尝试下一个扩展
-        console.log(`Extension ${extId} cannot handle action:`, error instanceof Error ? error.message : error)
-      }
+    // 根据 action.ext.type 查找对应的扩展
+    if (!action.ext || !action.ext.type) {
+      throw new Error(`Action ${action.id} missing ext.type field`)
     }
 
-    throw new Error(`No extension can handle action: ${action.id}`)
+    const extType = action.ext.type
+    let extension = this.extensions.get(extType)
+
+    // 如果找不到，尝试用完整 ID 格式查找（com.keyer.{type}）
+    if (!extension) {
+      const fullExtId = `com.keyer.${extType}`
+      extension = this.extensions.get(fullExtId)
+    }
+
+    if (!extension) {
+      throw new Error(`Extension ${extType} not found for action: ${action.id}`)
+    }
+
+    await extension.doAction(action)
+    console.log(`Action ${action.id} executed successfully`)
   }
 }

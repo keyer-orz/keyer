@@ -4,21 +4,12 @@ class PanelDemoExtension implements IExtension {
   store?: IStore
   panel?: IPanelController
 
-  async onPrepare(): Promise<void> {
+  async onPrepare(): Promise<IAction[]> {
     console.log('Panel Demo Extension loaded')
-  }
 
-  async onSearch(input: string): Promise<IAction[]> {
-    if (!input) {
-      return []
-    }
-
-    const lowerInput = input.toLowerCase()
-    const results: IAction[] = []
-
-    // List Demo
-    if ('list'.includes(lowerInput) || 'panel'.includes(lowerInput)) {
-      results.push({
+    // 返回所有 panel demo 的 actions
+    return [
+      {
         id: 'com.keyer.panel-demo.list',
         name: 'Panel List Demo',
         desc: '演示 List 类型面板 - 展示带图标、副标题和附件的列表',
@@ -27,12 +18,8 @@ class PanelDemoExtension implements IExtension {
           type: 'panel-demo',
           panelType: 'list'
         }
-      })
-    }
-
-    // Board Demo
-    if ('board'.includes(lowerInput) || 'panel'.includes(lowerInput)) {
-      results.push({
+      },
+      {
         id: 'com.keyer.panel-demo.board',
         name: 'Panel Board Demo',
         desc: '演示 Board 类型面板 - 展示卡片式网格布局',
@@ -41,10 +28,8 @@ class PanelDemoExtension implements IExtension {
           type: 'panel-demo',
           panelType: 'board'
         }
-      })
-    }
-
-    return results
+      }
+    ]
   }
 
   async doAction(action: IAction): Promise<void> {
