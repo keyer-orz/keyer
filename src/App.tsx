@@ -62,8 +62,8 @@ function App() {
 
       // 加载 UI 扩展
       window.electronAPI.loadUIExtensions().then(extensions => {
-        extensions.forEach(({ id }) => {
-          uiExtensionLoader.loadExtension(id)
+        extensions.forEach(({ id, uiPath }) => {
+          uiExtensionLoader.loadExtension(id, uiPath)
         })
       })
 

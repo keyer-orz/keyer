@@ -8,21 +8,23 @@ interface UIExtensionModule {
 class UIExtensionLoader {
   private extensions: Map<string, UIExtensionModule> = new Map()
 
-  // 统一路径生成：开发环境用 /extensions/{id}/dist/ui.js，生产环境用 file://${resourcesPath}/extensions/{id}/dist/ui.js
-  private getImportPath(extensionId: string): string {
+  // 直接使用传入的路径（开发环境和生产环境的路径已在主进程处理好）
+  private getImportPath(uiPath: string): string {
     const isDev = window.location.protocol === 'http:' || window.location.protocol === 'https:'
     if (isDev) {
-      return `/extensions/${extensionId}/dist/ui.js`
+      // 开发环境：直接使用传入的路径（如 /extensions/panel-demo/dist/ui.js）
+      return uiPath
     } else {
+      // 生产环境：使用 file:// 协议
       // @ts-ignore
       const resourcesPath = (window as any).process?.resourcesPath || ''
-      return `file://${resourcesPath}/extensions/${extensionId}/dist/ui.js`
+      return `file://${resourcesPath}${uiPath}`
     }
   }
 
-  async loadExtension(extensionId: string): Promise<void> {
+  async loadExtension(extensionId: string, uiPath: string): Promise<void> {
     try {
-      const importPath = this.getImportPath(extensionId)
+      const importPath = this.getImportPath(uiPath)
       const module = await import(/* @vite-ignore */ importPath)
       this.extensions.set(extensionId, module.default || module)
     } catch (error) {
