@@ -1,0 +1,28 @@
+{
+  "id": "com.keyer.clipboard-history",
+  "name": "clipboard-history",
+  "title": "Clipboard History",
+  "version": "1.0.0",
+  "description": "Track and search clipboard history",
+  "main": "dist/index.js",
+  "ui": "dist/ui.js",
+  "scripts": {
+    "build": "tsc && node build-ui.js"
+  },
+  "commands": [
+    {
+      "key": "show-panel",
+      "name": "Clipboard History Panel",
+      "desc": "Open clipboard history panel with filtering"
+    }
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "esbuild": "^0.27.0",
+    "keyerext": "file:../../packages/keyerext",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.0.0"
+  }
+}

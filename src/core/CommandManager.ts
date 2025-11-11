@@ -32,19 +32,15 @@ export class CommandManager {
     // 2. extension 配置的 actions (来自 package.json commands)
     // 3. script 配置的 actions
     const allActions: IAction[] = [
-      // extension 返回的 actions
-      ...this.extensionManager.getExtensionActions(),
-      // extension 配置的 actions (commands)
+      // extension 配置的 actions
       ...this.extensionManager.getCommands().map(cmd => ({
         ...cmd,
         typeLabel: 'Command',
-        ext: { type: 'command' }
       })),
       // script 配置的 actions
       ...this.scriptManager.getCommands().map(cmd => ({
         ...cmd,
         typeLabel: 'Script',
-        ext: { type: 'script' }
       }))
     ]
 

@@ -6,7 +6,6 @@ import { ExtensionStore } from './ExtensionStore'
 export class ExtensionManager {
   private extensions: Map<string, IExtension> = new Map()
   private commands: Map<string, ICommand> = new Map()
-  private extensionActions: Map<string, IAction[]> = new Map() // 存储扩展返回的 actions
   private stores: Map<string, ExtensionStore> = new Map()
   private extensionPackages: Map<string, ExtensionPackage> = new Map() // 存储包配置
   private extensionsDir: string
@@ -75,35 +74,41 @@ export class ExtensionManager {
       if (this.panelController) {
         extension.panel = this.panelController
       }
-
+      console.log("load extension:", pkg.id)
       // 保存包配置
       this.extensionPackages.set(pkg.id, pkg)
 
       // 注册扩展
       this.extensions.set(pkg.id, extension)
 
-      // 注册命令
+      // 注册命令（来自 package.json）
       for (const command of pkg.commands) {
-        this.commands.set(command.id, command)
+        console.log(`load extension pkg cmd: ${command.key}`)
+        this.commands.set(`${pkg.id}#${command.key}`, {
+          ...command,
+          id: `${pkg.id}#${command.key}`,
+        })
       }
 
       // 调用准备阶段，获取扩展返回的 actions
       const actionDefs = await extension.onPrepare()
       if (actionDefs && Array.isArray(actionDefs)) {
-        // 为每个 action 生成 id（格式：extensionId#key）
-        const actions: IAction[] = actionDefs.map(def => {
-          console.log('Creating action from def:', def)
-          return {
+
+        // 为每个 action 生成 id 并存储到 commands（格式：extensionId#key）
+        for (const def of actionDefs) {
+          console.log(`load extension action: ${def.key}`)
+          const action: IAction = {
             id: `${pkg.id}#${def.key}`,
             key: def.key,
             name: def.name,
             desc: def.desc,
             typeLabel: def.typeLabel || 'Extension'
           }
-        })
 
-        this.extensionActions.set(pkg.id, actions)
-        console.log(`Extension ${pkg.id} returned ${actions.length} actions:`, actions.map(a => ({ id: a.id, key: a.key })))
+          this.commands.set(action.id, action)
+        }
+
+        console.log(`Extension ${pkg.id} registered ${actionDefs.length} actions from onPrepare`)
       }
 
       console.log(`Loaded extension: ${pkg.id} - ${pkg.title} (with store)`)
@@ -130,34 +135,20 @@ export class ExtensionManager {
     return result
   }
 
-  // 获取所有扩展返回的 actions
-  getExtensionActions(): IAction[] {
-    const results: IAction[] = []
-
-    for (const [_, actions] of this.extensionActions) {
-      results.push(...actions)
-    }
-
-    return results
-  }
-
   // 执行命令
   // 返回 true: 保持主面板打开
   // 返回 false: 自动关闭主面板
   async executeAction(action: IAction): Promise<boolean> {
-    console.log('Executing action:', action, this.extensions)
+    console.log('Executing action:', action.id)
 
     // 从 action.id 解析 extensionId 和 key（格式：extensionId#key）
     const parts = action.id.split('#')
-    console.log('Parsed parts:', parts, 'length:', parts.length)
 
     if (parts.length !== 2) {
       throw new Error(`Invalid action id format: ${action.id}. Expected format: extensionId#key`)
     }
 
     const [extensionId, key] = parts
-    console.log('ExtensionId:', extensionId, 'Key:', key)
-
     const extension = this.extensions.get(extensionId)
 
     if (!extension) {
@@ -182,7 +173,9 @@ export class ExtensionManager {
       if (pkg.ui) {
         // 从 package ID 获取扩展目录名（如 com.keyer.panel-demo -> panel-demo）
         const extDirName = id.split('.').pop() || id
-        const uiPath = path.join(this.extensionsDir, extDirName, pkg.ui)
+        // 返回相对于项目根目录的路径（用于渲染进程导入）
+        // 例如：/extensions/clipboard-history/dist/ui.js
+        const uiPath = `/${path.join('extensions', extDirName, pkg.ui).replace(/\\/g, '/')}`
         result.push({ id, uiPath })
       }
     }

@@ -34,5 +34,14 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src')
     }
+  },
+  server: {
+    fs: {
+      // 允许访问项目根目录及 extensions 目录
+      allow: [
+        path.resolve(__dirname, '.'),
+        path.resolve(__dirname, 'extensions')
+      ]
+    }
   }
 })
