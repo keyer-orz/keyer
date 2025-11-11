@@ -89,3 +89,6 @@ export interface ExtensionPackage {
   main: string  // 主进程入口文件
   ui?: string   // 渲染进程 UI 组件入口文件（可选）
 }
+
+// React Hooks
+export { useStore, ExtensionIdContext } from './hooks'

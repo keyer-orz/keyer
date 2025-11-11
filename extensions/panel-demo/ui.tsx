@@ -1,20 +1,54 @@
-import React from 'react'
+import { useState } from 'react'
+import { useStore } from 'keyerext'
 
-// Dashboard 组件
+// Dashboard 组件 - 演示如何使用 Store
 export function Dashboard(props: { title?: string }) {
+  // 使用简化版 Store Hook，自动获取当前 extension ID
+  const [clickCount, setClickCount] = useStore<number>('dashboard-clicks', 0)
+
+  const [localCounter, setLocalCounter] = useState(0)
+
+  const handleCardClick = async () => {
+    // 更新 Store 中的计数
+    await setClickCount((clickCount || 0) + 1)
+  }
+
   return (
     <div style={{ padding: '20px' }}>
-      <h2 style={{ marginBottom: '20px', color: 'var(--color-text)' }}>
-        {props.title || 'System Dashboard'}
-      </h2>
+      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ margin: 0, color: 'var(--color-text)' }}>
+          {props.title || 'System Dashboard'}
+        </h2>
+        <div style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
+          总点击次数: {clickCount || 0} | 本次: {localCounter}
+        </div>
+      </div>
+
+      <p style={{ marginBottom: '20px', color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+        💡 点击任意卡片查看 Store 演示（数据会持久化保存）
+      </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        <div style={{
-          padding: '16px',
-          borderRadius: '8px',
-          background: 'var(--color-bg-secondary)',
-          border: '1px solid var(--color-border)'
-        }}>
+        <div
+          style={{
+            padding: '16px',
+            borderRadius: '8px',
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s'
+          }}
+          onClick={() => {
+            handleCardClick()
+            setLocalCounter(localCounter + 1)
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>📊</div>
           <h3 style={{ color: 'var(--color-text)', marginBottom: '4px' }}>CPU 使用率</h3>
           <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--color-primary)' }}>
@@ -25,12 +59,26 @@ export function Dashboard(props: { title?: string }) {
           </p>
         </div>
 
-        <div style={{
-          padding: '16px',
-          borderRadius: '8px',
-          background: 'var(--color-bg-secondary)',
-          border: '1px solid var(--color-border)'
-        }}>
+        <div
+          style={{
+            padding: '16px',
+            borderRadius: '8px',
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s'
+          }}
+          onClick={() => {
+            handleCardClick()
+            setLocalCounter(localCounter + 1)
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>💾</div>
           <h3 style={{ color: 'var(--color-text)', marginBottom: '4px' }}>内存使用</h3>
           <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--color-primary)' }}>
@@ -41,12 +89,26 @@ export function Dashboard(props: { title?: string }) {
           </p>
         </div>
 
-        <div style={{
-          padding: '16px',
-          borderRadius: '8px',
-          background: 'var(--color-bg-secondary)',
-          border: '1px solid var(--color-border)'
-        }}>
+        <div
+          style={{
+            padding: '16px',
+            borderRadius: '8px',
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s'
+          }}
+          onClick={() => {
+            handleCardClick()
+            setLocalCounter(localCounter + 1)
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>🌐</div>
           <h3 style={{ color: 'var(--color-text)', marginBottom: '4px' }}>网络状态</h3>
           <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#4ade80' }}>
@@ -57,12 +119,26 @@ export function Dashboard(props: { title?: string }) {
           </p>
         </div>
 
-        <div style={{
-          padding: '16px',
-          borderRadius: '8px',
-          background: 'var(--color-bg-secondary)',
-          border: '1px solid var(--color-border)'
-        }}>
+        <div
+          style={{
+            padding: '16px',
+            borderRadius: '8px',
+            background: 'var(--color-bg-secondary)',
+            border: '1px solid var(--color-border)',
+            cursor: 'pointer',
+            transition: 'transform 0.2s'
+          }}
+          onClick={() => {
+            handleCardClick()
+            setLocalCounter(localCounter + 1)
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔋</div>
           <h3 style={{ color: 'var(--color-text)', marginBottom: '4px' }}>电池状态</h3>
           <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#4ade80' }}>

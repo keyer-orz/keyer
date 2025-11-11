@@ -5,13 +5,16 @@
   "main": "dist/index.js",
   "ui": "dist/ui.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && tsc -p tsconfig.ui.json"
   },
   "commands": [],
   "devDependencies": {
-    "keyerext": "file:../../packages/keyerext",
-    "typescript": "^5.0.0",
     "@types/node": "^20.0.0",
-    "@types/react": "^18.0.0"
+    "@types/react": "^18.0.0",
+    "keyerext": "file:../../packages/keyerext",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "react": "^19.2.0"
   }
 }

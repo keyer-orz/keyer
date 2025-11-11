@@ -5,6 +5,17 @@ contextBridge.exposeInMainWorld('electron', {
   invoke: (channel: string, ...args: any[]) => ipcRenderer.invoke(channel, ...args)
 })
 
+contextBridge.exposeInMainWorld('extensionStore', {
+  get: (extensionId: string, key: string, defaultValue?: any) =>
+    ipcRenderer.invoke('extension-store-get', extensionId, key, defaultValue),
+  set: (extensionId: string, key: string, value: any) =>
+    ipcRenderer.invoke('extension-store-set', extensionId, key, value),
+  delete: (extensionId: string, key: string) =>
+    ipcRenderer.invoke('extension-store-delete', extensionId, key),
+  keys: (extensionId: string) =>
+    ipcRenderer.invoke('extension-store-keys', extensionId)
+})
+
 contextBridge.exposeInMainWorld('electronAPI', {
   search: (input: string) => ipcRenderer.invoke('search', input),
   execute: (action: any) => ipcRenderer.invoke('execute', action),

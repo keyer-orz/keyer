@@ -171,11 +171,48 @@ export class ExtensionManager {
 
     for (const [id, pkg] of this.extensionPackages) {
       if (pkg.ui) {
-        const uiPath = path.join(this.extensionsDir, path.dirname(pkg.main), pkg.ui)
+        // 从 package ID 获取扩展目录名（如 com.keyer.panel-demo -> panel-demo）
+        const extDirName = id.split('.').pop() || id
+        const uiPath = path.join(this.extensionsDir, extDirName, pkg.ui)
         result.push({ id, uiPath })
       }
     }
 
     return result
+  }
+
+  // Store 操作方法
+  getStoreValue(extensionId: string, key: string, defaultValue?: any) {
+    const store = this.stores.get(extensionId)
+    if (!store) {
+      return defaultValue
+    }
+    return store.get(key, defaultValue)
+  }
+
+  setStoreValue(extensionId: string, key: string, value: any): boolean {
+    const store = this.stores.get(extensionId)
+    if (!store) {
+      return false
+    }
+    store.set(key, value)
+    return true
+  }
+
+  deleteStoreValue(extensionId: string, key: string): boolean {
+    const store = this.stores.get(extensionId)
+    if (!store) {
+      return false
+    }
+    store.delete(key)
+    return true
+  }
+
+  getStoreKeys(extensionId: string): string[] {
+    const store = this.stores.get(extensionId)
+    if (!store) {
+      return []
+    }
+    return store.keys()
   }
 }

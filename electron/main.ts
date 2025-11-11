@@ -154,6 +154,35 @@ function setupIPC() {
     return uiExtensions
   })
 
+  // Extension Store 操作
+  ipcMain.handle('extension-store-get', (_, extensionId: string, key: string, defaultValue?: any) => {
+    if (!commandManager) {
+      return defaultValue
+    }
+    return commandManager.getExtensionStoreValue(extensionId, key, defaultValue)
+  })
+
+  ipcMain.handle('extension-store-set', (_, extensionId: string, key: string, value: any) => {
+    if (!commandManager) {
+      return false
+    }
+    return commandManager.setExtensionStoreValue(extensionId, key, value)
+  })
+
+  ipcMain.handle('extension-store-delete', (_, extensionId: string, key: string) => {
+    if (!commandManager) {
+      return false
+    }
+    return commandManager.deleteExtensionStoreValue(extensionId, key)
+  })
+
+  ipcMain.handle('extension-store-keys', (_, extensionId: string) => {
+    if (!commandManager) {
+      return []
+    }
+    return commandManager.getExtensionStoreKeys(extensionId)
+  })
+
   // 获取配置
   ipcMain.handle('get-config', () => {
     if (!configManager) {

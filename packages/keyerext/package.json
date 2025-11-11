@@ -2,10 +2,19 @@
   "name": "keyerext",
   "version": "1.0.0",
   "description": "Type definitions and SDK for Keyer extensions",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc",
+    "build:cjs": "tsc --module commonjs --outDir dist-cjs && node -e \"const fs=require('fs');const path=require('path');function copy(src,dest){const files=fs.readdirSync(src);files.forEach(f=>{const s=path.join(src,f);const d=path.join(dest,f.replace('.js','.cjs'));if(fs.statSync(s).isFile()&&f.endsWith('.js')){fs.copyFileSync(s,d)}})}copy('dist-cjs','dist')\" && rm -rf dist-cjs",
     "watch": "tsc --watch"
   },
   "keywords": [

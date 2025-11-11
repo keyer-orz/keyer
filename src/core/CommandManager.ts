@@ -95,4 +95,21 @@ export class CommandManager {
   getUIExtensions() {
     return this.extensionManager.getUIExtensions()
   }
+
+  // Extension Store 操作
+  getExtensionStoreValue(extensionId: string, key: string, defaultValue?: any) {
+    return this.extensionManager.getStoreValue(extensionId, key, defaultValue)
+  }
+
+  setExtensionStoreValue(extensionId: string, key: string, value: any) {
+    return this.extensionManager.setStoreValue(extensionId, key, value)
+  }
+
+  deleteExtensionStoreValue(extensionId: string, key: string) {
+    return this.extensionManager.deleteStoreValue(extensionId, key)
+  }
+
+  getExtensionStoreKeys(extensionId: string) {
+    return this.extensionManager.getStoreKeys(extensionId)
+  }
 }

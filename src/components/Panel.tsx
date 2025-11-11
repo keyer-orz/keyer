@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import './Panel.css'
 import { uiExtensionLoader } from '../core/UIExtensionLoader'
+import { ExtensionIdContext } from 'keyerext'
 
 // 可序列化的 Panel 配置
 interface SerializablePanelConfig {
@@ -41,7 +42,9 @@ function Panel({ config, onClose }: PanelProps) {
 
       <div className="panel-content">
         {Component ? (
-          <Component {...(config.props || {})} />
+          <ExtensionIdContext.Provider value={config.extensionId}>
+            <Component {...(config.props || {})} />
+          </ExtensionIdContext.Provider>
         ) : (
           <div className="panel-error">
             组件未找到: {config.component}
