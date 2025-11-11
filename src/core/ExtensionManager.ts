@@ -1,10 +1,12 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { ICommand, IAction, IExtension, ExtensionPackage } from '../types'
+import { ExtensionStore } from './ExtensionStore'
 
 export class ExtensionManager {
   private extensions: Map<string, IExtension> = new Map()
   private commands: Map<string, ICommand> = new Map()
+  private stores: Map<string, ExtensionStore> = new Map()
   private extensionsDir: string
 
   constructor(extensionsDir: string) {
@@ -58,6 +60,13 @@ export class ExtensionManager {
       const extensionModule = require(mainPath)
       const extension: IExtension = extensionModule.default || extensionModule
 
+      // 为扩展创建 Store
+      const store = new ExtensionStore(pkg.id)
+      this.stores.set(pkg.id, store)
+
+      // 注入 Store 到扩展实例
+      extension.store = store
+
       // 注册扩展
       this.extensions.set(pkg.id, extension)
 
@@ -69,7 +78,7 @@ export class ExtensionManager {
       // 调用准备阶段
       await extension.onPrepare()
 
-      console.log(`Loaded extension: ${pkg.id} - ${pkg.name}`)
+      console.log(`Loaded extension: ${pkg.id} - ${pkg.name} (with store)`)
     } catch (error) {
       console.error(`Failed to load extension from ${extDir}:`, error)
     }

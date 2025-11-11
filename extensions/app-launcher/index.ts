@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { exec } from 'child_process'
-import { IExtension, IAction } from 'keyerext'
+import { IExtension, IAction, IStore } from 'keyerext'
 
 // 应用数据库（包含中英文名称）
 interface AppInfo {
@@ -31,12 +31,17 @@ const appDatabase: AppInfo[] = [
 ]
 
 class AppLauncherExtension implements IExtension {
+  store?: IStore
   private apps: AppInfo[] = []
 
   async onPrepare(): Promise<void> {
     // 扫描应用程序目录
     await this.scanApplications()
     console.log(`App Launcher: Loaded ${this.apps.length} applications`)
+
+    // 显示启动统计
+    const launchCount = this.store?.get('totalLaunches', 0) || 0
+    console.log(`App Launcher: Total app launches: ${launchCount}`)
   }
 
   private async scanApplications(): Promise<void> {
@@ -115,6 +120,15 @@ class AppLauncherExtension implements IExtension {
             reject(error)
           } else {
             console.log('Opened app:', appPath)
+
+            // 记录启动次数
+            const totalLaunches = this.store?.get('totalLaunches', 0) as number
+            this.store?.set('totalLaunches', totalLaunches + 1)
+
+            // 记录每个应用的启动次数
+            const appLaunches = this.store?.get(`app:${appPath}`, 0) as number
+            this.store?.set(`app:${appPath}`, appLaunches + 1)
+
             resolve()
           }
         })

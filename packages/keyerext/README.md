@@ -53,11 +53,17 @@ cd my-extension
 
 4. Create index.ts:
 ```typescript
-import { IExtension, IAction } from 'keyerext'
+import { IExtension, IAction, IStore } from 'keyerext'
 
 class MyExtension implements IExtension {
+  store?: IStore
+
   async onPrepare(): Promise<void> {
     console.log('Extension loaded')
+
+    // Use store to persist data
+    const count = this.store?.get('launchCount', 0)
+    console.log('Launch count:', count)
   }
 
   async onSearch(input: string): Promise<IAction[]> {
@@ -74,10 +80,41 @@ class MyExtension implements IExtension {
 
   async doAction(action: IAction): Promise<void> {
     console.log('Action executed:', action)
+
+    // Increment launch count
+    const count = this.store?.get('launchCount', 0) as number
+    this.store?.set('launchCount', count + 1)
   }
 }
 
 export default new MyExtension()
+```
+
+### Using Store
+
+The `store` property is automatically injected by the framework when your extension loads. Each extension gets its own isolated storage space.
+
+```typescript
+// Save data
+this.store?.set('myKey', 'myValue')
+this.store?.set('counter', 42)
+this.store?.set('config', { theme: 'dark', lang: 'en' })
+
+// Read data
+const value = this.store?.get('myKey')  // 'myValue'
+const counter = this.store?.get('counter', 0)  // 42, or 0 if not exists
+const config = this.store?.get<{theme: string}>('config')
+
+// Delete data
+this.store?.delete('myKey')
+
+// Check existence
+if (this.store?.has('config')) {
+  // ...
+}
+
+// Clear all data
+this.store?.clear()
 ```
 
 5. Build:
@@ -93,9 +130,26 @@ Main interface for Keyer extensions.
 
 ```typescript
 interface IExtension {
+  store?: IStore  // Injected by the framework
   onPrepare(): Promise<void> | void
   onSearch(input: string): Promise<IAction[]> | IAction[]
   doAction(action: IAction): Promise<void> | void
+}
+```
+
+### IStore
+
+Key-value storage interface for extensions.
+
+```typescript
+interface IStore {
+  get<T = any>(key: string): T | undefined
+  get<T = any>(key: string, defaultValue: T): T
+  set(key: string, value: any): void
+  delete(key: string): void
+  clear(): void
+  keys(): string[]
+  has(key: string): boolean
 }
 ```
 
