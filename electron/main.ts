@@ -210,32 +210,8 @@ function setupIPC() {
   })
 }
 
-// 注册自定义协议用于加载扩展文件（生产环境）
-function registerExtensionProtocol() {
-  protocol.registerFileProtocol('ext-file', (request, callback) => {
-    try {
-      const url = request.url.substring('ext-file://'.length)
-      let filePath = decodeURIComponent(url)
-
-      // 如果是相对路径，转换为绝对路径
-      if (!path.isAbsolute(filePath)) {
-        // 相对于应用根目录
-        filePath = path.join(__dirname, '..', filePath)
-      }
-
-      console.log(`Loading extension file: ${filePath}`)
-      callback({ path: filePath })
-    } catch (error) {
-      console.error('Error loading extension file:', error)
-      callback({ error: -2 }) // 文件未找到
-    }
-  })
-}
-
 // 应用就绪
 app.whenReady().then(async () => {
-  // 注册扩展文件协议（用于生产环境）
-  registerExtensionProtocol()
 
   configManager = new ConfigManager()
   createWindow()

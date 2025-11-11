@@ -5,10 +5,12 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && electron-builder",
+    "build": "npm run build:extensions && tsc && vite build && electron-builder",
+    "build:extensions": "node tools/build-extensions.js",
     "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "vite build && electron-builder"
+    "electron:build": "npm run build:extensions && vite build && electron-builder",
+    "electron:build:app": "npm run build:extensions && vite build && electron-builder --mac --dir"
   },
   "keywords": [
     "electron",
@@ -41,20 +43,25 @@
     "appId": "com.keyer.app",
     "productName": "Keyer",
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "electronLanguages": ["en", "zh_CN"]
     },
     "files": [
       "dist/**/*",
-      "dist-electron/**/*",
-      "extensions/**/*"
+      "dist-electron/**/*"
     ],
     "extraResources": [
       {
-        "from": "scripts",
-        "to": "scripts",
+        "from": "extensions",
+        "to": "extensions",
         "filter": [
-          "**/*"
+          "*/dist/**/*",
+          "*/package.json"
         ]
+      },
+      {
+        "from": "scripts",
+        "to": "scripts"
       }
     ],
     "directories": {
