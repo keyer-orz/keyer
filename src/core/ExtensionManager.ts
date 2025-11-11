@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { ICommand, IAction, IExtension, ExtensionPackage, IPanelController } from '../types'
+import { ICommand, IAction, IExtension, ExtensionPackage } from '../types'
 import { ExtensionStore } from './ExtensionStore'
 
 export class ExtensionManager {
@@ -88,13 +88,25 @@ export class ExtensionManager {
       }
 
       // 调用准备阶段，获取扩展返回的 actions
-      const actions = await extension.onPrepare()
-      if (actions && Array.isArray(actions)) {
+      const actionDefs = await extension.onPrepare()
+      if (actionDefs && Array.isArray(actionDefs)) {
+        // 为每个 action 生成 id（格式：extensionId#key）
+        const actions: IAction[] = actionDefs.map(def => {
+          console.log('Creating action from def:', def)
+          return {
+            id: `${pkg.id}#${def.key}`,
+            key: def.key,
+            name: def.name,
+            desc: def.desc,
+            typeLabel: def.typeLabel || 'Extension'
+          }
+        })
+
         this.extensionActions.set(pkg.id, actions)
-        console.log(`Extension ${pkg.id} returned ${actions.length} actions`)
+        console.log(`Extension ${pkg.id} returned ${actions.length} actions:`, actions.map(a => ({ id: a.id, key: a.key })))
       }
 
-      console.log(`Loaded extension: ${pkg.id} - ${pkg.name} (with store)`)
+      console.log(`Loaded extension: ${pkg.id} - ${pkg.title} (with store)`)
     } catch (error) {
       console.error(`Failed to load extension from ${extDir}:`, error)
     }
@@ -133,26 +145,23 @@ export class ExtensionManager {
   // 返回 true: 保持主面板打开
   // 返回 false: 自动关闭主面板
   async executeAction(action: IAction): Promise<boolean> {
-    console.log('Executing action:', action)
+    console.log('Executing action:', action, this.extensions)
 
-    // 根据 action.ext.type 查找对应的扩展
-    if (!action.ext || !action.ext.type) {
-      throw new Error(`Action ${action.id} missing ext.type field`)
+    // 从 action.id 解析 extensionId 和 key（格式：extensionId#key）
+    const parts = action.id.split('#')
+    console.log('Parsed parts:', parts, 'length:', parts.length)
+
+    if (parts.length !== 2) {
+      throw new Error(`Invalid action id format: ${action.id}. Expected format: extensionId#key`)
     }
 
-    const extType = action.ext.type
-    let extension = this.extensions.get(extType)
-    let extensionId = extType
+    const [extensionId, key] = parts
+    console.log('ExtensionId:', extensionId, 'Key:', key)
 
-    // 如果找不到，尝试用完整 ID 格式查找（com.keyer.{type}）
-    if (!extension) {
-      const fullExtId = `com.keyer.${extType}`
-      extension = this.extensions.get(fullExtId)
-      extensionId = fullExtId
-    }
+    const extension = this.extensions.get(extensionId)
 
     if (!extension) {
-      throw new Error(`Extension ${extType} not found for action: ${action.id}`)
+      throw new Error(`Extension ${extensionId} not found for action: ${action.id}`)
     }
 
     // 设置当前扩展 ID 到 PanelController
@@ -160,7 +169,7 @@ export class ExtensionManager {
       this.panelController.setCurrentExtension(extensionId)
     }
 
-    const keepOpen = await extension.doAction(action)
+    const keepOpen = await extension.doAction(key)
     console.log(`Action ${action.id} executed successfully, keepOpen: ${keepOpen}`)
     return keepOpen
   }

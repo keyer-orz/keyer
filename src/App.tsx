@@ -152,9 +152,10 @@ function App() {
   // 获取图标
   const getIcon = (action: IAction) => {
     // 根据扩展类型返回不同的 emoji
-    if (action.ext?.type === 'system-preferences') {
+    // 使用 typeLabel 来区分类型
+    if (action.typeLabel === 'System') {
       return '⚙️'
-    } else if (action.ext?.type === 'command') {
+    } else if (action.typeLabel === 'Command') {
       return '⚡'
     }
     return '📦'

@@ -43,6 +43,7 @@ export class ScriptManager {
     const lines = content.split('\n')
 
     let id: string | null = null
+    let key: string | null = null
     let name: string | null = null
     let desc: string | null = null
 
@@ -52,10 +53,12 @@ export class ScriptManager {
 
       // 匹配 # @keyer.xxx 或 // @keyer.xxx
       const idMatch = trimmed.match(/^[#/]+\s*@keyer\.id\s+(.+)/)
+      const keyMatch = trimmed.match(/^[#/]+\s*@keyer\.key\s+(.+)/)
       const nameMatch = trimmed.match(/^[#/]+\s*@keyer\.name\s+(.+)/)
       const descMatch = trimmed.match(/^[#/]+\s*@keyer\.desc\s+(.+)/)
 
       if (idMatch) id = idMatch[1].trim()
+      if (keyMatch) key = keyMatch[1].trim()
       if (nameMatch) name = nameMatch[1].trim()
       if (descMatch) desc = descMatch[1].trim()
 
@@ -66,9 +69,11 @@ export class ScriptManager {
     }
 
     // 如果找到了完整的命令信息，则注册
+    // 如果没有指定 key，使用 id 作为 key
     if (id && name && desc) {
       this.commands.set(id, {
         id,
+        key: key || id,
         name,
         desc,
       })

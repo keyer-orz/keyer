@@ -1,5 +1,5 @@
 import { exec } from 'child_process'
-import { IExtension, IAction } from 'keyerext'
+import { IExtension, IActionDef } from 'keyerext'
 
 // 系统设置项数据库（支持中英文）
 interface PreferenceItem {
@@ -34,73 +34,81 @@ const preferencesDatabase: PreferenceItem[] = [
 
 class SystemPreferencesExtension implements IExtension {
   private preferences: PreferenceItem[]
+  private paneMap: Map<string, string> = new Map() // key -> pane
 
   constructor() {
     this.preferences = preferencesDatabase
   }
 
-  async onPrepare(): Promise<IAction[]> {
+  async onPrepare(): Promise<IActionDef[]> {
     console.log(`System Preferences: Loaded ${this.preferences.length} preference panes`)
 
+    // 清空之前的映射
+    this.paneMap.clear()
+
     // 返回所有系统设置项的 actions
-    return this.preferences.map(pref => ({
-      id: `com.keyer.system-preferences`,
-      name: `打开 ${pref.name}`,
-      desc: pref.desc,
-      typeLabel: 'System',
-      ext: {
-        type: 'system-preferences',
-        pane: pref.pane
+    return this.preferences.map(pref => {
+      const actionName = `打开 ${pref.name}`
+      const actionKey = `open.${pref.enName.toLowerCase().replace(/\s+/g, '-')}`
+      // 保存 key 到 pane 的映射
+      this.paneMap.set(actionKey, pref.pane)
+
+      return {
+        key: actionKey,
+        name: actionName,
+        desc: pref.desc,
+        typeLabel: 'System'
       }
-    }))
+    })
   }
 
-  async doAction(action: IAction): Promise<boolean> {
-    console.log('System Preferences: Executing action', action)
+  async doAction(key: string): Promise<boolean> {
+    console.log('System Preferences: Executing action', key)
 
-    // 如果不是 system-preferences 类型的 action，抛出错误让其他扩展处理
-    if (!action.ext || action.ext.type !== 'system-preferences') {
-      throw new Error('Not a system-preferences action')
+    // 从映射中获取 pane
+    const pane = this.paneMap.get(key)
+
+    if (!pane) {
+      console.error(`Pane not found for key: ${key}`)
+      return false
     }
 
-    const pane = action.ext.pane
-
     return new Promise((resolve, reject) => {
-        // macOS Ventura (13.0+) 使用 "System Settings.app"
-        // macOS Monterey 及之前使用 "System Preferences.app"
+      // macOS Ventura (13.0+) 使用 "System Settings.app"
+      // macOS Monterey 及之前使用 "System Preferences.app"
 
-        // 尝试使用简单的 open 命令，macOS 会自动处理
-        let command = `open -b com.apple.systempreferences`
+      // 尝试使用简单的 open 命令，macOS 会自动处理
+      let command = `open -b com.apple.systempreferences`
 
-        // 对于特定面板，尝试不同的方式
-        if (pane === 'Network') {
-          // 网络设置的特殊处理 - macOS Sequoia (15.x) 使用新的 URL scheme
-          command = `open "x-apple.systempreferences:com.apple.wifi-settings-extension"`
+      // 对于特定面板，尝试不同的方式
+      if (pane === 'Network') {
+        // 网络设置的特殊处理 - macOS Sequoia (15.x) 使用新的 URL scheme
+        command = `open "x-apple.systempreferences:com.apple.wifi-settings-extension"`
+      } else {
+        // 其他面板尝试标准方式
+        command = `open "x-apple.systempreferences:com.apple.preference.${pane}" || open -b com.apple.systempreferences`
+      }
+
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          console.error('Failed to open preference pane:', stderr)
+          // 最后的后备方案：直接打开系统设置
+          exec(`open -b com.apple.systempreferences`, (err2) => {
+            if (err2) {
+              reject(err2)
+            } else {
+              console.log('Opened System Preferences (fallback)')
+              // 打开设置后自动关闭主面板
+              resolve(false)
+            }
+          })
         } else {
-          // 其他面板尝试标准方式
-          command = `open "x-apple.systempreferences:com.apple.preference.${pane}" || open -b com.apple.systempreferences`
+          console.log('Opened preference pane:', pane)
+          // 打开设置后自动关闭主面板
+          resolve(false)
         }
-
-        exec(command, (error, stdout, stderr) => {
-          if (error) {
-            console.error('Failed to open preference pane:', stderr)
-            // 最后的后备方案：直接打开系统设置
-            exec(`open -b com.apple.systempreferences`, (err2) => {
-              if (err2) {
-                reject(error)
-              } else {
-                console.log('Opened System Settings (fallback)')
-                // 打开系统设置后自动关闭主面板
-                resolve(false)
-              }
-            })
-          } else {
-            console.log('Opened preference pane:', pane)
-            // 打开系统设置后自动关闭主面板
-            resolve(false)
-          }
-        })
       })
+    })
   }
 }
 

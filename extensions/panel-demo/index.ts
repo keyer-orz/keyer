@@ -1,40 +1,56 @@
-import { IExtension, IAction, IStore, IPanelController } from 'keyerext'
+import { IExtension, IActionDef, IStore, IPanelController } from 'keyerext'
 
 class PanelDemoExtension implements IExtension {
   store?: IStore
   panel?: IPanelController
 
-  async onPrepare(): Promise<IAction[]> {
+  async onPrepare(): Promise<IActionDef[]> {
     console.log('Panel Demo Extension loaded')
 
     // 返回所有 panel demo 的 actions
     return [
       {
-        id: 'com.keyer.panel-demo.dashboard',
+        key: 'dashboard-panel',
         name: 'Dashboard Panel',
         desc: '演示 Dashboard 面板 - 卡片式布局',
-        typeLabel: 'Panel',
-        ext: {
-          type: 'panel-demo',
-          demo: 'dashboard'
-        }
+        typeLabel: 'Panel'
+      },
+      {
+        key: 'simple-list',
+        name: 'Simple List',
+        desc: '演示简单列表面板',
+        typeLabel: 'Panel'
+      },
+      {
+        key: 'system-info',
+        name: 'System Info',
+        desc: '演示系统信息面板',
+        typeLabel: 'Panel'
       }
     ]
   }
 
-  async doAction(action: IAction): Promise<boolean> {
-    console.log('Executing panel demo action:', action)
-    if (!action.ext || action.ext.type !== 'panel-demo') {
-      throw new Error('Not a panel-demo action')
-    }
+  async doAction(key: string): Promise<boolean> {
+    console.log('Executing panel demo action:', key)
 
     if (!this.panel) {
       console.error('Panel controller not available')
       return false
     }
 
-    switch (action.ext.demo) {
-      case 'list':
+    // 根据 key 判断显示哪个面板
+    switch (key) {
+      case 'dashboard-panel':
+        this.panel.showPanel({
+          title: 'System Dashboard',
+          component: 'Dashboard',
+          props: {
+            title: 'My Custom Dashboard'
+          }
+        })
+        break
+
+      case 'simple-list':
         this.panel.showPanel({
           title: 'Simple List',
           component: 'SimpleList'
@@ -48,17 +64,8 @@ class PanelDemoExtension implements IExtension {
         })
         break
 
-      case 'dashboard':
-        this.panel.showPanel({
-          title: 'System Dashboard',
-          component: 'Dashboard',
-          props: {
-            title: 'My Custom Dashboard'
-          }
-        })
-        break
-
       default:
+        console.error(`Unknown action key: ${key}`)
         return false
     }
 

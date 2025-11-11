@@ -1,6 +1,7 @@
 {
   "id": "com.keyer.system-preferences",
-  "name": "System Preferences",
+  "name": "system-preferences",
+  "title": "System Preferences",
   "version": "1.0.0",
   "description": "Open macOS System Preferences",
   "main": "dist/index.js",

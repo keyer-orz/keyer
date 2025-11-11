@@ -1,6 +1,7 @@
 {
   "id": "com.keyer.panel-demo",
-  "name": "Panel Demo",
+  "name": "panel-demo",
+  "title": "Panel Demo",
   "version": "1.0.0",
   "main": "dist/index.js",
   "ui": "dist/ui.js",

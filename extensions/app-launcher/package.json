@@ -1,6 +1,7 @@
 {
   "id": "com.keyer.app-launcher",
-  "name": "App Launcher",
+  "name": "app-launcher",
+  "title": "App Launcher",
   "version": "1.0.0",
   "description": "Launch macOS applications",
   "main": "dist/index.js",
@@ -8,11 +9,7 @@
     "build": "tsc"
   },
   "commands": [
-    {
-      "id": "com.keyer.app-launcher.search",
-      "name": "打开应用",
-      "desc": "搜索并打开应用程序"
-    }
+     
   ],
   "devDependencies": {
     "keyerext": "file:../../packages/keyerext",

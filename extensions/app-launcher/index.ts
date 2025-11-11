@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { exec } from 'child_process'
-import { IExtension, IAction, IStore } from 'keyerext'
+import { IExtension, IActionDef, IStore } from 'keyerext'
 
 // 应用数据库（包含中英文名称）
 interface AppInfo {
@@ -33,8 +33,9 @@ const appDatabase: AppInfo[] = [
 class AppLauncherExtension implements IExtension {
   store?: IStore
   private apps: AppInfo[] = []
+  private appPathMap: Map<string, string> = new Map() // key -> appPath
 
-  async onPrepare(): Promise<IAction[]> {
+  async onPrepare(): Promise<IActionDef[]> {
     // 扫描应用程序目录
     await this.scanApplications()
     console.log(`App Launcher: Loaded ${this.apps.length} applications`)
@@ -43,17 +44,23 @@ class AppLauncherExtension implements IExtension {
     const launchCount = this.store?.get('totalLaunches', 0) || 0
     console.log(`App Launcher: Total app launches: ${launchCount}`)
 
+    // 清空之前的映射
+    this.appPathMap.clear()
+
     // 返回所有应用的 actions
-    return this.apps.map(app => ({
-      id: `com.keyer.app-launcher.open.${app.enName}`,
-      name: `打开 ${app.name}`,
-      desc: `${app.enName} - ${app.category}`,
-      typeLabel: 'App',
-      ext: {
-        type: 'app-launcher',
-        appPath: app.path
+    return this.apps.map(app => {
+      const actionName = `打开 ${app.name}`
+      const actionKey = `open.${app.enName.toLowerCase().replace(/\s+/g, '-')}`
+      // 保存 key 到 appPath 的映射
+      this.appPathMap.set(actionKey, app.path)
+
+      return {
+        key: actionKey,
+        name: actionName,
+        desc: `${app.enName} - ${app.category}`,
+        typeLabel: 'App'
       }
-    }))
+    })
   }
 
   private async scanApplications(): Promise<void> {
@@ -88,38 +95,36 @@ class AppLauncherExtension implements IExtension {
     }
   }
 
-  async doAction(action: IAction): Promise<boolean> {
-    if (!action.ext || action.ext.type !== 'app-launcher') {
-      throw new Error('Not an app-launcher action')
+  async doAction(key: string): Promise<boolean> {
+    // 从映射中获取 appPath
+    const appPath = this.appPathMap.get(key)
+
+    if (!appPath) {
+      console.error(`App path not found for key: ${key}`)
+      return false
     }
 
-    if (action.ext && action.ext.type === 'app-launcher') {
-      const appPath = action.ext.appPath
+    return new Promise<boolean>((resolve, reject) => {
+      exec(`open "${appPath}"`, (error, _stdout, stderr) => {
+        if (error) {
+          console.error('Failed to open app:', stderr)
+          reject(error)
+        } else {
+          console.log('Opened app:', appPath)
 
-      return new Promise<boolean>((resolve, reject) => {
-        exec(`open "${appPath}"`, (error, _stdout, stderr) => {
-          if (error) {
-            console.error('Failed to open app:', stderr)
-            reject(error)
-          } else {
-            console.log('Opened app:', appPath)
+          // 记录启动次数
+          const totalLaunches = this.store?.get('totalLaunches', 0) as number
+          this.store?.set('totalLaunches', totalLaunches + 1)
 
-            // 记录启动次数
-            const totalLaunches = this.store?.get('totalLaunches', 0) as number
-            this.store?.set('totalLaunches', totalLaunches + 1)
+          // 记录每个应用的启动次数
+          const appLaunches = this.store?.get(`app:${appPath}`, 0) as number
+          this.store?.set(`app:${appPath}`, appLaunches + 1)
 
-            // 记录每个应用的启动次数
-            const appLaunches = this.store?.get(`app:${appPath}`, 0) as number
-            this.store?.set(`app:${appPath}`, appLaunches + 1)
-
-            // 打开应用后自动关闭主面板
-            resolve(false)
-          }
-        })
+          // 打开应用后自动关闭主面板
+          resolve(false)
+        }
       })
-    }
-
-    return false
+    })
   }
 }
 
