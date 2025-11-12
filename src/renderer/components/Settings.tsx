@@ -2,13 +2,9 @@ import { useState, useEffect } from 'react'
 import './Settings.css'
 import { CommandManager } from '../../shared/CommandManager'
 
-interface SettingsProps {
-  onClose: () => void
-}
-
 type TabType = 'general' | 'extensions' | 'scripts'
 
-function Settings({ onClose }: SettingsProps) {
+function Settings() {
   const [activeTab, setActiveTab] = useState<TabType>('general')
   const [extensions, setExtensions] = useState<any[]>([])
   const [scripts, setScripts] = useState<any[]>([])
@@ -50,18 +46,8 @@ function Settings({ onClose }: SettingsProps) {
     await ipcRenderer.invoke('update-config', { theme: newTheme })
   }
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onClose])
-
   return (
-    <div className="settings-overlay" onClick={onClose}>
+    <div className="settings-overlay">
       <div className="settings-panel" onClick={(e) => e.stopPropagation()}>
         <div className="settings-header">
           <div className="settings-tabs">
@@ -86,9 +72,6 @@ function Settings({ onClose }: SettingsProps) {
               <span className="tab-icon">📜</span>
               Scripts
             </div>
-          </div>
-          <div className="settings-close" onClick={onClose}>
-            ✕
           </div>
         </div>
 

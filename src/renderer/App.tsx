@@ -124,7 +124,13 @@ function App() {
             return
           }
 
-          // 3. 如果 Input 为空，返回主界面
+          // 3. 如果在主界面且 Input 为空，隐藏窗口
+          if (viewState.type === 'main') {
+            e.preventDefault()
+            const { ipcRenderer } = window.require('electron')
+            ipcRenderer.invoke('hide-window')
+            return
+          }
         }
 
         // 如果不在主界面，返回主界面
