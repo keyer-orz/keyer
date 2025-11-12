@@ -74,3 +74,4 @@ App全局快捷键模块
 
 主进程增加 Store.ts 支持通过 extension_id/key/value 进度读写 扩展的 store.json
 通过 IPC 暴露给 render 进程
+src/shared/ExtensionStore.ts 只通过 ipc 进行数据的读写

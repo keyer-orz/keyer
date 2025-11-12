@@ -80,9 +80,6 @@ export interface ExtensionPackage {
   main: string  // 主进程入口文件
 }
 
-// React Hooks
-export { useStore, ExtensionIdContext } from './hooks'
-
 // React Components
 export { List, Item } from './components/List'
 export type { ListItem, ListProps, ItemProps, ListHandle } from './components/List'
