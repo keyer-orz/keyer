@@ -51,10 +51,12 @@ function ListInner<T = any>({
 
   // 当 items 变化时，重置选中索引
   React.useEffect(() => {
-    if (selectedIndex >= items.length) {
+    if (items.length > 0 && selectedIndex >= items.length) {
       setSelectedIndex(Math.max(0, items.length - 1))
+    } else if (items.length === 0) {
+      setSelectedIndex(0)
     }
-  }, [items.length, selectedIndex])
+  }, [items.length])
 
   // 自动滚动到选中项
   React.useEffect(() => {

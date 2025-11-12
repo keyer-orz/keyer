@@ -91,7 +91,7 @@ body {
 
 /* 鼠标悬停状态 */
 .result-item:hover {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-tertiary);
 }
 
 /* 键盘选中状态 - 优先级更高 */
@@ -213,7 +213,7 @@ body {
 
 /* 鼠标悬停效果 */
 .keyer-list-item:hover {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-tertiary);
 }
 
 /* 键盘选中状态 - 优先级更高 */
