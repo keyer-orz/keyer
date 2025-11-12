@@ -25,6 +25,7 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
   const [filter, setFilter] = useState('')
   const [history] = useState<ClipboardEntry[]>(initialHistory || [])
   const inputRef = useRef<HTMLInputElement>(null)
+  const listContainerRef = useRef<HTMLDivElement>(null)
 
   // 根据过滤条件筛选历史记录
   const filteredHistory = history.filter(entry => {
@@ -43,11 +44,18 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
     inputRef.current?.focus()
   }, [])
 
-  // 处理输入框的 Esc 键
+  // 处理输入框的键盘事件
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       e.preventDefault()
       onClose()
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      // 按上下键时，将焦点转移到列表
+      e.preventDefault()
+      const listElement = listContainerRef.current?.querySelector('[tabindex="0"]') as HTMLElement
+      if (listElement) {
+        listElement.focus()
+      }
     }
   }
 
@@ -109,7 +117,7 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
       </div>
 
       {/* 历史记录列表 */}
-      <div style={{ flex: 1, overflow: 'hidden', border: '1px solid #ddd', borderRadius: '6px' }}>
+      <div ref={listContainerRef} style={{ flex: 1, overflow: 'hidden', border: '1px solid #ddd', borderRadius: '6px' }}>
         {listItems.length === 0 ? (
           <div style={{
             padding: '24px',
@@ -123,7 +131,7 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
             items={listItems}
             onEnter={copyToClipboard}
             onEscape={onClose}
-            autoFocus={false}
+            autoFocus={true}
             renderItem={(item) => (
               <Item
                 icon="📋"
