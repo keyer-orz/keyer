@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 
+// 暴露 React 给扩展使用
+;(window as any).React = React
+;(window as any).ReactDOM = ReactDOM
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

@@ -23,6 +23,8 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
       contextIsolation: true,
+      // 在开发模式下禁用 sandbox 以避免权限问题
+      sandbox: false,
     },
   })
 
@@ -55,7 +57,9 @@ async function initializeCommandManager() {
     ? path.join(__dirname, '../scripts')  // 开发模式：dist-electron -> 项目根目录/scripts
     : path.join(process.resourcesPath, 'scripts')  // 生产模式：app.asar -> resources/scripts
 
-  const extensionsDir = path.join(__dirname, '../extensions')
+  const extensionsDir = process.env.VITE_DEV_SERVER_URL
+    ? path.join(__dirname, '../extensions')  // 开发模式：dist-electron -> 项目根目录/extensions
+    : path.join(process.resourcesPath, 'extensions')  // 生产模式：app.asar -> resources/extensions
 
   console.log('Scripts directory:', scriptsDir)
   console.log('Extensions directory:', extensionsDir)
@@ -209,6 +213,11 @@ function setupIPC() {
     return true
   })
 }
+
+// 禁用 GPU 和 Sandbox 以避免在某些系统上的崩溃
+app.commandLine.appendSwitch('disable-gpu-sandbox')
+app.commandLine.appendSwitch('no-sandbox')
+app.commandLine.appendSwitch('disable-software-rasterizer')
 
 // 应用就绪
 app.whenReady().then(async () => {

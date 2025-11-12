@@ -168,14 +168,25 @@ export class ExtensionManager {
   // 获取有 UI 入口的扩展列表
   getUIExtensions(): Array<{ id: string, uiPath: string }> {
     const result: Array<{ id: string, uiPath: string }> = []
+    const isDev = process.env.VITE_DEV_SERVER_URL
 
     for (const [id, pkg] of this.extensionPackages) {
       if (pkg.ui) {
         // 从 package ID 获取扩展目录名（如 com.keyer.panel-demo -> panel-demo）
         const extDirName = id.split('.').pop() || id
-        // 返回相对于项目根目录的路径（用于渲染进程导入）
-        // 例如：/extensions/clipboard-history/dist/ui.js
-        const uiPath = `/${path.join('extensions', extDirName, pkg.ui).replace(/\\/g, '/')}`
+
+        let uiPath: string
+        if (isDev) {
+          // 开发环境：返回相对路径（用于 Vite dev server）
+          uiPath = `/${path.join('extensions', extDirName, pkg.ui).replace(/\\/g, '/')}`
+        } else {
+          // 生产环境：返回完整的 file:// 路径
+          const fullPath = path.join(this.extensionsDir, extDirName, pkg.ui)
+          uiPath = `file://${fullPath}`
+        }
+
+        console.log('ui path:', uiPath)
+
         result.push({ id, uiPath })
       }
     }

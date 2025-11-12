@@ -7,7 +7,7 @@
   "main": "dist/index.js",
   "ui": "dist/ui.js",
   "scripts": {
-      "build": "tsc && tsc -p tsconfig.ui.json"
+      "build": "tsc && esbuild ui.tsx --bundle --outfile=dist/ui.js --format=esm --external:electron --external:react --external:react-dom"
   },
   "commands": [
     {
