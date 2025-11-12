@@ -39,7 +39,7 @@ function ListInner<T = any>({
   onSelect,
   onEnter,
   renderItem,
-  className = '',
+  className = 'results-list',
   selectedClassName = 'selected',
   autoFocus = true,
   initialSelectedIndex = 0

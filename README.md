@@ -89,4 +89,4 @@ src/shared/ExtensionStore.ts 只通过 ipc 进行数据的读写
     alignItems: 'center',
     gap: '12px',
     minHeight: '32px'
-}}> 默认样式如此，剪切板插件也用这个
+}}>

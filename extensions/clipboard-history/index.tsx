@@ -24,7 +24,6 @@ interface ClipboardHistoryPanelProps {
 function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHistoryPanelProps) {
   const [filter, setFilter] = useState('')
   const [history] = useState<ClipboardEntry[]>(initialHistory || [])
-  const listContainerRef = useRef<HTMLDivElement>(null)
 
   // 根据过滤条件筛选历史记录
   const filteredHistory = history.filter(entry => {
@@ -76,15 +75,8 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
           autoFocus={true}
         />
       </div>
-
-      {/* 历史记录列表 */}
-      <div ref={listContainerRef} style={{
-        flex: 1,
-        overflow: 'auto',
-        border: '1px solid var(--border-color)',
-        borderRadius: '6px',
-        maxHeight: 'calc(100vh - 160px)'
-      }}>
+      <div className="results-container">
+        {/* 历史记录列表 */}
         {listItems.length === 0 ? (
           <div style={{
             padding: '24px',
@@ -129,16 +121,15 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
             )}
           />
         )}
-      </div>
-
-      {/* 提示信息 */}
-      <div style={{
-        marginTop: '12px',
-        fontSize: '12px',
-        color: 'var(--text-tertiary)',
-        textAlign: 'center'
-      }}>
-        ↑↓ Navigate • Enter Copy • Esc Close
+        {/* 提示信息 */}
+        <div style={{
+          marginTop: '12px',
+          fontSize: '12px',
+          color: 'var(--text-tertiary)',
+          textAlign: 'center'
+        }}>
+          ↑↓ Navigate • Enter Copy • Esc Close
+        </div>
       </div>
     </Panel>
   )

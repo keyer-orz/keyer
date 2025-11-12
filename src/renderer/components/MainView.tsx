@@ -84,8 +84,6 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
           onSelect={handleSelect}
           onEnter={handleEnter}
           autoFocus={false}
-          className="results-list"
-          selectedClassName="selected"
           renderItem={(item) => (
             <Item style={{
               padding: '4px 6px',
