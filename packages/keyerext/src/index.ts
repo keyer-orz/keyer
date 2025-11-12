@@ -86,3 +86,5 @@ export { useStore, ExtensionIdContext } from './hooks'
 // React Components
 export { List, Item } from './components/List'
 export type { ListItem, ListProps, ItemProps } from './components/List'
+export { Input } from './components/Input'
+export type { InputProps, InputHandle } from './components/Input'

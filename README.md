@@ -60,3 +60,11 @@ IAction extend ICommand
 3. Finder<->Terminal (sript实现)
     * 打开当前Finder所在目录到终端
     * 打开当前终端到Finder
+
+
+App全局快捷键模块
+按下 上/下时，如果当前界面有List组件，焦点切换到List组件，并支持List组件上下切换选项
+按下 Esc 时，如果当前界面有 Input 组件
+    焦点不在 Input, Input 获取焦点
+    焦点在 Input, Input 清空
+    Input是空的，返回主界面

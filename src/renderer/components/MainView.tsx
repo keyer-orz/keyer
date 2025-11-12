@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { IAction } from '../../shared/types'
 import { CommandManager } from '../../shared/CommandManager'
+import { Input, InputHandle } from 'keyerext'
 
 interface MainViewProps {
   onExecute: (action: IAction) => Promise<void>
@@ -14,7 +15,7 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isMouseActive, setIsMouseActive] = useState(true)
 
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<InputHandle>(null)
   const selectedItemRef = useRef<HTMLDivElement>(null)
 
   // 自动聚焦输入框
@@ -86,15 +87,14 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
   return (
     <>
       <div className="search-container">
-        <input
+        <Input
           ref={inputRef}
-          type="text"
-          className="search-input"
-          placeholder="Search for apps and commands..."
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={setInput}
           onKeyDown={handleKeyDown}
-          autoFocus
+          placeholder="Search for apps and commands..."
+          autoFocus={true}
+          className="search-input"
         />
       </div>
 

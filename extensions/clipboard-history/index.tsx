@@ -4,7 +4,7 @@ const React: typeof ReactType = (window as any).React
 const { useState, useEffect, useRef } = React
 
 import electron from 'electron'
-import { IExtension, IActionDef, IStore, IExtensionResult, List, Item } from 'keyerext'
+import { IExtension, IActionDef, IStore, IExtensionResult, List, Item, Input } from 'keyerext'
 import type { ListItem } from 'keyerext'
 
 const { clipboard } = electron
@@ -24,7 +24,6 @@ interface ClipboardHistoryPanelProps {
 function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHistoryPanelProps) {
   const [filter, setFilter] = useState('')
   const [history] = useState<ClipboardEntry[]>(initialHistory || [])
-  const inputRef = useRef<HTMLInputElement>(null)
   const listContainerRef = useRef<HTMLDivElement>(null)
 
   // 根据过滤条件筛选历史记录
@@ -39,10 +38,6 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
     data: entry
   }))
 
-  // 自动聚焦输入框
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
 
   // 处理输入框的键盘事件
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
@@ -96,23 +91,19 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
       backgroundColor: '#fff'
     }}>
       {/* 搜索框 */}
-      <div style={{ marginBottom: '12px' }}>
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder="Filter clipboard history..."
+      <div style={{
+        marginBottom: '12px',
+        padding: '8px 12px',
+        border: '1px solid #ddd',
+        borderRadius: '6px',
+        backgroundColor: 'transparent'
+      }}>
+        <Input
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
+          onChange={setFilter}
           onKeyDown={handleInputKeyDown}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            fontSize: '14px',
-            border: '1px solid #ddd',
-            borderRadius: '6px',
-            outline: 'none',
-            boxSizing: 'border-box'
-          }}
+          placeholder="Filter clipboard history..."
+          autoFocus={true}
         />
       </div>
 

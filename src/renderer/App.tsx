@@ -85,12 +85,54 @@ function App() {
     }
   }, [])
 
-  // 全局键盘事件 - 处理非主界面的 Esc 返回
+  // 全局键盘快捷键处理
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && viewState.type !== 'main') {
-        e.preventDefault()
-        setViewState({ type: 'main' })
+      // 处理 ArrowUp 和 ArrowDown - 聚焦到 List 组件
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        // 查找页面中的 List 组件（带有 tabindex="0" 的元素）
+        const listElement = document.querySelector('[tabindex="0"]') as HTMLElement
+        if (listElement && document.activeElement !== listElement) {
+          e.preventDefault()
+          listElement.focus()
+          return
+        }
+      }
+
+      // 处理 Escape 键 - 智能行为
+      if (e.key === 'Escape') {
+        // 查找页面中的 Input 组件
+        const inputElement = document.querySelector('[data-keyer-input="true"]') as HTMLInputElement
+
+        if (inputElement) {
+          // 1. 如果焦点不在 Input 上，让 Input 获取焦点
+          if (document.activeElement !== inputElement) {
+            e.preventDefault()
+            inputElement.focus()
+            return
+          }
+
+          // 2. 如果焦点在 Input 上且 Input 不为空，清空 Input
+          if (inputElement.value.trim() !== '') {
+            e.preventDefault()
+            // 触发 onChange 事件来清空（模拟用户输入）
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+              window.HTMLInputElement.prototype,
+              'value'
+            )?.set
+            nativeInputValueSetter?.call(inputElement, '')
+            inputElement.dispatchEvent(new Event('input', { bubbles: true }))
+            return
+          }
+
+          // 3. 如果 Input 为空，返回主界面
+        }
+
+        // 如果不在主界面，返回主界面
+        if (viewState.type !== 'main') {
+          e.preventDefault()
+          setViewState({ type: 'main' })
+        }
       }
     }
 
