@@ -4,7 +4,7 @@ const React: typeof ReactType = (window as any).React
 const { useState, useEffect, useRef } = React
 
 import electron from 'electron'
-import { IExtension, IActionDef, IStore, IExtensionResult, List, Item, Input, Panel } from 'keyerext'
+import { IExtension, IActionDef, IStore, IExtensionResult, List, Item, Input, Panel, Text } from 'keyerext'
 import type { ListItem } from 'keyerext'
 
 const { clipboard } = electron
@@ -93,37 +93,24 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
               <Item>
                 <div style={{ fontSize: '20px' }}>📋</div>
                 <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    color: 'var(--text-primary)'
-                  }}>
+                  <Text variant="title" ellipsis>
                     {getPreview(item.data.content)}
-                  </div>
-                  <div style={{
-                    fontSize: '12px',
-                    color: 'var(--text-secondary)',
-                    marginTop: '2px'
-                  }}>
+                  </Text>
+                  <Text variant="body" style={{ marginTop: '2px' }}>
                     {getTimeAgo(item.data.timestamp)}
-                  </div>
+                  </Text>
                 </div>
               </Item>
             )}
           />
         )}
         {/* 提示信息 */}
-        <div style={{
+        <Text variant="caption" style={{
           marginTop: '12px',
-          fontSize: '12px',
-          color: 'var(--text-tertiary)',
           textAlign: 'center'
         }}>
           ↑↓ Navigate • Enter Copy • Esc Close
-        </div>
+        </Text>
       </div>
     </Panel>
   )

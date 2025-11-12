@@ -226,6 +226,44 @@ body {
   /* 无默认样式，完全由使用者控制 */
 }
 
+/* Text 组件 - 5 种文字样式 */
+.keyer-text-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.keyer-text-body {
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--text-secondary);
+}
+
+.keyer-text-caption {
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--text-tertiary);
+}
+
+.keyer-text-input {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.keyer-text-label {
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--text-secondary);
+}
+
+/* 文字省略样式 */
+.keyer-text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Dark theme 滚动条 */
 .app.theme-dark *::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);

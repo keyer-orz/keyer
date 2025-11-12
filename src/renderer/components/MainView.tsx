@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { IAction } from '../../shared/types'
 import { CommandManager } from '../../shared/CommandManager'
-import { Input, InputHandle, List, Item, Panel } from 'keyerext'
+import { Input, InputHandle, List, Item, Panel, Text } from 'keyerext'
 import type { ListItem } from 'keyerext'
 
 interface MainViewProps {
@@ -90,9 +90,9 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
               </div>
               <div className="result-content">
                 <div className="result-info">
-                  <div className="result-name">{item.data.name}</div>
+                  <Text variant="title" ellipsis>{item.data.name}</Text>
                 </div>
-                <div className="result-tag">{item.data.typeLabel || 'Extension'}</div>
+                <Text variant="label">{item.data.typeLabel || 'Extension'}</Text>
               </div>
             </Item>
           )}
