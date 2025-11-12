@@ -9,11 +9,9 @@ export class ExtensionManager {
   private stores: Map<string, ExtensionStore> = new Map()
   private extensionPackages: Map<string, ExtensionPackage> = new Map() // 存储包配置
   private extensionsDir: string
-  private panelController: any | null = null  // 使用 any 来包含 setCurrentExtension
 
-  constructor(extensionsDir: string, panelController?: any) {
+  constructor(extensionsDir: string) {
     this.extensionsDir = extensionsDir
-    this.panelController = panelController || null
   }
 
   // 扫描并加载所有 extension
@@ -97,10 +95,6 @@ export class ExtensionManager {
       // 注入 Store 到扩展实例
       extension.store = store
 
-      // 注入 PanelController 到扩展实例（已废弃但保留用于设置 extensionId）
-      if (this.panelController && this.panelController.setCurrentExtension) {
-        (extension as any).panel = this.panelController
-      }
       console.log("load extension:", pkg.id)
       // 保存包配置
       this.extensionPackages.set(pkg.id, pkg)

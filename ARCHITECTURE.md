@@ -24,8 +24,7 @@ keyer/
 │   │   │   ├── Settings.tsx     # 设置面板
 │   │   │   └── Settings.css
 │   │   └── core/                # 渲染进程核心逻辑
-│   │       ├── RendererCommandManager.ts    # CommandManager 单例
-│   │       └── RendererPanelController.ts   # Panel 控制器（已废弃）
+│       └── RendererCommandManager.ts    # CommandManager 单例
 │   │
 │   └── shared/                  # 共享业务逻辑（在渲染进程中运行）
 │       ├── CommandManager.ts    # 命令管理器
@@ -96,7 +95,6 @@ keyer/
 
 **渲染进程核心**:
 - `core/RendererCommandManager.ts` - CommandManager 单例初始化
-- `core/RendererPanelController.ts` - Panel 控制器（已废弃，保留作为占位符）
 
 ### 3. 共享业务逻辑层 (Shared Logic)
 
@@ -390,8 +388,9 @@ npm run build
 1. **Panel.tsx / Panel.css**: 未使用的 Panel 组件
 2. **UIExtensionLoader.ts**: 未集成的动态加载器
 3. **PanelController.ts**: 重复的主进程 Panel 控制器
+4. **RendererPanelController.ts**: 已废弃的渲染进程 Panel 控制器
 
-当前 Panel 控制通过 `IExtensionResult` 直接返回组件实现。
+当前扩展 UI 通过 `IExtensionResult` 直接返回 React 组件实现，不再需要 Panel 控制器。
 
 ## 未来扩展方向
 

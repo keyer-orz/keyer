@@ -1,6 +1,5 @@
 // 渲染进程中的 CommandManager 单例
 import { CommandManager } from '../../shared/CommandManager'
-import { RendererPanelController } from './RendererPanelController'
 import { ipcRenderer } from 'electron'
 
 let commandManagerInstance: CommandManager | null = null
@@ -21,13 +20,9 @@ export async function initializeCommandManager() {
   console.log('Scripts directory:', paths.scriptsDir)
   console.log('Extensions directory:', paths.extensionsDir)
 
-  // 创建 PanelController
-  const panelController = new RendererPanelController()
-
   commandManagerInstance = new CommandManager(
     paths.scriptsDir,
-    paths.extensionsDir,
-    panelController
+    paths.extensionsDir
   )
 
   await commandManagerInstance.initialize()

@@ -6,9 +6,9 @@ export class CommandManager {
   private scriptManager: ScriptManager
   private extensionManager: ExtensionManager
 
-  constructor(scriptsDir: string, extensionsDir: string, panelController?: any) {
+  constructor(scriptsDir: string, extensionsDir: string) {
     this.scriptManager = new ScriptManager(scriptsDir)
-    this.extensionManager = new ExtensionManager(extensionsDir, panelController)
+    this.extensionManager = new ExtensionManager(extensionsDir)
   }
 
   // 初始化：扫描所有脚本和扩展
