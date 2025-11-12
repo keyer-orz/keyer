@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import * as os from 'os'
 import { IStore } from 'keyerext'
 
 // 获取 userData 路径的辅助函数
@@ -14,19 +15,19 @@ function getUserDataPath(): string {
     // 在渲染进程中会失败，这是正常的
   }
 
-  // 在渲染进程中，使用简化的路径计算
+  // 在渲染进程中，使用 os.homedir() 获取用户目录
   // Electron 的 userData 路径通常是：
   // macOS: ~/Library/Application Support/<app name>
   // Windows: %APPDATA%/<app name>
   // Linux: ~/.config/<app name>
 
   const appName = 'keyer'
-  const home = process.env.HOME || process.env.USERPROFILE || ''
+  const home = os.homedir()
 
   if (process.platform === 'darwin') {
     return path.join(home, 'Library', 'Application Support', appName)
   } else if (process.platform === 'win32') {
-    return path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), appName)
+    return path.join(home, 'AppData', 'Roaming', appName)
   } else {
     return path.join(home, '.config', appName)
   }
