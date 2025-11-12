@@ -158,9 +158,22 @@ export function Item({
   children
 }: ItemProps) {
   const React = getReact()
+
+  // 默认样式
+  const defaultStyle: React.CSSProperties = {
+    padding: '4px 6px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    minHeight: '32px'
+  }
+
+  // 合并默认样式和用户传入的样式
+  const mergedStyle = { ...defaultStyle, ...style }
+
   return React.createElement(
     'div',
-    { className: `keyer-item ${className}`, style },
+    { className: `keyer-item ${className}`, style: mergedStyle },
     children
   )
 }

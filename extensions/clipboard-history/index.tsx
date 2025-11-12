@@ -90,12 +90,7 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
             items={listItems}
             onEnter={copyToClipboard}
             renderItem={(item) => (
-              <Item style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '8px 12px'
-              }}>
+              <Item>
                 <div style={{ fontSize: '20px' }}>📋</div>
                 <div style={{ flex: 1, overflow: 'hidden' }}>
                   <div style={{

@@ -84,13 +84,7 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
           onSelect={handleSelect}
           onEnter={handleEnter}
           renderItem={(item) => (
-            <Item style={{
-              padding: '4px 6px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              minHeight: '32px'
-            }}>
+            <Item>
               <div className="result-icon">
                 {getIcon(item.data)}
               </div>
