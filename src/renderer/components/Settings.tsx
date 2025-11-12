@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import './Settings.css'
-import { getCommandManager } from '../core/RendererCommandManager'
+import { CommandManager } from '../../shared/CommandManager'
 
 interface SettingsProps {
   onClose: () => void
@@ -21,7 +21,7 @@ function Settings({ onClose }: SettingsProps) {
       const { ipcRenderer } = window.require('electron')
 
       try {
-        const commandManager = getCommandManager()
+        const commandManager = CommandManager.getInstance()
         const exts = commandManager.getExtensions()
         const scrs = commandManager.getScripts()
         const cfg = await ipcRenderer.invoke('get-config')

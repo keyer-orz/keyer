@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { IAction } from '../shared/types'
 import Settings from './components/Settings'
-import { initializeCommandManager, getCommandManager } from './core/RendererCommandManager'
+import { CommandManager } from '../shared/CommandManager'
 import { IExtensionResult } from 'keyerext'
 
 // 扩展 Window 类型以支持 ipcRenderer
@@ -32,7 +32,16 @@ function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        await initializeCommandManager()
+        const { ipcRenderer } = window.require('electron')
+
+        // 从主进程获取路径信息
+        const paths = await ipcRenderer.invoke('get-paths') as {
+          scriptsDir: string
+          extensionsDir: string
+          isDev: boolean
+        }
+
+        await CommandManager.createInstance(paths.scriptsDir, paths.extensionsDir)
         setCommandManagerReady(true)
         console.log('CommandManager initialized in renderer process')
       } catch (error) {
@@ -85,7 +94,7 @@ function App() {
       if (!commandManagerReady) return
 
       try {
-        const commandManager = getCommandManager()
+        const commandManager = CommandManager.getInstance()
         const actions = await commandManager.search(input)
         setResults(actions)
         setSelectedIndex(0)
@@ -136,7 +145,7 @@ function App() {
   // 执行命令
   const handleExecute = async (action: IAction) => {
     try {
-      const commandManager = getCommandManager()
+      const commandManager = CommandManager.getInstance()
       const result = await commandManager.execute(action)
 
       // 处理不同类型的返回值

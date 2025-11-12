@@ -3,12 +3,43 @@ import { ScriptManager } from './ScriptManager'
 import { ExtensionManager } from './ExtensionManager'
 
 export class CommandManager {
+  private static instance: CommandManager | null = null
+
   private scriptManager: ScriptManager
   private extensionManager: ExtensionManager
 
   constructor(scriptsDir: string, extensionsDir: string) {
     this.scriptManager = new ScriptManager(scriptsDir)
     this.extensionManager = new ExtensionManager(extensionsDir)
+  }
+
+  // 获取单例实例
+  static getInstance(): CommandManager {
+    if (!CommandManager.instance) {
+      throw new Error('CommandManager not initialized. Call CommandManager.initialize first.')
+    }
+    return CommandManager.instance
+  }
+
+  // 初始化单例（异步工厂方法）
+  static async createInstance(scriptsDir: string, extensionsDir: string): Promise<CommandManager> {
+    if (CommandManager.instance) {
+      return CommandManager.instance
+    }
+
+    console.log('Initializing CommandManager')
+    console.log('Scripts directory:', scriptsDir)
+    console.log('Extensions directory:', extensionsDir)
+
+    CommandManager.instance = new CommandManager(scriptsDir, extensionsDir)
+    await CommandManager.instance.initialize()
+
+    return CommandManager.instance
+  }
+
+  // 重置单例（用于测试）
+  static resetInstance(): void {
+    CommandManager.instance = null
   }
 
   // 初始化：扫描所有脚本和扩展

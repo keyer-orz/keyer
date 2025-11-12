@@ -20,14 +20,12 @@ keyer/
 │   │   ├── App.css              # 主组件样式
 │   │   ├── main.tsx             # React 入口
 │   │   ├── index.css            # 全局样式
-│   │   ├── components/          # React 组件
-│   │   │   ├── Settings.tsx     # 设置面板
-│   │   │   └── Settings.css
-│   │   └── core/                # 渲染进程核心逻辑
-│       └── RendererCommandManager.ts    # CommandManager 单例
+│   │   └── components/          # React 组件
+│   │       ├── Settings.tsx     # 设置面板
+│   │       └── Settings.css
 │   │
 │   └── shared/                  # 共享业务逻辑（在渲染进程中运行）
-│       ├── CommandManager.ts    # 命令管理器
+│       ├── CommandManager.ts    # 命令管理器（包含单例逻辑）
 │       ├── ExtensionManager.ts  # 扩展管理器
 │       ├── ScriptManager.ts     # 脚本管理器
 │       ├── ExtensionStore.ts    # 扩展持久化存储
@@ -93,9 +91,6 @@ keyer/
   - 扩展列表
   - 脚本列表
 
-**渲染进程核心**:
-- `core/RendererCommandManager.ts` - CommandManager 单例初始化
-
 ### 3. 共享业务逻辑层 (Shared Logic)
 
 **位置**: `src/shared/`
@@ -110,9 +105,20 @@ keyer/
 
 #### CommandManager
 统一管理所有命令来源：
+- **单例模式**: 使用静态方法 `createInstance()` 和 `getInstance()` 管理唯一实例
 - 聚合脚本和扩展的命令
 - 提供搜索接口（模糊匹配）
 - 执行命令并返回结果
+
+**使用方式**:
+```typescript
+// 初始化单例（在 App.tsx 中）
+await CommandManager.createInstance(scriptsDir, extensionsDir)
+
+// 获取单例实例
+const manager = CommandManager.getInstance()
+await manager.search('keyword')
+```
 
 #### ExtensionManager
 扩展生命周期管理：
@@ -389,8 +395,10 @@ npm run build
 2. **UIExtensionLoader.ts**: 未集成的动态加载器
 3. **PanelController.ts**: 重复的主进程 Panel 控制器
 4. **RendererPanelController.ts**: 已废弃的渲染进程 Panel 控制器
+5. **RendererCommandManager.ts**: 包装类（单例逻辑已整合到 CommandManager 中）
 
 当前扩展 UI 通过 `IExtensionResult` 直接返回 React 组件实现，不再需要 Panel 控制器。
+CommandManager 使用静态方法管理单例，不再需要独立的包装类。
 
 ## 未来扩展方向
 
