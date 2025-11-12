@@ -130,35 +130,21 @@ export function List<T = any>({
   )
 }
 
-// Item 组件（辅助组件，用于标准化列表项样式）
+// Item 组件（纯容器组件，外部自定义内容）
 export interface ItemProps {
-  icon?: React.ReactNode
-  title: string
-  description?: string
-  badge?: string
   className?: string
+  style?: React.CSSProperties
   children?: React.ReactNode
 }
 
 export function Item({
-  icon,
-  title,
-  description,
-  badge,
   className = '',
+  style = {},
   children
 }: ItemProps) {
   return (
-    <div className={`keyer-item ${className}`}>
-      {icon && <div className="keyer-item-icon">{icon}</div>}
-      <div className="keyer-item-content">
-        <div className="keyer-item-header">
-          <div className="keyer-item-title">{title}</div>
-          {badge && <div className="keyer-item-badge">{badge}</div>}
-        </div>
-        {description && <div className="keyer-item-description">{description}</div>}
-        {children}
-      </div>
+    <div className={`keyer-item ${className}`} style={style}>
+      {children}
     </div>
   )
 }

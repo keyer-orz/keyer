@@ -124,11 +124,32 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
             onEscape={onClose}
             autoFocus={true}
             renderItem={(item) => (
-              <Item
-                icon="📋"
-                title={getPreview(item.data.content)}
-                description={getTimeAgo(item.data.timestamp)}
-              />
+              <Item style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '8px 12px'
+              }}>
+                <div style={{ fontSize: '20px' }}>📋</div>
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <div style={{
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {getPreview(item.data.content)}
+                  </div>
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#999',
+                    marginTop: '2px'
+                  }}>
+                    {getTimeAgo(item.data.timestamp)}
+                  </div>
+                </div>
+              </Item>
             )}
           />
         )}

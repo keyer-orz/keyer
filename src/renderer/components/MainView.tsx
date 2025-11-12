@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { IAction } from '../../shared/types'
 import { CommandManager } from '../../shared/CommandManager'
-import { Input, InputHandle } from 'keyerext'
+import { Input, InputHandle, List, Item } from 'keyerext'
+import type { ListItem } from 'keyerext'
 
 interface MainViewProps {
   onExecute: (action: IAction) => Promise<void>
@@ -12,11 +13,9 @@ interface MainViewProps {
 function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewProps) {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<IAction[]>([])
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const [isMouseActive, setIsMouseActive] = useState(true)
+  const [selectedAction, setSelectedAction] = useState<IAction | null>(null)
 
   const inputRef = useRef<InputHandle>(null)
-  const selectedItemRef = useRef<HTMLDivElement>(null)
 
   // 自动聚焦输入框
   useEffect(() => {
@@ -32,7 +31,6 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
         const commandManager = CommandManager.getInstance()
         const actions = await commandManager.search(input)
         setResults(actions)
-        setSelectedIndex(0)
       } catch (error) {
         console.error('Search error:', error)
       }
@@ -42,36 +40,23 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
     return () => clearTimeout(debounce)
   }, [input, commandManagerReady])
 
-  // 键盘导航时自动滚动到选中项
-  useEffect(() => {
-    if (selectedItemRef.current) {
-      selectedItemRef.current.scrollIntoView({
-        behavior: 'auto',
-        block: 'nearest',
-      })
-    }
-  }, [selectedIndex, results])
-
-  // 键盘事件处理
+  // 键盘事件处理（仅处理 Input 层面的事件）
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setIsMouseActive(false)
-      setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setIsMouseActive(false)
-      setSelectedIndex((prev) => Math.max(prev - 1, 0))
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (results[selectedIndex]) {
-        onExecute(results[selectedIndex])
-      }
-    } else if (e.key === 'Escape') {
+    if (e.key === 'Escape') {
       e.preventDefault()
       const { ipcRenderer } = window.require('electron')
       ipcRenderer.invoke('hide-window')
     }
+  }
+
+  // List 选中回调
+  const handleSelect = (item: ListItem<IAction>) => {
+    setSelectedAction(item.data)
+  }
+
+  // List Enter 回调
+  const handleEnter = (item: ListItem<IAction>) => {
+    onExecute(item.data)
   }
 
   // 获取图标
@@ -83,6 +68,12 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
     }
     return '📦'
   }
+
+  // 转换为 ListItem 格式
+  const listItems: ListItem<IAction>[] = results.map(action => ({
+    id: action.id,
+    data: action
+  }))
 
   return (
     <>
@@ -98,33 +89,39 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
         />
       </div>
 
-      <div
-        className={`results-container ${isMouseActive ? 'mouse-active' : ''}`}
-        onMouseMove={() => setIsMouseActive(true)}
-      >
-        {results.map((result, index) => (
-          <div
-            key={`${result.id}-${index}`}
-            ref={index === selectedIndex ? selectedItemRef : null}
-            className={`result-item ${index === selectedIndex ? 'selected' : ''}`}
-            onClick={() => onExecute(result)}
-          >
-            <div className="result-icon">
-              {getIcon(result)}
-            </div>
-            <div className="result-content">
-              <div className="result-info">
-                <div className="result-name">{result.name}</div>
+      <div className="results-container">
+        <List
+          items={listItems}
+          onSelect={handleSelect}
+          onEnter={handleEnter}
+          autoFocus={false}
+          className="results-list"
+          selectedClassName="selected"
+          renderItem={(item) => (
+            <Item style={{
+              padding: '4px 6px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              minHeight: '32px'
+            }}>
+              <div className="result-icon">
+                {getIcon(item.data)}
               </div>
-              <div className="result-tag">{result.typeLabel || 'Extension'}</div>
-            </div>
-          </div>
-        ))}
+              <div className="result-content">
+                <div className="result-info">
+                  <div className="result-name">{item.data.name}</div>
+                </div>
+                <div className="result-tag">{item.data.typeLabel || 'Extension'}</div>
+              </div>
+            </Item>
+          )}
+        />
       </div>
 
       <div className="footer">
         <div className="footer-desc">
-          {results[selectedIndex]?.desc || ''}
+          {selectedAction?.desc || ''}
         </div>
         <div className="footer-settings" onClick={onOpenSettings}>
           ⚙️
