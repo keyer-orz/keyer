@@ -5,9 +5,8 @@
   "version": "1.0.0",
   "description": "Track and search clipboard history",
   "main": "dist/index.js",
-  "ui": "dist/ui.js",
   "scripts": {
-      "build": "tsc && esbuild ui.tsx --bundle --outfile=dist/ui.js --format=esm --external:electron --external:react --external:react-dom"
+    "build": "tsc"
   },
   "commands": [
     {

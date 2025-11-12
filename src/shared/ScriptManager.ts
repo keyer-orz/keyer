@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { ICommand } from '../types'
+import { ICommand } from './types'
 
 export class ScriptManager {
   private commands: Map<string, ICommand> = new Map()

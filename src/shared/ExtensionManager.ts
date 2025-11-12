@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { ICommand, IAction, IExtension, ExtensionPackage } from '../types'
+import { ICommand, IAction, IExtension, ExtensionPackage } from './types'
 import { ExtensionStore } from './ExtensionStore'
 
 export class ExtensionManager {
@@ -59,9 +59,36 @@ export class ExtensionManager {
         return
       }
 
+      // 劫持 React 模块，让扩展使用主应用的 React
+      // 这样避免多个 React 实例导致 hooks 无法工作
+      const Module = require('module')
+      const originalRequire = Module.prototype.require
+
+      Module.prototype.require = function(id: string) {
+        if (id === 'react') {
+          return (window as any).React
+        }
+        if (id === 'react-dom') {
+          return (window as any).ReactDOM
+        }
+        if (id === 'react/jsx-runtime') {
+          // 返回 JSX runtime
+          const React = (window as any).React
+          return {
+            jsx: React.createElement,
+            jsxs: React.createElement,
+            Fragment: React.Fragment
+          }
+        }
+        return originalRequire.apply(this, arguments as any)
+      }
+
       // 动态加载扩展模块
       const extensionModule = require(mainPath)
       const extension: IExtension = extensionModule.default || extensionModule
+
+      // 恢复原始的 require
+      Module.prototype.require = originalRequire
 
       // 为扩展创建 Store
       const store = new ExtensionStore(pkg.id)
@@ -70,9 +97,9 @@ export class ExtensionManager {
       // 注入 Store 到扩展实例
       extension.store = store
 
-      // 注入 PanelController 到扩展实例
-      if (this.panelController) {
-        extension.panel = this.panelController
+      // 注入 PanelController 到扩展实例（已废弃但保留用于设置 extensionId）
+      if (this.panelController && this.panelController.setCurrentExtension) {
+        (extension as any).panel = this.panelController
       }
       console.log("load extension:", pkg.id)
       // 保存包配置
@@ -136,9 +163,8 @@ export class ExtensionManager {
   }
 
   // 执行命令
-  // 返回 true: 保持主面板打开
-  // 返回 false: 自动关闭主面板
-  async executeAction(action: IAction): Promise<boolean> {
+  // 返回扩展的执行结果
+  async executeAction(action: IAction): Promise<boolean | import('keyerext').IExtensionResult> {
     console.log('Executing action:', action.id)
 
     // 从 action.id 解析 extensionId 和 key（格式：extensionId#key）
@@ -155,43 +181,14 @@ export class ExtensionManager {
       throw new Error(`Extension ${extensionId} not found for action: ${action.id}`)
     }
 
-    // 设置当前扩展 ID 到 PanelController
-    if (this.panelController && this.panelController.setCurrentExtension) {
-      this.panelController.setCurrentExtension(extensionId)
-    }
-
-    const keepOpen = await extension.doAction(key)
-    console.log(`Action ${action.id} executed successfully, keepOpen: ${keepOpen}`)
-    return keepOpen
+    const result = await extension.doAction(key)
+    console.log(`Action ${action.id} executed successfully, result:`, result)
+    return result
   }
 
-  // 获取有 UI 入口的扩展列表
+  // 获取有 UI 入口的扩展列表（现在不再使用，保留以防需要）
   getUIExtensions(): Array<{ id: string, uiPath: string }> {
-    const result: Array<{ id: string, uiPath: string }> = []
-    const isDev = process.env.VITE_DEV_SERVER_URL
-
-    for (const [id, pkg] of this.extensionPackages) {
-      if (pkg.ui) {
-        // 从 package ID 获取扩展目录名（如 com.keyer.panel-demo -> panel-demo）
-        const extDirName = id.split('.').pop() || id
-
-        let uiPath: string
-        if (isDev) {
-          // 开发环境：返回相对路径（用于 Vite dev server）
-          uiPath = `/${path.join('extensions', extDirName, pkg.ui).replace(/\\/g, '/')}`
-        } else {
-          // 生产环境：返回完整的 file:// 路径
-          const fullPath = path.join(this.extensionsDir, extDirName, pkg.ui)
-          uiPath = `file://${fullPath}`
-        }
-
-        console.log('ui path:', uiPath)
-
-        result.push({ id, uiPath })
-      }
-    }
-
-    return result
+    return []
   }
 
   // Store 操作方法

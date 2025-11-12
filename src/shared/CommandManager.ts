@@ -1,4 +1,4 @@
-import { ICommand, IAction, IPanelController } from '../types'
+import { ICommand, IAction } from './types'
 import { ScriptManager } from './ScriptManager'
 import { ExtensionManager } from './ExtensionManager'
 
@@ -6,7 +6,7 @@ export class CommandManager {
   private scriptManager: ScriptManager
   private extensionManager: ExtensionManager
 
-  constructor(scriptsDir: string, extensionsDir: string, panelController?: IPanelController) {
+  constructor(scriptsDir: string, extensionsDir: string, panelController?: any) {
     this.scriptManager = new ScriptManager(scriptsDir)
     this.extensionManager = new ExtensionManager(extensionsDir, panelController)
   }
@@ -61,9 +61,8 @@ export class CommandManager {
   }
 
   // 执行命令
-  // 返回 true: 保持主面板打开
-  // 返回 false: 自动关闭主面板
-  async execute(action: IAction): Promise<boolean> {
+  // 返回值可以是布尔值或扩展结果对象
+  async execute(action: IAction): Promise<boolean | import('keyerext').IExtensionResult> {
     // 判断是 script 还是 extension
     const scriptCommand = this.scriptManager.getCommand(action.id)
 

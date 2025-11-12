@@ -9,8 +9,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "jsx": "react"
   },
-  "include": ["index.ts"],
+  "include": ["index.tsx"],
   "exclude": ["node_modules", "dist"]
 }

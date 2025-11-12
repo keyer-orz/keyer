@@ -1,25 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { clipboard } from 'electron'
+import { IExtension, IActionDef, IStore, IExtensionResult } from 'keyerext'
 
-interface ClipboardEntry {
+export interface ClipboardEntry {
   content: string
   timestamp: number
 }
 
+// ============ React Component ============
+
 interface ClipboardHistoryPanelProps {
   history: ClipboardEntry[]
+  onClose: () => void
 }
 
-// 声明 window 类型
-declare global {
-  interface Window {
-    electronAPI?: {
-      hideWindow: () => Promise<void>
-    }
-    require?: any
-  }
-}
-
-function ClipboardHistoryPanel({ history: initialHistory }: ClipboardHistoryPanelProps) {
+function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHistoryPanelProps) {
   const [filter, setFilter] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [history, setHistory] = useState<ClipboardEntry[]>(initialHistory || [])
@@ -55,7 +50,10 @@ function ClipboardHistoryPanel({ history: initialHistory }: ClipboardHistoryPane
       if (filteredHistory[selectedIndex]) {
         copyToClipboard(selectedIndex)
       }
-    }  
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      onClose()
+    }
   }
 
   // 复制到剪贴板
@@ -63,15 +61,11 @@ function ClipboardHistoryPanel({ history: initialHistory }: ClipboardHistoryPane
     const entry = filteredHistory[index]
     if (!entry) return
 
-    // 直接使用 electron 的 clipboard API
-    if (window.require) {
-      const { clipboard } = window.require('electron')
-      clipboard.writeText(entry.content)
-      console.log('Copied to clipboard:', entry.content.substring(0, 50))
+    clipboard.writeText(entry.content)
+    console.log('Copied to clipboard:', entry.content.substring(0, 50))
 
-      // 关闭窗口
-      window.electronAPI?.hideWindow()
-    }
+    // 关闭面板
+    onClose()
   }
 
   // 点击列表项
@@ -118,7 +112,8 @@ function ClipboardHistoryPanel({ history: initialHistory }: ClipboardHistoryPane
       display: 'flex',
       flexDirection: 'column',
       padding: '16px',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      backgroundColor: '#fff'
     }}>
       {/* 搜索框 */}
       <div style={{ marginBottom: '12px' }}>
@@ -162,7 +157,7 @@ function ClipboardHistoryPanel({ history: initialHistory }: ClipboardHistoryPane
         ) : (
           filteredHistory.map((entry, index) => (
             <div
-              key={index}
+              key={entry.timestamp}
               onClick={() => handleItemClick(index)}
               style={{
                 padding: '12px',
@@ -204,7 +199,117 @@ function ClipboardHistoryPanel({ history: initialHistory }: ClipboardHistoryPane
   )
 }
 
-// 导出所有组件（与系统期望的格式一致）
-export default {
-  ClipboardHistoryPanel
+// ============ Extension Class ============
+
+class ClipboardHistoryExtension implements IExtension {
+  store?: IStore
+  private history: ClipboardEntry[] = []
+  private lastClipboard: string = ''
+  private checkInterval: NodeJS.Timeout | null = null
+  private readonly MAX_HISTORY = 100
+  private readonly CHECK_INTERVAL_MS = 1000
+
+  async onPrepare(): Promise<IActionDef[]> {
+    // 从 store 加载历史记录
+    this.loadHistory()
+    // 开始监听剪贴板
+    this.startClipboardMonitoring()
+    console.log(`Clipboard History: Loaded ${this.history.length} entries`)
+    return []
+  }
+
+  doAction(key: string): IExtensionResult {
+    // 检查是否是打开面板命令
+    if (key === 'show-panel') {
+      return {
+        keepOpen: true,
+        component: ClipboardHistoryPanel,
+        props: {
+          history: this.history
+        }
+      }
+    }
+    return { keepOpen: true }
+  }
+
+  private startClipboardMonitoring() {
+    // 获取初始剪贴板内容
+    this.lastClipboard = clipboard.readText()
+
+    // 定期检查剪贴板变化
+    this.checkInterval = setInterval(() => {
+      const current = clipboard.readText()
+
+      if (current && current !== this.lastClipboard) {
+        this.lastClipboard = current
+        this.addToHistory(current)
+      }
+    }, this.CHECK_INTERVAL_MS)
+  }
+
+  private addToHistory(content: string) {
+    // 去除首尾空白
+    content = content.trim()
+
+    if (!content) {
+      return
+    }
+
+    // 检查是否已存在（移除重复）
+    const existingIndex = this.history.findIndex(e => e.content === content)
+    if (existingIndex !== -1) {
+      this.history.splice(existingIndex, 1)
+    }
+
+    // 添加到历史记录开头
+    this.history.unshift({
+      content,
+      timestamp: Date.now()
+    })
+
+    // 限制历史记录数量
+    if (this.history.length > this.MAX_HISTORY) {
+      this.history = this.history.slice(0, this.MAX_HISTORY)
+    }
+
+    // 保存到 store
+    this.saveHistory()
+
+    console.log('Added to clipboard history:', this.getPreview(content))
+  }
+
+  private getPreview(content: string, maxLength: number = 60): string {
+    const singleLine = content.replace(/\s+/g, ' ').trim()
+    if (singleLine.length <= maxLength) return singleLine
+    return singleLine.substring(0, maxLength) + '...'
+  }
+
+  private loadHistory() {
+    if (!this.store) {
+      return
+    }
+
+    const saved = this.store.get<ClipboardEntry[]>('history')
+    if (saved && Array.isArray(saved)) {
+      this.history = saved
+    }
+  }
+
+  private saveHistory() {
+    if (!this.store) {
+      return
+    }
+
+    this.store.set('history', this.history)
+  }
+
+  // 清理资源
+  onDestroy() {
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval)
+      this.checkInterval = null
+    }
+  }
 }
+
+export default new ClipboardHistoryExtension()

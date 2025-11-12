@@ -1,4 +1,5 @@
 // 核心接口定义
+import type * as React from 'react'
 
 export interface ICommand {
   id: string
@@ -41,43 +42,21 @@ export interface IStore {
   has(key: string): boolean
 }
 
-// Panel 相关接口
+// Extension 执行结果
+export interface IExtensionResult {
+  // 是否保持主窗口打开
+  keepOpen?: boolean
 
-// List 列表项
-export interface IListItem {
-  id: string
-  title: string
-  subtitle?: string
-  icon?: string
-  accessories?: string[]  // 右侧附加信息
-  action?: IAction  // 点击时执行的动作
-}
+  // 要显示的 React 组件（可选）
+  component?: React.ComponentType<any>
 
-// Panel 配置（只支持自定义 React 组件）
-export interface IPanelConfig {
-  title: string
-  component: string  // 组件名称（需要在扩展的 UI 入口中导出）
-  props?: Record<string, any>  // 传递给组件的 props
-}
-
-// Panel 控制器
-export interface IPanelController {
-  // 显示面板
-  showPanel(config: IPanelConfig): void
-
-  // 关闭面板
-  closePanel(): void
-
-  // 更新面板内容
-  updatePanel(props: Record<string, any>): void
+  // 传递给组件的 props（可选）
+  props?: Record<string, any>
 }
 
 export interface IExtension {
   // 扩展的存储实例（由框架注入）
   store?: IStore
-
-  // 面板控制器（由框架注入）
-  panel?: IPanelController
 
   // 准备阶段，返回扩展提供的 actions
   // 返回的 action 不需要设置 id，由 ExtensionManager 自动生成（格式：extensionId#key）
@@ -85,9 +64,10 @@ export interface IExtension {
 
   // 执行命令
   // key: action 的唯一标识符（来自 IActionDef 中定义的 key）
-  // 返回 true: 保持主面板打开
-  // 返回 false: 自动关闭主面板
-  doAction(key: string): Promise<boolean> | boolean
+  // 返回值：
+  //   - boolean: true 保持主面板打开，false 自动关闭主面板
+  //   - IExtensionResult: 详细控制结果，可以返回 React 组件
+  doAction(key: string): Promise<boolean | IExtensionResult> | boolean | IExtensionResult
 }
 
 // Extension 的包配置定义
@@ -98,7 +78,6 @@ export interface ExtensionPackage {
   version: string
   commands: ICommand[]
   main: string  // 主进程入口文件
-  ui?: string   // 渲染进程 UI 组件入口文件（可选）
 }
 
 // React Hooks

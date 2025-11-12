@@ -1,5 +1,5 @@
 // 渲染进程中的 CommandManager 单例
-import { CommandManager } from './CommandManager'
+import { CommandManager } from '../../shared/CommandManager'
 import { RendererPanelController } from './RendererPanelController'
 import { ipcRenderer } from 'electron'
 

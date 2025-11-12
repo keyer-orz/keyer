@@ -1,16 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import './App.css'
-import { IAction } from './types'
+import { IAction } from '../shared/types'
 import Settings from './components/Settings'
-import Panel from './components/Panel'
-import { IPanelConfig, IListItem } from 'keyerext'
-import { uiExtensionLoader } from './core/UIExtensionLoader'
 import { initializeCommandManager, getCommandManager } from './core/RendererCommandManager'
-
-// 可序列化的 Panel 配置（包含 extensionId）
-interface SerializablePanelConfig extends IPanelConfig {
-  extensionId: string
-}
+import { IExtensionResult } from 'keyerext'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
@@ -25,10 +18,13 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isMouseActive, setIsMouseActive] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
-  const [showPanel, setShowPanel] = useState(false)
-  const [panelConfig, setPanelConfig] = useState<SerializablePanelConfig | null>(null)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [commandManagerReady, setCommandManagerReady] = useState(false)
+
+  // 扩展组件状态
+  const [extensionComponent, setExtensionComponent] = useState<React.ComponentType<any> | null>(null)
+  const [extensionProps, setExtensionProps] = useState<Record<string, any>>({})
+
   const inputRef = useRef<HTMLInputElement>(null)
   const selectedItemRef = useRef<HTMLDivElement>(null)
 
@@ -39,18 +35,6 @@ function App() {
         await initializeCommandManager()
         setCommandManagerReady(true)
         console.log('CommandManager initialized in renderer process')
-
-        // 加载 UI 扩展
-        const commandManager = getCommandManager()
-        const uiExtensions = commandManager.getUIExtensions()
-        for (const { id, uiPath } of uiExtensions) {
-          try {
-            await uiExtensionLoader.loadExtension(id, uiPath)
-            console.log(`Loaded UI extension: ${id}`)
-          } catch (error) {
-            console.error(`Failed to load UI extension ${id}:`, error)
-          }
-        }
       } catch (error) {
         console.error('Failed to initialize CommandManager:', error)
       }
@@ -69,27 +53,8 @@ function App() {
       setInput('')
       setResults([])
       setSelectedIndex(0)
-    }
-
-    // 监听面板显示
-    const handleShowPanel = (event: CustomEvent) => {
-      const config = event.detail as SerializablePanelConfig
-      setPanelConfig(config)
-      setShowPanel(true)
-    }
-
-    // 监听面板关闭
-    const handleClosePanel = () => {
-      setShowPanel(false)
-      setPanelConfig(null)
-    }
-
-    // 监听面板更新
-    const handleUpdatePanel = (event: CustomEvent) => {
-      const items = event.detail as IListItem[]
-      if (panelConfig) {
-        setPanelConfig({ ...panelConfig, props: { ...panelConfig.props, items } })
-      }
+      // 关闭扩展组件
+      setExtensionComponent(null)
     }
 
     // 监听主题变化
@@ -100,9 +65,6 @@ function App() {
     // 注册事件监听
     ipcRenderer.on('focus-input', handleFocusInput)
     ipcRenderer.on('theme-changed', handleThemeChanged)
-    window.addEventListener('show-panel', handleShowPanel as EventListener)
-    window.addEventListener('close-panel', handleClosePanel)
-    window.addEventListener('update-panel', handleUpdatePanel as EventListener)
 
     // 加载配置
     ipcRenderer.invoke('get-config').then((config: any) => {
@@ -114,11 +76,8 @@ function App() {
     return () => {
       ipcRenderer.removeListener('focus-input', handleFocusInput)
       ipcRenderer.removeListener('theme-changed', handleThemeChanged)
-      window.removeEventListener('show-panel', handleShowPanel as EventListener)
-      window.removeEventListener('close-panel', handleClosePanel)
-      window.removeEventListener('update-panel', handleUpdatePanel as EventListener)
     }
-  }, [panelConfig])
+  }, [])
 
   // 搜索
   useEffect(() => {
@@ -151,6 +110,9 @@ function App() {
 
   // 键盘事件处理
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // 如果显示扩展组件，不处理键盘事件
+    if (extensionComponent) return
+
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       setIsMouseActive(false)
@@ -175,15 +137,39 @@ function App() {
   const handleExecute = async (action: IAction) => {
     try {
       const commandManager = getCommandManager()
-      const keepOpen = await commandManager.execute(action)
+      const result = await commandManager.execute(action)
 
-      if (!keepOpen) {
-        const { ipcRenderer } = window.require('electron')
-        await ipcRenderer.invoke('hide-window')
+      // 处理不同类型的返回值
+      if (typeof result === 'boolean') {
+        // 布尔值：true 保持打开，false 关闭
+        if (!result) {
+          const { ipcRenderer } = window.require('electron')
+          await ipcRenderer.invoke('hide-window')
+        }
+        setInput('')
+        setResults([])
+      } else {
+        // 扩展结果对象
+        const extResult = result as IExtensionResult
+
+        if (extResult.component) {
+          // 显示扩展组件
+          setExtensionComponent(() => extResult.component!)
+          setExtensionProps({
+            ...extResult.props,
+            onClose: () => {
+              setExtensionComponent(null)
+              setInput('')
+              setResults([])
+            }
+          })
+        }
+
+        if (extResult.keepOpen === false) {
+          const { ipcRenderer } = window.require('electron')
+          await ipcRenderer.invoke('hide-window')
+        }
       }
-
-      setInput('')
-      setResults([])
     } catch (error) {
       console.error('Execute error:', error)
     }
@@ -191,8 +177,6 @@ function App() {
 
   // 获取图标
   const getIcon = (action: IAction) => {
-    // 根据扩展类型返回不同的 emoji
-    // 使用 typeLabel 来区分类型
     if (action.typeLabel === 'System') {
       return '⚙️'
     } else if (action.typeLabel === 'Command') {
@@ -201,18 +185,19 @@ function App() {
     return '📦'
   }
 
+  // 渲染扩展组件
+  if (extensionComponent) {
+    const ExtComponent = extensionComponent
+    return (
+      <div className={`app theme-${theme}`}>
+        <ExtComponent {...extensionProps} />
+      </div>
+    )
+  }
+
   return (
     <div className={`app theme-${theme}`}>
-      {showPanel && panelConfig && (
-        <Panel
-          config={panelConfig}
-          onClose={() => {
-            setShowPanel(false)
-            setPanelConfig(null)
-          }}
-        />
-      )}
-      {!showPanel && !showSettings && (
+      {!showSettings && (
         <>
           <div className="search-container">
             <input
@@ -261,7 +246,7 @@ function App() {
           </div>
         </>
       )}
-      {!showPanel && showSettings && (
+      {showSettings && (
         <Settings onClose={() => setShowSettings(false)} />
       )}
     </div>

@@ -4,9 +4,6 @@ import { IStore } from 'keyerext'
 
 // 获取 userData 路径的辅助函数
 function getUserDataPath(): string {
-  // 在渲染进程中，通过 ipcRenderer 同步获取
-  const { ipcRenderer } = require('electron')
-
   try {
     // 尝试同步获取（如果在主进程中）
     const { app } = require('electron')
