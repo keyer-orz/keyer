@@ -4,7 +4,7 @@ const React: typeof ReactType = (window as any).React
 const { useState, useEffect, useRef } = React
 
 import electron from 'electron'
-import { IExtension, IActionDef, IStore, IExtensionResult, List, Item, Input } from 'keyerext'
+import { IExtension, IActionDef, IStore, IExtensionResult, List, Item, Input, Panel } from 'keyerext'
 import type { ListItem } from 'keyerext'
 
 const { clipboard } = electron
@@ -66,23 +66,9 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
   }
 
   return (
-    <div style={{
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      padding: '16px',
-      boxSizing: 'border-box',
-      backgroundColor: '#fff'
-    }}>
+    <Panel>
       {/* 搜索框 */}
-      <div style={{
-        marginBottom: '12px',
-        padding: '8px 12px',
-        border: '1px solid #ddd',
-        borderRadius: '6px',
-        backgroundColor: 'transparent'
-      }}>
+      <div className="search-container">
         <Input
           value={filter}
           onChange={setFilter}
@@ -95,7 +81,7 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
       <div ref={listContainerRef} style={{
         flex: 1,
         overflow: 'auto',
-        border: '1px solid #ddd',
+        border: '1px solid var(--border-color)',
         borderRadius: '6px',
         maxHeight: 'calc(100vh - 160px)'
       }}>
@@ -103,7 +89,7 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
           <div style={{
             padding: '24px',
             textAlign: 'center',
-            color: '#999'
+            color: 'var(--text-tertiary)'
           }}>
             {filter ? 'No matching items' : 'No clipboard history yet'}
           </div>
@@ -132,7 +118,7 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
                   </div>
                   <div style={{
                     fontSize: '12px',
-                    color: '#999',
+                    color: 'var(--text-tertiary)',
                     marginTop: '2px'
                   }}>
                     {getTimeAgo(item.data.timestamp)}
@@ -148,12 +134,12 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
       <div style={{
         marginTop: '12px',
         fontSize: '12px',
-        color: '#999',
+        color: 'var(--text-tertiary)',
         textAlign: 'center'
       }}>
         ↑↓ Navigate • Enter Copy • Esc Close
       </div>
-    </div>
+    </Panel>
   )
 }
 

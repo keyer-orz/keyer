@@ -62,7 +62,7 @@ function InputInner({
   return React.createElement('input', {
     ref: inputRef,
     type: 'text',
-    className: `keyer-input ${className}`,
+    className: `keyer-input search-input ${className}`,
     placeholder,
     value,
     onChange: (e: any) => onChange(e.target.value),

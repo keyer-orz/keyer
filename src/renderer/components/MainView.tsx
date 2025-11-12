@@ -75,7 +75,6 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
           onChange={setInput}
           placeholder="Search for apps and commands..."
           autoFocus={true}
-          className="search-input"
         />
       </div>
 
