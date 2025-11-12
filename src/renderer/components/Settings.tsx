@@ -47,9 +47,8 @@ function Settings() {
   }
 
   return (
-    <div className="settings-overlay">
-      <div className="settings-panel" onClick={(e) => e.stopPropagation()}>
-        <div className="settings-header">
+    <div className="settings-panel">
+      <div className="settings-header">
           <div className="settings-tabs">
             <div
               className={`settings-tab ${activeTab === 'general' ? 'active' : ''}`}
@@ -174,7 +173,6 @@ function Settings() {
             </div>
           )}
         </div>
-      </div>
     </div>
   )
 }

@@ -92,7 +92,13 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
       </div>
 
       {/* 历史记录列表 */}
-      <div ref={listContainerRef} style={{ flex: 1, overflow: 'hidden', border: '1px solid #ddd', borderRadius: '6px' }}>
+      <div ref={listContainerRef} style={{
+        flex: 1,
+        overflow: 'auto',
+        border: '1px solid #ddd',
+        borderRadius: '6px',
+        maxHeight: 'calc(100vh - 160px)'
+      }}>
         {listItems.length === 0 ? (
           <div style={{
             padding: '24px',

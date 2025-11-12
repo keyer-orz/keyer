@@ -1,22 +1,7 @@
-.settings-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
 .settings-panel {
-  width: 700px;
-  height: 500px;
+  width: 100%;
+  height: 100%;
   background-color: var(--bg-primary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   overflow: hidden;
