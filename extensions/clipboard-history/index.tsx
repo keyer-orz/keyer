@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { clipboard } from 'electron'
-import { IExtension, IActionDef, IStore, IExtensionResult } from 'keyerext'
+import { IExtension, IActionDef, IStore, IExtensionResult, List, Item } from 'keyerext'
+import type { ListItem } from 'keyerext'
 
 export interface ClipboardEntry {
   content: string
@@ -16,10 +17,8 @@ interface ClipboardHistoryPanelProps {
 
 function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHistoryPanelProps) {
   const [filter, setFilter] = useState('')
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const [history, setHistory] = useState<ClipboardEntry[]>(initialHistory || [])
+  const [history] = useState<ClipboardEntry[]>(initialHistory || [])
   const inputRef = useRef<HTMLInputElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
 
   // 根据过滤条件筛选历史记录
   const filteredHistory = history.filter(entry => {
@@ -27,73 +26,40 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
     return entry.content.toLowerCase().includes(filter.toLowerCase())
   })
 
-  // 当过滤条件改变时，重置选中索引
-  useEffect(() => {
-    setSelectedIndex(0)
-  }, [filter])
+  // 转换为 ListItem 格式
+  const listItems: ListItem<ClipboardEntry>[] = filteredHistory.map(entry => ({
+    id: entry.timestamp,
+    data: entry
+  }))
 
   // 自动聚焦输入框
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
 
-  // 处理键盘事件
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setSelectedIndex(prev => Math.min(prev + 1, filteredHistory.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setSelectedIndex(prev => Math.max(prev - 1, 0))
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (filteredHistory[selectedIndex]) {
-        copyToClipboard(selectedIndex)
-      }
-    } else if (e.key === 'Escape') {
+  // 处理输入框的 Esc 键
+  const handleInputKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
       e.preventDefault()
       onClose()
     }
   }
 
   // 复制到剪贴板
-  const copyToClipboard = (index: number) => {
-    const entry = filteredHistory[index]
-    if (!entry) return
-
-    clipboard.writeText(entry.content)
-    console.log('Copied to clipboard:', entry.content.substring(0, 50))
-
-    // 关闭面板
+  const copyToClipboard = (item: ListItem<ClipboardEntry>) => {
+    clipboard.writeText(item.data.content)
+    console.log('Copied to clipboard:', item.data.content.substring(0, 50))
     onClose()
   }
-
-  // 点击列表项
-  const handleItemClick = (index: number) => {
-    setSelectedIndex(index)
-    copyToClipboard(index)
-  }
-
-  // 滚动选中项到可见区域
-  useEffect(() => {
-    const selectedElement = listRef.current?.children[selectedIndex] as HTMLElement
-    if (selectedElement) {
-      selectedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-    }
-  }, [selectedIndex])
 
   // 格式化时间
   const getTimeAgo = (timestamp: number): string => {
     const seconds = Math.floor((Date.now() - timestamp) / 1000)
-
     if (seconds < 60) return 'Just now'
-
     const minutes = Math.floor(seconds / 60)
     if (minutes < 60) return `${minutes}m ago`
-
     const hours = Math.floor(minutes / 60)
     if (hours < 24) return `${hours}h ago`
-
     const days = Math.floor(hours / 24)
     return `${days}d ago`
   }
@@ -123,7 +89,7 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
           placeholder="Filter clipboard history..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          onKeyDown={handleKeyDown}
+          onKeyDown={handleInputKeyDown}
           style={{
             width: '100%',
             padding: '8px 12px',
@@ -137,16 +103,8 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
       </div>
 
       {/* 历史记录列表 */}
-      <div
-        ref={listRef}
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          border: '1px solid #ddd',
-          borderRadius: '6px'
-        }}
-      >
-        {filteredHistory.length === 0 ? (
+      <div style={{ flex: 1, overflow: 'hidden', border: '1px solid #ddd', borderRadius: '6px' }}>
+        {listItems.length === 0 ? (
           <div style={{
             padding: '24px',
             textAlign: 'center',
@@ -155,34 +113,19 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
             {filter ? 'No matching items' : 'No clipboard history yet'}
           </div>
         ) : (
-          filteredHistory.map((entry, index) => (
-            <div
-              key={entry.timestamp}
-              onClick={() => handleItemClick(index)}
-              style={{
-                padding: '12px',
-                borderBottom: index < filteredHistory.length - 1 ? '1px solid #eee' : 'none',
-                backgroundColor: index === selectedIndex ? '#e3f2fd' : 'transparent',
-                cursor: 'pointer',
-                transition: 'background-color 0.1s'
-              }}
-              onMouseEnter={() => setSelectedIndex(index)}
-            >
-              <div style={{
-                fontSize: '14px',
-                marginBottom: '4px',
-                wordBreak: 'break-word'
-              }}>
-                {getPreview(entry.content)}
-              </div>
-              <div style={{
-                fontSize: '12px',
-                color: '#999'
-              }}>
-                {getTimeAgo(entry.timestamp)}
-              </div>
-            </div>
-          ))
+          <List
+            items={listItems}
+            onEnter={copyToClipboard}
+            onEscape={onClose}
+            autoFocus={false}
+            renderItem={(item) => (
+              <Item
+                icon="📋"
+                title={getPreview(item.data.content)}
+                description={getTimeAgo(item.data.timestamp)}
+              />
+            )}
+          />
         )}
       </div>
 

@@ -82,3 +82,7 @@ export interface ExtensionPackage {
 
 // React Hooks
 export { useStore, ExtensionIdContext } from './hooks'
+
+// React Components
+export { List, Item } from './components/List'
+export type { ListItem, ListProps, ItemProps } from './components/List'

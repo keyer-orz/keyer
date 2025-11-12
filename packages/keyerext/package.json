@@ -12,9 +12,9 @@
     }
   },
   "scripts": {
-    "build": "npm run build:esm && npm run build:cjs",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:css",
     "build:esm": "tsc",
-    "build:cjs": "tsc --module commonjs --outDir dist-cjs && node -e \"const fs=require('fs');const path=require('path');function copy(src,dest){const files=fs.readdirSync(src);files.forEach(f=>{const s=path.join(src,f);const d=path.join(dest,f.replace('.js','.cjs'));if(fs.statSync(s).isFile()&&f.endsWith('.js')){fs.copyFileSync(s,d)}})}copy('dist-cjs','dist')\" && rm -rf dist-cjs",
+    "build:css": "mkdir -p dist/components && cp src/components/*.css dist/components/ 2>/dev/null || true",
     "watch": "tsc --watch"
   },
   "keywords": [
