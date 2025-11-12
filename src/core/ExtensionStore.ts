@@ -1,7 +1,39 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { app } from 'electron'
 import { IStore } from 'keyerext'
+
+// 获取 userData 路径的辅助函数
+function getUserDataPath(): string {
+  // 在渲染进程中，通过 ipcRenderer 同步获取
+  const { ipcRenderer } = require('electron')
+
+  try {
+    // 尝试同步获取（如果在主进程中）
+    const { app } = require('electron')
+    if (app && app.getPath) {
+      return app.getPath('userData')
+    }
+  } catch (e) {
+    // 在渲染进程中会失败，这是正常的
+  }
+
+  // 在渲染进程中，使用简化的路径计算
+  // Electron 的 userData 路径通常是：
+  // macOS: ~/Library/Application Support/<app name>
+  // Windows: %APPDATA%/<app name>
+  // Linux: ~/.config/<app name>
+
+  const appName = 'keyer'
+  const home = process.env.HOME || process.env.USERPROFILE || ''
+
+  if (process.platform === 'darwin') {
+    return path.join(home, 'Library', 'Application Support', appName)
+  } else if (process.platform === 'win32') {
+    return path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), appName)
+  } else {
+    return path.join(home, '.config', appName)
+  }
+}
 
 export class ExtensionStore implements IStore {
   private extensionId: string
@@ -12,7 +44,7 @@ export class ExtensionStore implements IStore {
     this.extensionId = extensionId
 
     // 存储路径：userData/extensions/{extensionId}/store.json
-    const userDataPath = app.getPath('userData')
+    const userDataPath = getUserDataPath()
     const storeDir = path.join(userDataPath, 'extensions', extensionId)
 
     // 确保目录存在

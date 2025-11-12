@@ -1,12 +1,8 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, protocol } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
-import * as fs from 'fs'
-import { CommandManager } from '../src/core/CommandManager'
 import { ConfigManager } from '../src/core/ConfigManager'
-import { PanelController } from '../src/core/PanelController'
 
 let mainWindow: BrowserWindow | null = null
-let commandManager: CommandManager | null = null
 let configManager: ConfigManager | null = null
 
 // 创建主窗口
@@ -20,9 +16,8 @@ function createWindow() {
     skipTaskbar: true,
     resizable: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
-      contextIsolation: true,
+      contextIsolation: false,
       // 在开发模式下禁用 sandbox 以避免权限问题
       sandbox: false,
     },
@@ -47,30 +42,6 @@ function createWindow() {
   })
 }
 
-// 初始化命令管理器
-async function initializeCommandManager() {
-  // 在开发模式下使用项目内的 scripts 目录，在生产模式下也使用打包后的 scripts 目录
-  console.log('Current __dirname:', __dirname)
-  console.log('Is dev mode:', !!process.env.VITE_DEV_SERVER_URL)
-
-  const scriptsDir = process.env.VITE_DEV_SERVER_URL
-    ? path.join(__dirname, '../scripts')  // 开发模式：dist-electron -> 项目根目录/scripts
-    : path.join(process.resourcesPath, 'scripts')  // 生产模式：app.asar -> resources/scripts
-
-  const extensionsDir = process.env.VITE_DEV_SERVER_URL
-    ? path.join(__dirname, '../extensions')  // 开发模式：dist-electron -> 项目根目录/extensions
-    : path.join(process.resourcesPath, 'extensions')  // 生产模式：app.asar -> resources/extensions
-
-  console.log('Scripts directory:', scriptsDir)
-  console.log('Extensions directory:', extensionsDir)
-
-  // 创建 PanelController
-  const panelController = mainWindow ? new PanelController(mainWindow) : undefined
-
-  commandManager = new CommandManager(scriptsDir, extensionsDir, panelController)
-  await commandManager.initialize()
-}
-
 // 注册全局快捷键
 function registerGlobalShortcut() {
   // 注册 Command+Space 快捷键
@@ -93,32 +64,6 @@ function registerGlobalShortcut() {
 
 // IPC 事件处理
 function setupIPC() {
-  // 搜索命令
-  ipcMain.handle('search', async (_, input: string) => {
-    if (!commandManager) {
-      return []
-    }
-    return await commandManager.search(input)
-  })
-
-  // 执行命令
-  ipcMain.handle('execute', async (_, action) => {
-    if (!commandManager) {
-      throw new Error('Command manager not initialized1')
-    }
-
-    const keepOpen = await commandManager.execute(action)
-
-    // 根据返回值决定是否隐藏窗口
-    // true: 保持窗口打开
-    // false: 自动关闭窗口
-    if (!keepOpen && mainWindow) {
-      mainWindow.hide()
-    }
-
-    return keepOpen
-  })
-
   // 隐藏窗口
   ipcMain.handle('hide-window', () => {
     if (mainWindow) {
@@ -126,66 +71,26 @@ function setupIPC() {
     }
   })
 
-  // 获取扩展列表
-  ipcMain.handle('get-extensions', () => {
-    if (!commandManager) {
-      console.log('CommandManager not initialized')
-      return []
+  // 显示窗口
+  ipcMain.handle('show-window', () => {
+    if (mainWindow) {
+      mainWindow.show()
+      mainWindow.center()
     }
-    const extensions = commandManager.getExtensions()
-    console.log('Returning extensions:', extensions)
-    return extensions
   })
 
-  // 获取脚本列表
-  ipcMain.handle('get-scripts', () => {
-    if (!commandManager) {
-      console.log('CommandManager not initialized')
-      return []
+  // 获取路径信息（供渲染进程使用）
+  ipcMain.handle('get-paths', () => {
+    const isDev = !!process.env.VITE_DEV_SERVER_URL
+    return {
+      scriptsDir: isDev
+        ? path.join(__dirname, '../scripts')
+        : path.join(process.resourcesPath, 'scripts'),
+      extensionsDir: isDev
+        ? path.join(__dirname, '../extensions')
+        : path.join(process.resourcesPath, 'extensions'),
+      isDev
     }
-    const scripts = commandManager.getScripts()
-    console.log('Returning scripts:', scripts)
-    return scripts
-  })
-
-  // 加载 UI 扩展列表
-  ipcMain.handle('load-ui-extensions', () => {
-    if (!commandManager) {
-      console.log('CommandManager not initialized')
-      return []
-    }
-    const uiExtensions = commandManager.getUIExtensions()
-    console.log('Returning UI extensions:', uiExtensions)
-    return uiExtensions
-  })
-
-  // Extension Store 操作
-  ipcMain.handle('extension-store-get', (_, extensionId: string, key: string, defaultValue?: any) => {
-    if (!commandManager) {
-      return defaultValue
-    }
-    return commandManager.getExtensionStoreValue(extensionId, key, defaultValue)
-  })
-
-  ipcMain.handle('extension-store-set', (_, extensionId: string, key: string, value: any) => {
-    if (!commandManager) {
-      return false
-    }
-    return commandManager.setExtensionStoreValue(extensionId, key, value)
-  })
-
-  ipcMain.handle('extension-store-delete', (_, extensionId: string, key: string) => {
-    if (!commandManager) {
-      return false
-    }
-    return commandManager.deleteExtensionStoreValue(extensionId, key)
-  })
-
-  ipcMain.handle('extension-store-keys', (_, extensionId: string) => {
-    if (!commandManager) {
-      return []
-    }
-    return commandManager.getExtensionStoreKeys(extensionId)
   })
 
   // 获取配置
@@ -221,10 +126,8 @@ app.commandLine.appendSwitch('disable-software-rasterizer')
 
 // 应用就绪
 app.whenReady().then(async () => {
-
   configManager = new ConfigManager()
   createWindow()
-  await initializeCommandManager()
   registerGlobalShortcut()
   setupIPC()
 

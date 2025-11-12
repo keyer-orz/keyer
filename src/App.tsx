@@ -5,29 +5,17 @@ import Settings from './components/Settings'
 import Panel from './components/Panel'
 import { IPanelConfig, IListItem } from 'keyerext'
 import { uiExtensionLoader } from './core/UIExtensionLoader'
+import { initializeCommandManager, getCommandManager } from './core/RendererCommandManager'
 
 // 可序列化的 Panel 配置（包含 extensionId）
 interface SerializablePanelConfig extends IPanelConfig {
   extensionId: string
 }
 
+// 扩展 Window 类型以支持 ipcRenderer
 declare global {
   interface Window {
-    electronAPI: {
-      search: (input: string) => Promise<IAction[]>
-      execute: (action: IAction) => Promise<void>
-      hideWindow: () => Promise<void>
-      onFocusInput: (callback: () => void) => void
-      getExtensions: () => Promise<any[]>
-      getScripts: () => Promise<any[]>
-      getConfig: () => Promise<any>
-      updateConfig: (updates: any) => Promise<boolean>
-      onThemeChanged: (callback: (theme: string) => void) => void
-      onShowPanel: (callback: (config: SerializablePanelConfig) => void) => void
-      onClosePanel: (callback: () => void) => void
-      onUpdatePanel: (callback: (items: IListItem[]) => void) => void
-      loadUIExtensions: () => Promise<Array<{ id: string, uiPath: string }>>
-    }
+    require: NodeRequire
   }
 }
 
@@ -40,72 +28,116 @@ function App() {
   const [showPanel, setShowPanel] = useState(false)
   const [panelConfig, setPanelConfig] = useState<SerializablePanelConfig | null>(null)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const [commandManagerReady, setCommandManagerReady] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const selectedItemRef = useRef<HTMLDivElement>(null)
 
-  // 监听焦点输入事件
+  // 初始化 CommandManager
   useEffect(() => {
-    if (window.electronAPI) {
-      window.electronAPI.onFocusInput(() => {
-        inputRef.current?.focus()
-        setInput('')
-        setResults([])
-        setSelectedIndex(0)
-      })
+    const init = async () => {
+      try {
+        await initializeCommandManager()
+        setCommandManagerReady(true)
+        console.log('CommandManager initialized in renderer process')
 
-      // 加载配置
-      window.electronAPI.getConfig().then(config => {
-        if (config && config.theme) {
-          setTheme(config.theme)
+        // 加载 UI 扩展
+        const commandManager = getCommandManager()
+        const uiExtensions = commandManager.getUIExtensions()
+        for (const { id, uiPath } of uiExtensions) {
+          try {
+            await uiExtensionLoader.loadExtension(id, uiPath)
+            console.log(`Loaded UI extension: ${id}`)
+          } catch (error) {
+            console.error(`Failed to load UI extension ${id}:`, error)
+          }
         }
-      })
+      } catch (error) {
+        console.error('Failed to initialize CommandManager:', error)
+      }
+    }
 
-      // 加载 UI 扩展
-      window.electronAPI.loadUIExtensions().then(extensions => {
-        extensions.forEach(({ id, uiPath }) => {
-          uiExtensionLoader.loadExtension(id, uiPath)
-        })
-      })
+    init()
+  }, [])
 
-      // 监听主题变化
-      window.electronAPI.onThemeChanged((newTheme: string) => {
-        setTheme(newTheme as 'dark' | 'light')
-      })
+  // 监听事件
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron')
 
-      // 监听面板显示
-      window.electronAPI.onShowPanel((config: SerializablePanelConfig) => {
-        setPanelConfig(config)
-        setShowPanel(true)
-      })
+    // 监听焦点输入事件
+    const handleFocusInput = () => {
+      inputRef.current?.focus()
+      setInput('')
+      setResults([])
+      setSelectedIndex(0)
+    }
 
-      // 监听面板关闭
-      window.electronAPI.onClosePanel(() => {
-        setShowPanel(false)
-        setPanelConfig(null)
-      })
+    // 监听面板显示
+    const handleShowPanel = (event: CustomEvent) => {
+      const config = event.detail as SerializablePanelConfig
+      setPanelConfig(config)
+      setShowPanel(true)
+    }
 
-      // 监听面板更新
-      window.electronAPI.onUpdatePanel((items: IListItem[]) => {
-        if (panelConfig) {
-          setPanelConfig({ ...panelConfig, props: { ...panelConfig.props, items } })
-        }
-      })
+    // 监听面板关闭
+    const handleClosePanel = () => {
+      setShowPanel(false)
+      setPanelConfig(null)
+    }
+
+    // 监听面板更新
+    const handleUpdatePanel = (event: CustomEvent) => {
+      const items = event.detail as IListItem[]
+      if (panelConfig) {
+        setPanelConfig({ ...panelConfig, props: { ...panelConfig.props, items } })
+      }
+    }
+
+    // 监听主题变化
+    const handleThemeChanged = (_: any, newTheme: string) => {
+      setTheme(newTheme as 'dark' | 'light')
+    }
+
+    // 注册事件监听
+    ipcRenderer.on('focus-input', handleFocusInput)
+    ipcRenderer.on('theme-changed', handleThemeChanged)
+    window.addEventListener('show-panel', handleShowPanel as EventListener)
+    window.addEventListener('close-panel', handleClosePanel)
+    window.addEventListener('update-panel', handleUpdatePanel as EventListener)
+
+    // 加载配置
+    ipcRenderer.invoke('get-config').then((config: any) => {
+      if (config && config.theme) {
+        setTheme(config.theme)
+      }
+    })
+
+    return () => {
+      ipcRenderer.removeListener('focus-input', handleFocusInput)
+      ipcRenderer.removeListener('theme-changed', handleThemeChanged)
+      window.removeEventListener('show-panel', handleShowPanel as EventListener)
+      window.removeEventListener('close-panel', handleClosePanel)
+      window.removeEventListener('update-panel', handleUpdatePanel as EventListener)
     }
   }, [panelConfig])
 
   // 搜索
   useEffect(() => {
     const searchCommands = async () => {
-      if (window.electronAPI) {
-        const actions = await window.electronAPI.search(input)
+      if (!commandManagerReady) return
+
+      try {
+        const commandManager = getCommandManager()
+        const actions = await commandManager.search(input)
         setResults(actions)
         setSelectedIndex(0)
+      } catch (error) {
+        console.error('Search error:', error)
       }
     }
 
     const debounce = setTimeout(searchCommands, 150)
     return () => clearTimeout(debounce)
-  }, [input])
+  }, [input, commandManagerReady])
 
   // 键盘导航时自动滚动到选中项
   useEffect(() => {
@@ -134,21 +166,24 @@ function App() {
       }
     } else if (e.key === 'Escape') {
       e.preventDefault()
-      console.log("Escape key pressed")
-      if (window.electronAPI) {
-        window.electronAPI.hideWindow()
-      }
+      const { ipcRenderer } = window.require('electron')
+      ipcRenderer.invoke('hide-window')
     }
   }
 
   // 执行命令
   const handleExecute = async (action: IAction) => {
     try {
-      if (window.electronAPI) {
-        await window.electronAPI.execute(action)
-        setInput('')
-        setResults([])
+      const commandManager = getCommandManager()
+      const keepOpen = await commandManager.execute(action)
+
+      if (!keepOpen) {
+        const { ipcRenderer } = window.require('electron')
+        await ipcRenderer.invoke('hide-window')
       }
+
+      setInput('')
+      setResults([])
     } catch (error) {
       console.error('Execute error:', error)
     }

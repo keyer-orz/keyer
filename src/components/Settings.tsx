@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './Settings.css'
+import { getCommandManager } from '../core/RendererCommandManager'
 
 interface SettingsProps {
   onClose: () => void
@@ -17,19 +18,27 @@ function Settings({ onClose }: SettingsProps) {
 
   useEffect(() => {
     const loadData = async () => {
-      if (window.electronAPI) {
-        const exts = await window.electronAPI.getExtensions()
-        const scrs = await window.electronAPI.getScripts()
-        const cfg = await window.electronAPI.getConfig()
+      const { ipcRenderer } = window.require('electron')
+
+      try {
+        const commandManager = getCommandManager()
+        const exts = commandManager.getExtensions()
+        const scrs = commandManager.getScripts()
+        const cfg = await ipcRenderer.invoke('get-config')
+
         console.log('Loaded extensions:', exts)
         console.log('Loaded scripts:', scrs)
         console.log('Loaded config:', cfg)
+
         setExtensions(exts)
         setScripts(scrs)
         setConfig(cfg)
+
         if (cfg && cfg.theme) {
           setTheme(cfg.theme)
         }
+      } catch (error) {
+        console.error('Failed to load settings data:', error)
       }
     }
     loadData()
@@ -37,9 +46,8 @@ function Settings({ onClose }: SettingsProps) {
 
   const handleThemeChange = async (newTheme: 'dark' | 'light') => {
     setTheme(newTheme)
-    if (window.electronAPI) {
-      await window.electronAPI.updateConfig({ theme: newTheme })
-    }
+    const { ipcRenderer } = window.require('electron')
+    await ipcRenderer.invoke('update-config', { theme: newTheme })
   }
 
   useEffect(() => {
