@@ -1,9 +1,11 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
 import { ConfigManager } from '../src/main/ConfigManager'
+import { Store } from './Store'
 
 let mainWindow: BrowserWindow | null = null
 let configManager: ConfigManager | null = null
+let store: Store | null = null
 
 // 创建主窗口
 function createWindow() {
@@ -117,6 +119,76 @@ function setupIPC() {
 
     return true
   })
+
+  // Extension Store 操作 (异步)
+  ipcMain.handle('extension-store-get', (_, extensionId: string, key: string, defaultValue?: any) => {
+    if (!store) {
+      console.log('Store not initialized')
+      return defaultValue
+    }
+    return store.get(extensionId, key, defaultValue)
+  })
+
+  ipcMain.handle('extension-store-set', (_, extensionId: string, key: string, value: any) => {
+    if (!store) {
+      console.log('Store not initialized')
+      return false
+    }
+    return store.set(extensionId, key, value)
+  })
+
+  ipcMain.handle('extension-store-delete', (_, extensionId: string, key: string) => {
+    if (!store) {
+      console.log('Store not initialized')
+      return false
+    }
+    return store.delete(extensionId, key)
+  })
+
+  ipcMain.handle('extension-store-keys', (_, extensionId: string) => {
+    if (!store) {
+      console.log('Store not initialized')
+      return []
+    }
+    return store.keys(extensionId)
+  })
+
+  // Extension Store 操作 (同步)
+  ipcMain.on('extension-store-get-sync', (event, extensionId: string, key: string, defaultValue?: any) => {
+    if (!store) {
+      console.log('Store not initialized')
+      event.returnValue = defaultValue
+      return
+    }
+    event.returnValue = store.get(extensionId, key, defaultValue)
+  })
+
+  ipcMain.on('extension-store-set-sync', (event, extensionId: string, key: string, value: any) => {
+    if (!store) {
+      console.log('Store not initialized')
+      event.returnValue = false
+      return
+    }
+    event.returnValue = store.set(extensionId, key, value)
+  })
+
+  ipcMain.on('extension-store-delete-sync', (event, extensionId: string, key: string) => {
+    if (!store) {
+      console.log('Store not initialized')
+      event.returnValue = false
+      return
+    }
+    event.returnValue = store.delete(extensionId, key)
+  })
+
+  ipcMain.on('extension-store-keys-sync', (event, extensionId: string) => {
+    if (!store) {
+      console.log('Store not initialized')
+      event.returnValue = []
+      return
+    }
+    event.returnValue = store.keys(extensionId)
+  })
 }
 
 // 禁用 GPU 和 Sandbox 以避免在某些系统上的崩溃
@@ -127,6 +199,7 @@ app.commandLine.appendSwitch('disable-software-rasterizer')
 // 应用就绪
 app.whenReady().then(async () => {
   configManager = new ConfigManager()
+  store = new Store()
   createWindow()
   registerGlobalShortcut()
   setupIPC()

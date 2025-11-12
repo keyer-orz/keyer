@@ -1,80 +1,26 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import * as os from 'os'
 import { IStore } from 'keyerext'
 
-// 获取 userData 路径的辅助函数
-function getUserDataPath(): string {
-  try {
-    // 尝试同步获取（如果在主进程中）
-    const { app } = require('electron')
-    if (app && app.getPath) {
-      return app.getPath('userData')
-    }
-  } catch (e) {
-    // 在渲染进程中会失败，这是正常的
-  }
-
-  // 在渲染进程中，使用 os.homedir() 获取用户目录
-  // Electron 的 userData 路径通常是：
-  // macOS: ~/Library/Application Support/<app name>
-  // Windows: %APPDATA%/<app name>
-  // Linux: ~/.config/<app name>
-
-  const appName = 'keyer'
-  const home = os.homedir()
-
-  if (process.platform === 'darwin') {
-    return path.join(home, 'Library', 'Application Support', appName)
-  } else if (process.platform === 'win32') {
-    return path.join(home, 'AppData', 'Roaming', appName)
-  } else {
-    return path.join(home, '.config', appName)
+// 扩展 Window 类型以支持 ipcRenderer
+declare global {
+  interface Window {
+    require: NodeRequire
   }
 }
 
 export class ExtensionStore implements IStore {
   private extensionId: string
-  private storePath: string
-  private data: Record<string, any> = {}
+  private ipcRenderer: any
 
   constructor(extensionId: string) {
     this.extensionId = extensionId
 
-    // 存储路径：userData/extensions/{extensionId}/store.json
-    const userDataPath = getUserDataPath()
-    const storeDir = path.join(userDataPath, 'extensions', extensionId)
-
-    // 确保目录存在
-    if (!fs.existsSync(storeDir)) {
-      fs.mkdirSync(storeDir, { recursive: true })
-    }
-
-    this.storePath = path.join(storeDir, 'store.json')
-    this.load()
-  }
-
-  // 从文件加载数据
-  private load(): void {
+    // 获取 ipcRenderer
     try {
-      if (fs.existsSync(this.storePath)) {
-        const content = fs.readFileSync(this.storePath, 'utf-8')
-        this.data = JSON.parse(content)
-        console.log(`[${this.extensionId}] Store loaded:`, Object.keys(this.data))
-      }
+      const { ipcRenderer } = window.require('electron')
+      this.ipcRenderer = ipcRenderer
     } catch (error) {
-      console.error(`[${this.extensionId}] Failed to load store:`, error)
-      this.data = {}
-    }
-  }
-
-  // 保存数据到文件
-  private save(): void {
-    try {
-      fs.writeFileSync(this.storePath, JSON.stringify(this.data, null, 2))
-      console.log(`[${this.extensionId}] Store saved:`, Object.keys(this.data))
-    } catch (error) {
-      console.error(`[${this.extensionId}] Failed to save store:`, error)
+      console.error(`[${this.extensionId}] Failed to get ipcRenderer:`, error)
+      throw new Error('ExtensionStore requires Electron environment')
     }
   }
 
@@ -82,37 +28,58 @@ export class ExtensionStore implements IStore {
   get<T = any>(key: string): T | undefined
   get<T = any>(key: string, defaultValue: T): T
   get<T = any>(key: string, defaultValue?: T): T | undefined {
-    if (key in this.data) {
-      return this.data[key] as T
+    try {
+      // 同步 IPC 调用不支持，但我们可以使用 invoke 的同步版本
+      // 注意：这里实际上是异步的，但我们用同步的方式包装
+      // 在实际使用中，扩展应该使用异步方式
+      const result = this.ipcRenderer.sendSync('extension-store-get-sync', this.extensionId, key, defaultValue)
+      return result as T
+    } catch (error) {
+      console.error(`[${this.extensionId}] Failed to get value:`, error)
+      return defaultValue
     }
-    return defaultValue
   }
 
   // 设置值
   set(key: string, value: any): void {
-    this.data[key] = value
-    this.save()
+    try {
+      this.ipcRenderer.sendSync('extension-store-set-sync', this.extensionId, key, value)
+    } catch (error) {
+      console.error(`[${this.extensionId}] Failed to set value:`, error)
+    }
   }
 
   // 删除值
   delete(key: string): void {
-    delete this.data[key]
-    this.save()
+    try {
+      this.ipcRenderer.sendSync('extension-store-delete-sync', this.extensionId, key)
+    } catch (error) {
+      console.error(`[${this.extensionId}] Failed to delete value:`, error)
+    }
   }
 
   // 清空所有数据
   clear(): void {
-    this.data = {}
-    this.save()
+    try {
+      const keys = this.keys()
+      keys.forEach(key => this.delete(key))
+    } catch (error) {
+      console.error(`[${this.extensionId}] Failed to clear store:`, error)
+    }
   }
 
   // 获取所有键
   keys(): string[] {
-    return Object.keys(this.data)
+    try {
+      return this.ipcRenderer.sendSync('extension-store-keys-sync', this.extensionId)
+    } catch (error) {
+      console.error(`[${this.extensionId}] Failed to get keys:`, error)
+      return []
+    }
   }
 
   // 判断键是否存在
   has(key: string): boolean {
-    return key in this.data
+    return this.keys().includes(key)
   }
 }

@@ -68,3 +68,9 @@ App全局快捷键模块
     焦点不在 Input, Input 获取焦点
     焦点在 Input, Input 清空
     Input是空的，返回主界面
+
+
+重构下 Store
+
+主进程增加 Store.ts 支持通过 extension_id/key/value 进度读写 扩展的 store.json
+通过 IPC 暴露给 render 进程
