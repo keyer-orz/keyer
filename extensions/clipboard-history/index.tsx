@@ -39,21 +39,6 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
   }))
 
 
-  // 处理输入框的键盘事件
-  const handleInputKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault()
-      onClose()
-    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      // 按上下键时，将焦点转移到列表
-      e.preventDefault()
-      const listElement = listContainerRef.current?.querySelector('[tabindex="0"]') as HTMLElement
-      if (listElement) {
-        listElement.focus()
-      }
-    }
-  }
-
   // 复制到剪贴板
   const copyToClipboard = (item: ListItem<ClipboardEntry>) => {
     clipboard.writeText(item.data.content)
@@ -101,7 +86,6 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
         <Input
           value={filter}
           onChange={setFilter}
-          onKeyDown={handleInputKeyDown}
           placeholder="Filter clipboard history..."
           autoFocus={true}
         />
@@ -121,7 +105,6 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
           <List
             items={listItems}
             onEnter={copyToClipboard}
-            onEscape={onClose}
             autoFocus={true}
             renderItem={(item) => (
               <Item style={{

@@ -72,5 +72,8 @@ export default defineConfig({
         path.resolve(__dirname, 'extensions')
       ]
     }
+  },
+  optimizeDeps: {
+    include: ['keyerext']
   }
 })

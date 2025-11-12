@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { IAction } from '../../shared/types'
 import { CommandManager } from '../../shared/CommandManager'
 import { Input, InputHandle, List, Item } from 'keyerext'
@@ -40,15 +40,6 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
     return () => clearTimeout(debounce)
   }, [input, commandManagerReady])
 
-  // 键盘事件处理（仅处理 Input 层面的事件）
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault()
-      const { ipcRenderer } = window.require('electron')
-      ipcRenderer.invoke('hide-window')
-    }
-  }
-
   // List 选中回调
   const handleSelect = (item: ListItem<IAction>) => {
     setSelectedAction(item.data)
@@ -82,7 +73,6 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
           ref={inputRef}
           value={input}
           onChange={setInput}
-          onKeyDown={handleKeyDown}
           placeholder="Search for apps and commands..."
           autoFocus={true}
           className="search-input"

@@ -88,10 +88,10 @@ function App() {
   // 全局键盘快捷键处理
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // 处理 ArrowUp 和 ArrowDown - 聚焦到 List 组件
+      // 处理 ArrowUp 和 ArrowDown - 转移焦点到 List
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-        // 查找页面中的 List 组件（带有 tabindex="0" 的元素）
-        const listElement = document.querySelector('[tabindex="0"]') as HTMLElement
+        const listElement = document.querySelector('[data-keyer-list="true"]') as HTMLElement
+        // 如果 List 存在且焦点不在 List 上，转移焦点
         if (listElement && document.activeElement !== listElement) {
           e.preventDefault()
           listElement.focus()
@@ -101,7 +101,6 @@ function App() {
 
       // 处理 Escape 键 - 智能行为
       if (e.key === 'Escape') {
-        // 查找页面中的 Input 组件
         const inputElement = document.querySelector('[data-keyer-input="true"]') as HTMLInputElement
 
         if (inputElement) {
