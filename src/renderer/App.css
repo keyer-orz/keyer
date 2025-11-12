@@ -89,19 +89,14 @@ body {
   border-radius: 6px;
 }
 
-/* 键盘导航选中 - 深色高亮 */
-.result-item.selected {
-  background-color: var(--bg-highlight);
-}
-
-/* 鼠标悬停 - 浅色高亮（仅在鼠标活跃时） */
-.results-container.mouse-active .result-item:hover {
+/* 鼠标悬停状态 */
+.result-item:hover {
   background-color: var(--bg-secondary);
 }
 
-/* 键盘选中时，鼠标悬停保持深色 */
-.results-container.mouse-active .result-item.selected:hover {
-  background-color: var(--bg-highlight);
+/* 键盘选中状态 - 优先级更高 */
+.result-item.selected {
+  background-color: var(--bg-highlight) !important;
 }
 
 .result-icon {
@@ -216,19 +211,14 @@ body {
   border-radius: 6px;
 }
 
-/* 鼠标激活模式下的悬停效果 */
-.keyer-list.mouse-active .keyer-list-item:hover {
+/* 鼠标悬停效果 */
+.keyer-list-item:hover {
   background-color: var(--bg-secondary);
 }
 
-/* 选中状态 */
+/* 键盘选中状态 - 优先级更高 */
 .keyer-list-item.selected {
-  background-color: var(--bg-highlight);
-}
-
-/* 键盘选中时，鼠标悬停保持深色 */
-.keyer-list.mouse-active .keyer-list-item.selected:hover {
-  background-color: var(--bg-highlight);
+  background-color: var(--bg-highlight) !important;
 }
 
 /* Item 组件 - 纯容器，由使用者自定义内容 */

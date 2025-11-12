@@ -46,7 +46,6 @@ function ListInner<T = any>({
 }: ListProps<T>, ref: React.Ref<ListHandle>) {
   const React = getReact()
   const [selectedIndex, setSelectedIndex] = React.useState(initialSelectedIndex)
-  const [isMouseActive, setIsMouseActive] = React.useState(false)
   const listRef = React.useRef<HTMLDivElement>(null)
   const selectedItemRef = React.useRef<HTMLDivElement>(null)
 
@@ -59,13 +58,13 @@ function ListInner<T = any>({
 
   // 自动滚动到选中项
   React.useEffect(() => {
-    if (selectedItemRef.current && !isMouseActive) {
+    if (selectedItemRef.current) {
       selectedItemRef.current.scrollIntoView({
         behavior: 'auto',
         block: 'nearest',
       })
     }
-  }, [selectedIndex, isMouseActive])
+  }, [selectedIndex])
 
   // 选中项变化时触发回调
   React.useEffect(() => {
@@ -85,11 +84,9 @@ function ListInner<T = any>({
   const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setIsMouseActive(false)
       setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1))
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
-      setIsMouseActive(false)
       setSelectedIndex((prev) => Math.max(prev - 1, 0))
     } else if (e.key === 'Enter') {
       e.preventDefault()
@@ -105,11 +102,9 @@ function ListInner<T = any>({
       listRef.current?.focus()
     },
     selectNext: () => {
-      setIsMouseActive(false)
       setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1))
     },
     selectPrev: () => {
-      setIsMouseActive(false)
       setSelectedIndex((prev) => Math.max(prev - 1, 0))
     },
     enter: () => {
@@ -121,14 +116,9 @@ function ListInner<T = any>({
     getSelectedItem: () => items[selectedIndex]
   }), [items, selectedIndex, onEnter])
 
-  // 处理鼠标悬停
-  const handleMouseEnter = React.useCallback((index: number) => {
-    setIsMouseActive(true)
-    setSelectedIndex(index)
-  }, [])
-
   // 处理点击
   const handleClick = React.useCallback((item: ListItem<T>, index: number) => {
+    setSelectedIndex(index)
     if (onEnter) {
       onEnter(item, index)
     }
@@ -142,9 +132,8 @@ function ListInner<T = any>({
     'div',
     {
       ref: listRef,
-      className: `keyer-list ${className} ${isMouseActive ? 'mouse-active' : ''}`,
+      className: `keyer-list ${className}`,
       onKeyDown: handleKeyDown,
-      onMouseMove: () => setIsMouseActive(true),
       tabIndex: 0,
       'data-keyer-list': 'true'
     },
@@ -155,7 +144,6 @@ function ListInner<T = any>({
           key: item.id,
           ref: index === selectedIndex ? selectedItemRef : null,
           className: `keyer-list-item ${index === selectedIndex ? selectedClassName : ''}`,
-          onMouseEnter: () => handleMouseEnter(index),
           onClick: () => handleClick(item, index)
         },
         renderItem(item, index, index === selectedIndex)
