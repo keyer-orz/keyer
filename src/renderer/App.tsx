@@ -214,7 +214,7 @@ function App() {
         return null
 
       case 'settings':
-        return <Settings onClose={returnToMain} />
+        return <Settings />
 
       default:
         return null
