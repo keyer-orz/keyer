@@ -88,31 +88,6 @@ function App() {
   // 全局键盘快捷键处理
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // 处理 Enter 键 - 当 Input 聚焦时，执行列表的第一个选中项
-      if (e.key === 'Enter') {
-        const inputElement = document.querySelector('[data-keyer-input="true"]') as HTMLInputElement
-        if (inputElement && document.activeElement === inputElement) {
-          e.preventDefault()
-          // 查找 List 元素并触发选中项的点击
-          const selectedItem = document.querySelector('.keyer-list-item.selected') as HTMLElement
-          if (selectedItem) {
-            selectedItem.click()
-          }
-          return
-        }
-      }
-
-      // 处理 ArrowUp 和 ArrowDown - 转移焦点到 List
-      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-        const listElement = document.querySelector('[data-keyer-list="true"]') as HTMLElement
-        // 如果 List 存在且焦点不在 List 上，转移焦点
-        if (listElement && document.activeElement !== listElement) {
-          e.preventDefault()
-          listElement.focus()
-          return
-        }
-      }
-
       // 处理 Escape 键 - 智能行为
       if (e.key === 'Escape') {
         const inputElement = document.querySelector('[data-keyer-input="true"]') as HTMLInputElement

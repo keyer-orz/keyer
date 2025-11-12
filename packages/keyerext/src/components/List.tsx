@@ -81,42 +81,29 @@ function ListInner<T = any>({
       listRef.current.focus()
     }
   }, [autoFocus])
-
-  // 键盘事件处理
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setSelectedIndex((prev) => Math.max(prev - 1, 0))
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
-      if (items[selectedIndex] && onEnter) {
-        onEnter(items[selectedIndex], selectedIndex)
+  // 监听全局键盘事件（当 List 没有焦点时也能响应）
+  React.useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // 只要 List 元素存在就处理（不管焦点在哪里）
+      if (listRef.current) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1))
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          setSelectedIndex((prev) => Math.max(prev - 1, 0))
+        } else if (e.key === 'Enter') {
+          e.preventDefault()
+          if (items[selectedIndex] && onEnter) {
+            onEnter(items[selectedIndex], selectedIndex)
+          }
+        }
       }
     }
-  }, [items, selectedIndex, onEnter])
 
-  // 暴露方法给父组件
-  React.useImperativeHandle(ref, () => ({
-    focus: () => {
-      listRef.current?.focus()
-    },
-    selectNext: () => {
-      setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1))
-    },
-    selectPrev: () => {
-      setSelectedIndex((prev) => Math.max(prev - 1, 0))
-    },
-    enter: () => {
-      if (items[selectedIndex] && onEnter) {
-        onEnter(items[selectedIndex], selectedIndex)
-      }
-    },
-    getSelectedIndex: () => selectedIndex,
-    getSelectedItem: () => items[selectedIndex]
-  }), [items, selectedIndex, onEnter])
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [items.length, selectedIndex, onEnter])
 
   // 处理点击
   const handleClick = React.useCallback((item: ListItem<T>, index: number) => {
@@ -135,7 +122,6 @@ function ListInner<T = any>({
     {
       ref: listRef,
       className: `keyer-list ${className}`,
-      onKeyDown: handleKeyDown,
       tabIndex: 0,
       'data-keyer-list': 'true'
     },

@@ -89,7 +89,6 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
           <List
             items={listItems}
             onEnter={copyToClipboard}
-            autoFocus={true}
             renderItem={(item) => (
               <Item style={{
                 display: 'flex',

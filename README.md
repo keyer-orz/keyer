@@ -83,10 +83,19 @@ src/shared/ExtensionStore.ts 只通过 ipc 进行数据的读写
 3. List 的滚动条样式统一，支持 light / dark
 
 去除 <div className="search-container"> 和 <div className="results-container"> 精简布局
-<Item style={{
-    padding: '4px 6px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    minHeight: '32px'
-}}>
+
+---
+
+1. 键盘选中为 select, 鼠标选中为 hover
+2. 两者互不影响
+
+--
+
+列表的 item 有三个样式
+1. 键盘上下选择，切换为选中样式
+2. 鼠标悬浮 item 时，使用 hover样式，如果此时 item 已被选中，则使用 选中样式
+
+--
+
+src/renderer/App.tsx 中有 ArrowUp / ArrowDown ，这个去除即可
+当前界面的 Input 组件默认获取焦点，键盘的 ArrowUp / ArrowDown 不会影响 Input 的焦点

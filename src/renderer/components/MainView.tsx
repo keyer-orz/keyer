@@ -83,7 +83,6 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
           items={listItems}
           onSelect={handleSelect}
           onEnter={handleEnter}
-          autoFocus={false}
           renderItem={(item) => (
             <Item style={{
               padding: '4px 6px',
