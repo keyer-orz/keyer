@@ -112,13 +112,14 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
                     fontWeight: 500,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis'
+                    textOverflow: 'ellipsis',
+                    color: 'var(--text-primary)'
                   }}>
                     {getPreview(item.data.content)}
                   </div>
                   <div style={{
                     fontSize: '12px',
-                    color: 'var(--text-tertiary)',
+                    color: 'var(--text-secondary)',
                     marginTop: '2px'
                   }}>
                     {getTimeAgo(item.data.timestamp)}

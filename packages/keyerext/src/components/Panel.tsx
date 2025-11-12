@@ -11,32 +11,27 @@ function getReact(): typeof ReactType {
 
 export interface PanelProps {
   children?: React.ReactNode
-  className?: string
-  style?: React.CSSProperties
-  padding?: string | number
+  direction?: 'horizontal' | 'vertical' 
 }
 
 export function Panel({
   children,
-  className = '',
-  style = {},
-  padding = '16px'
+  direction = 'vertical'
 }: PanelProps) {
   const React = getReact()
 
   return React.createElement(
     'div',
     {
-      className: `keyer-panel ${className}`,
+      className: 'keyer-panel',
       style: {
         width: '100%',
         height: '100%',
         display: 'flex',
-        flexDirection: 'column',
-        padding,
+        flexDirection: direction === 'horizontal' ? 'row' : 'column',
         boxSizing: 'border-box',
         backgroundColor: 'var(--bg-primary)',
-        ...style
+        gap: '12px'
       }
     },
     children
