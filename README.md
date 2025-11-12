@@ -75,3 +75,18 @@ App全局快捷键模块
 主进程增加 Store.ts 支持通过 extension_id/key/value 进度读写 扩展的 store.json
 通过 IPC 暴露给 render 进程
 src/shared/ExtensionStore.ts 只通过 ipc 进行数据的读写
+
+---
+
+1. src/renderer/components/MainView.tsx 使用 Panel 作为根容器
+2. src/renderer/components/Settings.tsx 使用 Panel 作为根容器
+3. List 的滚动条样式统一，支持 light / dark
+
+去除 <div className="search-container"> 和 <div className="results-container"> 精简布局
+<Item style={{
+    padding: '4px 6px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    minHeight: '32px'
+}}> 默认样式如此，剪切板插件也用这个

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { IAction } from '../../shared/types'
 import { CommandManager } from '../../shared/CommandManager'
-import { Input, InputHandle, List, Item } from 'keyerext'
+import { Input, InputHandle, List, Item, Panel } from 'keyerext'
 import type { ListItem } from 'keyerext'
 
 interface MainViewProps {
@@ -67,7 +67,7 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
   }))
 
   return (
-    <>
+    <Panel>
       <div className="search-container">
         <Input
           ref={inputRef}
@@ -116,7 +116,7 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
           ⚙️
         </div>
       </div>
-    </>
+    </Panel>
   )
 }
 

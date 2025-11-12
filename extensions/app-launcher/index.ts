@@ -49,7 +49,7 @@ class AppLauncherExtension implements IExtension {
 
     // 返回所有应用的 actions
     return this.apps.map(app => {
-      const actionName = `打开 ${app.name}`
+      const actionName = `${app.name}`
       const actionKey = `open.${app.enName.toLowerCase().replace(/\s+/g, '-')}`
       // 保存 key 到 appPath 的映射
       this.appPathMap.set(actionKey, app.path)

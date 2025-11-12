@@ -257,14 +257,28 @@ body {
   background: transparent;
 }
 
-.keyer-list::-webkit-scrollbar-thumb {
+/* Dark theme 滚动条 */
+.theme-dark .keyer-list::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 5px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-.keyer-list::-webkit-scrollbar-thumb:hover {
+.theme-dark .keyer-list::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
+  background-clip: content-box;
+}
+
+/* Light theme 滚动条 */
+.theme-light .keyer-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.theme-light .keyer-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
   background-clip: content-box;
 }

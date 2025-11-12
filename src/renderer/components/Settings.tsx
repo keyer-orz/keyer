@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Settings.css'
 import { CommandManager } from '../../shared/CommandManager'
+import { Panel } from 'keyerext'
 
 type TabType = 'general' | 'extensions' | 'scripts'
 
@@ -47,7 +48,7 @@ function Settings() {
   }
 
   return (
-    <div className="settings-panel">
+    <Panel>
       <div className="settings-header">
           <div className="settings-tabs">
             <div
@@ -173,7 +174,7 @@ function Settings() {
             </div>
           )}
         </div>
-    </div>
+    </Panel>
   )
 }
 
