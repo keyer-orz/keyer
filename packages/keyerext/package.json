@@ -1,30 +1,46 @@
 {
   "name": "keyerext",
   "version": "1.0.0",
-  "description": "Type definitions and SDK for Keyer extensions",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "Type definitions and React components SDK for Keyer extensions",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "build": "npm run build:esm && npm run build:cjs && npm run build:css",
-    "build:esm": "tsc",
-    "build:css": "mkdir -p dist/components && cp src/components/*.css dist/components/ 2>/dev/null || true",
-    "watch": "tsc --watch"
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "watch": "tsc --watch",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "keyer",
     "extension",
-    "types"
+    "sdk",
+    "types",
+    "react",
+    "electron"
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/keyer.git",
+    "directory": "packages/keyerext"
+  },
   "devDependencies": {
+    "@types/react": "^18.0.0",
     "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
   }
 }

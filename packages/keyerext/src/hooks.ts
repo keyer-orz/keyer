@@ -1,4 +1,7 @@
-import { useState, useEffect, useCallback, createContext, useContext } from 'react'
+// 使用主 App 的 React 实例，避免多实例冲突
+import type * as ReactType from 'react'
+const React: typeof ReactType = typeof window !== 'undefined' ? (window as any).React : require('react')
+const { useState, useEffect, useCallback, createContext, useContext } = React
 
 // Extension ID Context - 用于在 Panel 中注入当前的 extensionId
 export const ExtensionIdContext = createContext<string | null>(null)

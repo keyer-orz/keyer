@@ -1,7 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { clipboard } from 'electron'
+// 使用主 App 的 React 实例，避免多实例冲突
+import type * as ReactType from 'react'
+const React: typeof ReactType = (window as any).React
+const { useState, useEffect, useRef } = React
+
+import electron from 'electron'
 import { IExtension, IActionDef, IStore, IExtensionResult, List, Item } from 'keyerext'
 import type { ListItem } from 'keyerext'
+
+const { clipboard } = electron
 
 export interface ClipboardEntry {
   content: string

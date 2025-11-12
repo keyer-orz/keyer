@@ -57,36 +57,11 @@ export class ExtensionManager {
         return
       }
 
-      // 劫持 React 模块，让扩展使用主应用的 React
-      // 这样避免多个 React 实例导致 hooks 无法工作
-      const Module = require('module')
-      const originalRequire = Module.prototype.require
-
-      Module.prototype.require = function(id: string) {
-        if (id === 'react') {
-          return (window as any).React
-        }
-        if (id === 'react-dom') {
-          return (window as any).ReactDOM
-        }
-        if (id === 'react/jsx-runtime') {
-          // 返回 JSX runtime
-          const React = (window as any).React
-          return {
-            jsx: React.createElement,
-            jsxs: React.createElement,
-            Fragment: React.Fragment
-          }
-        }
-        return originalRequire.apply(this, arguments as any)
-      }
-
-      // 动态加载扩展模块
+      // 使用 require 加载模块（在 Electron 渲染进程中更可靠）
+      // 清除 require 缓存以确保获取最新版本
+      delete require.cache[require.resolve(mainPath)]
       const extensionModule = require(mainPath)
       const extension: IExtension = extensionModule.default || extensionModule
-
-      // 恢复原始的 require
-      Module.prototype.require = originalRequire
 
       // 为扩展创建 Store
       const store = new ExtensionStore(pkg.id)

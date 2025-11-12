@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+// 使用主 App 的 React 实例，避免多实例冲突
+import type * as ReactType from 'react'
+const React: typeof ReactType = typeof window !== 'undefined' ? (window as any).React : require('react')
+const { useState, useEffect, useRef, useCallback } = React
 
 export interface ListItem<T = any> {
   id: string | number
