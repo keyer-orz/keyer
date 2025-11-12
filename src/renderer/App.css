@@ -153,25 +153,13 @@ body {
   flex-shrink: 0;
 }
 
-/* 滚动条样式 */
-.results-container::-webkit-scrollbar {
+/* 统一滚动条样式 - 应用到整个 App */
+.app *::-webkit-scrollbar {
   width: 10px;
 }
 
-.results-container::-webkit-scrollbar-track {
+.app *::-webkit-scrollbar-track {
   background: transparent;
-}
-
-.results-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-.results-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-  background-clip: content-box;
 }
 
 /* 底部条 */
@@ -248,37 +236,28 @@ body {
   /* 无默认样式，完全由使用者控制 */
 }
 
-/* List 滚动条样式 */
-.keyer-list::-webkit-scrollbar {
-  width: 10px;
-}
-
-.keyer-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
 /* Dark theme 滚动条 */
-.theme-dark .keyer-list::-webkit-scrollbar-thumb {
+.app.theme-dark *::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 5px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-.theme-dark .keyer-list::-webkit-scrollbar-thumb:hover {
+.app.theme-dark *::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
   background-clip: content-box;
 }
 
 /* Light theme 滚动条 */
-.theme-light .keyer-list::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+.app.theme-light *::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 5px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
-.theme-light .keyer-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+.app.theme-light *::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
   background-clip: content-box;
 }
