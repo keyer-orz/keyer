@@ -55,7 +55,11 @@ function InputInner({
   // 自动聚焦
   React.useEffect(() => {
     if (autoFocus && inputRef.current) {
-      inputRef.current.focus()
+      // 使用 setTimeout 确保在组件完全渲染后聚焦
+      const timer = setTimeout(() => {
+        inputRef.current?.focus()
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [autoFocus])
 
