@@ -1,38 +1,69 @@
-import { useState } from 'react'
-import { Panel } from 'keyerext'
+import { useState, useMemo } from 'react'
+import { Panel, List, Item, type ListItem, type ListSection } from 'keyerext'
 import GeneralTab from '../settings/GeneralTab'
 import ExtensionsTab from '../settings/ExtensionsTab'
 import ScriptsTab from '../settings/ScriptsTab'
 import type { TabType } from '../settings/types'
 
+interface TabData {
+  id: TabType
+  icon: string
+  label: string
+}
+
 function Settings() {
   const [activeTab, setActiveTab] = useState<TabType>('general')
+
+  // 构建标签列表
+  const tabSections = useMemo((): ListSection<TabData>[] => {
+    const tabs: Array<{ id: TabType; icon: string; label: string }> = [
+      { id: 'general', icon: '⚙️', label: 'General' },
+      { id: 'extensions', icon: '🧩', label: 'Extensions' },
+      { id: 'scripts', icon: '📜', label: 'Scripts' }
+    ]
+
+    return [{
+      header: '',
+      items: tabs.map(tab => ({
+        id: tab.id,
+        data: tab
+      }))
+    }]
+  }, [])
+
+  // 渲染标签项
+  const renderTabItem = (item: ListItem<TabData>) => {
+    return (
+      <Item style={{ padding: '10px 16px' }}>
+        <div className="settings-tab-content">
+          <span className="tab-icon">{item.data.icon}</span>
+          <span className="tab-label">{item.data.label}</span>
+        </div>
+      </Item>
+    )
+  }
+
+  // 处理标签选择（方向键移动时）
+  const handleTabSelect = (item: ListItem<TabData>) => {
+    setActiveTab(item.data.id)
+  }
+
+  // 处理标签确认（Enter 键）
+  const handleTabEnter = (item: ListItem<TabData>) => {
+    setActiveTab(item.data.id)
+  }
 
   return (
     <Panel direction="horizontal">
       {/* 左侧：标签列表 */}
       <div className="settings-sidebar">
-        <div
-          className={`settings-tab ${activeTab === 'general' ? 'active' : ''}`}
-          onClick={() => setActiveTab('general')}
-        >
-          <span className="tab-icon">⚙️</span>
-          <span className="tab-label">General</span>
-        </div>
-        <div
-          className={`settings-tab ${activeTab === 'extensions' ? 'active' : ''}`}
-          onClick={() => setActiveTab('extensions')}
-        >
-          <span className="tab-icon">🧩</span>
-          <span className="tab-label">Extensions</span>
-        </div>
-        <div
-          className={`settings-tab ${activeTab === 'scripts' ? 'active' : ''}`}
-          onClick={() => setActiveTab('scripts')}
-        >
-          <span className="tab-icon">📜</span>
-          <span className="tab-label">Scripts</span>
-        </div>
+        <List
+          sections={tabSections}
+          renderItem={renderTabItem}
+          onSelect={handleTabSelect}
+          onEnter={handleTabEnter}
+          autoHide={false}
+        />
       </div>
 
       {/* 右侧：内容区域 */}

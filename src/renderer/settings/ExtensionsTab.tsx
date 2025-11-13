@@ -164,19 +164,15 @@ function ExtensionsTab() {
                 {/* 扩展行 */}
                 <div
                   className={`table-row extension-row ${selectedItem?.id === ext.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedItem(ext)}
+                  onClick={() => {
+                    setSelectedItem(ext)
+                    toggleExpand(ext.id)
+                  }}
                 >
                   <div className="col-name">
-                    <span
-                      className="expand-arrow"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleExpand(ext.id)
-                      }}
-                    >
+                    <span className="expand-arrow">
                       {ext.expanded ? '▼' : '▶'}
                     </span>
-                    <span className="item-icon">🧩</span>
                     <span className="item-name">{ext.title}</span>
                   </div>
                   <div className="col-type">Extension</div>
@@ -195,7 +191,6 @@ function ExtensionsTab() {
                   >
                     <div className="col-name">
                       <span className="indent"></span>
-                      <span className="item-icon">⚡</span>
                       <span className="item-name">{cmd.name}</span>
                     </div>
                     <div className="col-type">Command</div>
@@ -227,9 +222,6 @@ function ExtensionsTab() {
         {selectedItem ? (
           <div className="detail-content">
             <div className="detail-header">
-              <span className="detail-icon">
-                {selectedItem.type === 'extension' ? '🧩' : '⚡'}
-              </span>
               <h2>{selectedItem.type === 'extension' ? selectedItem.title : selectedItem.name}</h2>
             </div>
 

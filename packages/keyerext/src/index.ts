@@ -79,6 +79,7 @@ export interface ExtensionPackage {
   id: string
   name: string  // 小写中线命名，如 "panel-demo"
   title: string  // 对外显示的标题，如 "Panel Demo"
+  description?: string  // 扩展描述
   version: string
   commands: ICommand[]
   main: string  // 主进程入口文件

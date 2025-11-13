@@ -134,9 +134,14 @@ export class ExtensionManager {
   getAllExtensions() {
     const result: any[] = []
     for (const [extId, _] of this.extensions) {
+      const pkg = this.extensionPackages.get(extId)
       const extCommands = Array.from(this.commands.values()).filter(cmd => cmd.id.startsWith(extId))
       result.push({
         id: extId,
+        name: pkg?.name || extId,
+        title: pkg?.title || pkg?.name || extId,
+        description: pkg?.description,
+        version: pkg?.version,
         commands: extCommands
       })
     }

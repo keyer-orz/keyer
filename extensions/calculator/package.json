@@ -1,6 +1,7 @@
 {
   "id": "com.keyer.app-calculator",
   "name": "calculator",
+  "title": "Calculator",
   "version": "1.0.0",
   "description": "Calculator extension with preview support",
   "main": "dist/index.js",
