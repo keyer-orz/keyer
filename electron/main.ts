@@ -27,6 +27,9 @@ function createWindow() {
     },
   })
 
+  // 保存原始窗口大小
+  const originalSize = { width: 800, height: 500 }
+
   // 开发模式下加载 vite dev server
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
@@ -44,6 +47,9 @@ function createWindow() {
       mainWindow.hide()
     }
   })
+
+  // 存储原始大小供后续使用
+  ;(mainWindow as any).originalSize = originalSize
 }
 
 // 注册全局快捷键
@@ -79,6 +85,25 @@ function setupIPC() {
   ipcMain.handle('show-window', () => {
     if (mainWindow) {
       mainWindow.show()
+      mainWindow.center()
+    }
+  })
+
+  // 调整窗口大小
+  ipcMain.handle('resize-window', (_, width: number, height: number, center: boolean = true) => {
+    if (mainWindow) {
+      mainWindow.setSize(width, height, true)
+      if (center) {
+        mainWindow.center()
+      }
+    }
+  })
+
+  // 恢复窗口原始大小
+  ipcMain.handle('restore-window-size', () => {
+    if (mainWindow) {
+      const originalSize = (mainWindow as any).originalSize || { width: 800, height: 500 }
+      mainWindow.setSize(originalSize.width, originalSize.height, true)
       mainWindow.center()
     }
   })
@@ -249,6 +274,44 @@ function setupIPC() {
     }
 
     return result.filePaths[0]
+  })
+
+  // Shortcuts management
+  ipcMain.handle('get-shortcuts', () => {
+    if (!configManager) {
+      console.log('ConfigManager not initialized')
+      return {}
+    }
+    const config = configManager.getConfig()
+    return config.shortcuts || {}
+  })
+
+  ipcMain.handle('save-shortcuts', (_, shortcuts: Record<string, string>) => {
+    if (!configManager) {
+      console.log('ConfigManager not initialized')
+      return false
+    }
+    configManager.updateConfig({ shortcuts })
+    return true
+  })
+
+  // Enabled commands management
+  ipcMain.handle('get-enabled-commands', () => {
+    if (!configManager) {
+      console.log('ConfigManager not initialized')
+      return {}
+    }
+    const config = configManager.getConfig()
+    return config.enabledCommands || {}
+  })
+
+  ipcMain.handle('save-enabled-commands', (_, enabledCommands: Record<string, boolean>) => {
+    if (!configManager) {
+      console.log('ConfigManager not initialized')
+      return false
+    }
+    configManager.updateConfig({ enabledCommands })
+    return true
   })
 }
 

@@ -30,6 +30,19 @@ function App() {
   // 视图状态机
   const [viewState, setViewState] = useState<ViewState>({ type: 'main' })
 
+  // 监听视图切换，调整窗口大小
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron')
+
+    if (viewState.type === 'settings') {
+      // 切换到设置界面，窗口变大
+      ipcRenderer.invoke('resize-window', 1200, 700, true)
+    } else if (viewState.type === 'main') {
+      // 返回主界面，恢复原始大小
+      ipcRenderer.invoke('restore-window-size')
+    }
+  }, [viewState.type])
+
   // 初始化 CommandManager
   useEffect(() => {
     const init = async () => {
