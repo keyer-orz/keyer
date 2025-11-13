@@ -133,7 +133,7 @@ export class ExtensionManager {
 
   // 执行命令
   // 返回扩展的执行结果
-  async executeAction(action: IAction): Promise<boolean | import('keyerext').IExtensionResult> {
+  async executeAction(action: IAction): Promise<null | React.ComponentType<any>> {
     console.log('Executing action:', action.id)
 
     // 从 action.id 解析 extensionId 和 key（格式：extensionId#key）

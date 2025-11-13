@@ -92,15 +92,17 @@ export class CommandManager {
   }
 
   // 执行命令
-  // 返回值可以是布尔值或扩展结果对象
-  async execute(action: IAction): Promise<boolean | import('keyerext').IExtensionResult> {
+  // 返回值：
+  //   - null: 关闭主面板
+  //   - React.ComponentType<any>: 切换至插件的二级面板
+  async execute(action: IAction): Promise<null | React.ComponentType<any>> {
     // 判断是 script 还是 extension
     const scriptCommand = this.scriptManager.getCommand(action.id)
 
     if (scriptCommand) {
       // 执行 script（脚本执行后默认关闭主面板）
       await this.scriptManager.executeScript(action.id)
-      return false
+      return null
     } else {
       // 执行 extension（由扩展决定是否关闭）
       return await this.extensionManager.executeAction(action)
