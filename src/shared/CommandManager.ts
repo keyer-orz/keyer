@@ -94,8 +94,8 @@ export class CommandManager {
   // 执行命令
   // 返回值：
   //   - null: 关闭主面板
-  //   - React.ComponentType<any>: 切换至插件的二级面板
-  async execute(action: IAction): Promise<null | React.ComponentType<any>> {
+  //   - React.ReactElement: 切换至插件的二级面板
+  async execute(action: IAction): Promise<import('keyerext').ExtensionUIResult> {
     // 判断是 script 还是 extension
     const scriptCommand = this.scriptManager.getCommand(action.id)
 
@@ -125,7 +125,7 @@ export class CommandManager {
   }
 
   // 获取预览元素
-  async getPreview(input: string): Promise<Array<React.ReactElement>> {
+  async getPreview(input: string): Promise<Array<import('keyerext').ExtensionUIResult>> {
     return await this.extensionManager.getPreviewComponents(input)
   }
 

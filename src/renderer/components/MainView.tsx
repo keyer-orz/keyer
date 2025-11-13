@@ -13,7 +13,7 @@ interface MainViewProps {
 function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewProps) {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<IAction[]>([])
-  const [previewElements, setPreviewElements] = useState<React.ReactElement[]>([])
+  const [previewElements, setPreviewElements] = useState<Array<import('keyerext').ExtensionUIResult>>([])
   const [selectedAction, setSelectedAction] = useState<IAction | null>(null)
 
   const inputRef = useRef<InputHandle>(null)

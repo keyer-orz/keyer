@@ -133,7 +133,7 @@ export class ExtensionManager {
 
   // 执行命令
   // 返回扩展的执行结果
-  async executeAction(action: IAction): Promise<null | React.ComponentType<any>> {
+  async executeAction(action: IAction): Promise<import('keyerext').ExtensionUIResult> {
     console.log('Executing action:', action.id)
 
     // 从 action.id 解析 extensionId 和 key（格式：extensionId#key）
@@ -161,8 +161,8 @@ export class ExtensionManager {
   }
 
   // 获取预览元素
-  async getPreviewComponents(input: string): Promise<Array<React.ReactElement>> {
-    const previewElements: Array<React.ReactElement> = []
+  async getPreviewComponents(input: string): Promise<Array<import('keyerext').ExtensionUIResult>> {
+    const previewElements: Array<import('keyerext').ExtensionUIResult> = []
 
     // 遍历所有开启了 enabledPreview 的扩展
     for (const [extensionId, extension] of this.extensions) {

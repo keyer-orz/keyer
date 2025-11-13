@@ -3,8 +3,8 @@ import type * as ReactType from 'react'
 const React: typeof ReactType = (window as any).React
 
 import electron from 'electron'
-import { IExtension, IActionDef, IStore } from 'keyerext'
-import { ClipboardHistoryPanel, ClipboardEntry, ClipboardEntryType } from './ui'
+import { IExtension, IActionDef, IStore, ExtensionUIResult } from 'keyerext'
+import { ClipboardHistoryPanel, ClipboardEntry } from './ui'
 
 const { clipboard } = electron
 
@@ -34,14 +34,14 @@ class ClipboardHistoryExtension implements IExtension {
     return []
   }
 
-  doAction(key: string): React.ComponentType<any> | null {
+  doAction(key: string): ExtensionUIResult {
     // 检查是否是打开面板命令
     if (key === 'show-panel') {
-      // 返回一个包装组件，传递 props
-      return () => React.createElement(ClipboardHistoryPanel, {
-        history: this.getHistory(),
-        onCopy: this.copyToClipboard.bind(this)
-      })
+      // 直接返回 React 元素
+      return <ClipboardHistoryPanel
+        history={this.getHistory()}
+        onCopy={this.copyToClipboard.bind(this)}
+      />
     }
     return null
   }

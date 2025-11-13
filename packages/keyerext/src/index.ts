@@ -42,6 +42,11 @@ export interface IStore {
   has(key: string): boolean
 }
 
+// 扩展返回的 UI 结果类型
+// - null: 关闭主面板 / 不显示 UI
+// - React.ReactElement: 显示 React 元素
+export type ExtensionUIResult = null | React.ReactElement
+
 export interface IExtension {
   // 扩展的存储实例（由框架注入）
   store?: IStore
@@ -57,8 +62,8 @@ export interface IExtension {
   // key: action 的唯一标识符（来自 IActionDef 中定义的 key）
   // 返回值：
   //   - null: 关闭主面板
-  //   - React.ComponentType<any>: 切换至插件的二级面板
-  doAction(key: string): Promise<null | React.ComponentType<any>> | null | React.ComponentType<any>
+  //   - React.ReactElement: 切换至插件的二级面板
+  doAction(key: string): Promise<ExtensionUIResult> | ExtensionUIResult
 
   // 预览功能（可选）
   // 当用户输入时，如果 enabledPreview 为 true，会调用此方法
@@ -66,7 +71,7 @@ export interface IExtension {
   // 返回值：
   //   - null: 不显示预览
   //   - React.ReactElement: 在列表顶部显示的预览元素
-  onPreview?(input: string): Promise<null | React.ReactElement> | null | React.ReactElement
+  onPreview?(input: string): Promise<ExtensionUIResult> | ExtensionUIResult
 }
 
 // Extension 的包配置定义
