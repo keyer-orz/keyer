@@ -231,7 +231,6 @@ body {
   display: flex;
   box-sizing: border-box;
   background-color: var(--bg-primary);
-  gap: 12px;
 }
 
 .keyer-panel-vertical {
