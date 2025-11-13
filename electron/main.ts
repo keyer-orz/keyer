@@ -92,7 +92,7 @@ function setupIPC() {
   // 调整窗口大小
   ipcMain.handle('resize-window', (_, width: number, height: number, center: boolean = true) => {
     if (mainWindow) {
-      mainWindow.setSize(width, height, true)
+      mainWindow.setSize(width, height, false)
       if (center) {
         mainWindow.center()
       }
@@ -103,7 +103,7 @@ function setupIPC() {
   ipcMain.handle('restore-window-size', () => {
     if (mainWindow) {
       const originalSize = (mainWindow as any).originalSize || { width: 800, height: 500 }
-      mainWindow.setSize(originalSize.width, originalSize.height, true)
+      mainWindow.setSize(originalSize.width, originalSize.height, false)
       mainWindow.center()
     }
   })
