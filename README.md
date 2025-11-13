@@ -1,208 +1,279 @@
-## Keyer
-快捷键呼出命令面板，快捷执行命令
+# Keyer
 
-技术：Electron + React + Typescript 实现
+<div align="center">
+  <h3>⚡ A powerful command launcher for macOS</h3>
+  <p>Quick access to commands, scripts, and system preferences with global shortcuts</p>
+</div>
 
-ICommand
-* id: 字符串, 类似于 com.xxx.xx
-* name: 搜索关键字
-* desc: 描述
+## ✨ Features
 
-扩展分为两类
-1. script
-通过注释的方式提供 command
+- 🚀 **Fast Command Launcher** - Quickly search and execute commands with keyboard
+- ⌨️ **Global Shortcuts** - Trigger commands from anywhere with custom hotkeys
+- 🔌 **Extensible Architecture** - Support for TypeScript extensions and shell scripts
+- 🎨 **Modern UI** - Clean, Raycast-style interface with dark/light theme
+- 💾 **Persistent Storage** - Extension-specific data storage with JSON backend
+- 🔍 **Smart Search** - Fuzzy matching across commands, extensions, and scripts
+
+## 📦 Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Development mode
+npm run dev
+
+# Build for production
+npm run build
 ```
-# @keyer.name xx
-# @keyer.desc xx
-# @keyer.id xxx
-```
-2. extension
-使用 TS 实现
-通过 packages.json 提供 command
-```
-{
-    ...
-    commnads: [
-        {
-            id: "xx",
-            name: "xx",
-            desc: ""
-        }
-    ]
+
+## 🎮 Usage
+
+### Main Window
+- Press `Shift+Space` to open the command launcher (customizable)
+- Type to search for commands
+- Use `↑`/`↓` or mouse to navigate
+- Press `Enter` or click to execute
+- Press `Esc` to navigate back or close
+
+### Settings
+- Click the ⚙️ icon or search "Settings"
+- Configure theme, shortcuts, and extensions
+- Enable/disable commands
+- Bind custom global shortcuts to commands
+
+## 🔧 Architecture
+
+### Command System
+
+Commands are the core abstraction in Keyer. Each command implements:
+
+```typescript
+interface IAction {
+  id: string          // Unique identifier (e.g., "com.keyer.calculator")
+  key: string         // Search keyword
+  name: string        // Display name
+  desc?: string       // Description
+  typeLabel?: string  // Type badge (Command/Script/System)
 }
 ```
-通过 IExtension 实现扩展逻辑
-```
-func onPrepare() // 准备阶段
-func onSearch(input: String) -> IAction[] // 根据关键字返回结果
-func doAction(action: IAction) // 执行命令
-```
 
-IAction extend ICommand
-* id: command id
-* name
-* desc
-* ext: any 扩展字段 由 onSearch 返回，并传递给 doAction
+### Extension Types
 
-程序启动后
-1. 扫描所有 script 注册 command
-2. 扫描所有 extension 注册 command
-3. 展示一个输入框
-    1. 输入关键字，匹配 command + extension 的onSearch 的结果 列表展示
-    2. 方向键上下选择，会车，执行 command / extension 的 doAction 
+#### 1. TypeScript Extensions
 
-实现(仅实现这三个即可)
-1. App打开(extension)
-    * 包含“实用工具”目录
-    * 包含中英文检索
-2. 设置项打开(extension)
-    * 包含“网络”和“Wifi”
-3. Finder<->Terminal (sript实现)
-    * 打开当前Finder所在目录到终端
-    * 打开当前终端到Finder
+Located in `extensions/` directory. Each extension exports an `IExtension`:
 
+```typescript
+interface IExtension {
+  // Lifecycle
+  onPrepare(): Promise<void>
 
-App全局快捷键模块
-按下 上/下时，如果当前界面有List组件，焦点切换到List组件，并支持List组件上下切换选项
-按下 Esc 时，如果当前界面有 Input 组件
-    焦点不在 Input, Input 获取焦点
-    焦点在 Input, Input 清空
-    Input是空的，返回主界面
+  // Search
+  onSearch(input: string): IAction[] | Promise<IAction[]>
 
+  // Execution
+  doAction(action: IAction): ExtensionUIResult | Promise<ExtensionUIResult>
 
-重构下 Store
-
-主进程增加 Store.ts 支持通过 extension_id/key/value 进度读写 扩展的 store.json
-通过 IPC 暴露给 render 进程
-src/shared/ExtensionStore.ts 只通过 ipc 进行数据的读写
-
----
-
-1. src/renderer/components/MainView.tsx 使用 Panel 作为根容器
-2. src/renderer/components/Settings.tsx 使用 Panel 作为根容器
-3. List 的滚动条样式统一，支持 light / dark
-
-去除 <div className="search-container"> 和 <div className="results-container"> 精简布局
-
----
-
-1. 键盘选中为 select, 鼠标选中为 hover
-2. 两者互不影响
-
---
-
-列表的 item 有三个样式
-1. 键盘上下选择，切换为选中样式
-2. 鼠标悬浮 item 时，使用 hover样式，如果此时 item 已被选中，则使用 选中样式
-
---
-
-src/renderer/App.tsx 中有 ArrowUp / ArrowDown ，这个去除即可
-当前界面的 Input 组件默认获取焦点，键盘的 ArrowUp / ArrowDown 不会影响 Input 的焦点
-
---
-
-首页：上下选择，回车 -> 根据回调判断是否隐藏 / 打开二级面板
-二级页面：回车 -> 默认隐藏 App 后回首页
-
---
-
-重构：IExtension 的 doAction 函数
-返回 null | React.ComponentType<any>
-若返回 null, doAction 后，关闭主面板
-若返回 React.ComponentType<any>，则切换至插件的二级面板
-
-注意：
-keepOpen 不需要了
-props 也没有了
-剪切板的二级面板需要在组件内获取数据
-
--- 
-
-extensions/clipboard-history 重构下
-1. 将 UI 拆到独立的文件里
-2. UI 分为左右布局，左侧为列表，右侧为预览
-3. 剪切板支持图片和文本类型，列表内展示类型信息（你需要把老的持久化数据删了）, 文本展示文本自适应单元格宽度，图片展示 Image($width x $height)
-
---
-
-取消剪切版插件的 footer
-右侧预览和左侧列表中间放条线就行
-预览背景和边框也去除
-
---
-
-IExtension 重构
-增加 onPreview 函数,参数为 Input 和 enabledPreview(默认为 false)
-onPreview 返回 同 doAction
-
-增加一个计算器插件
-开启 enabledPreview
-input输入类似"1+1="
-
-App执行开启了 enabledPreview 的插件，调用其 onPreview
-将返回的结果追加到 主面板列表的 顶部
-
---
-
-重构 List 组件数据源支持 Section[] 和 Item[]
-Section 结构为
-{
-    header: "xxx",
-    items: Item[]
+  // Live preview (optional)
+  onPreview?(input: string): ExtensionUIResult | Promise<ExtensionUIResult>
 }
-键盘仅支持 选中 Item
-重构剪切板和 MainView
 
----
+type ExtensionUIResult =
+  | null                       // Close window
+  | React.ComponentType<any>   // Show secondary panel (component)
+  | React.ReactElement         // Show secondary panel (element)
+```
 
-新增一个 samples 文件夹, 里面创建一个空白的插件
+**Example: Calculator Extension**
 
----
+```typescript
+class CalculatorExtension implements IExtension {
+  async onPrepare() {
+    // Initialize extension
+  }
 
-重构:
-src/shared/CommandManager.ts -> src/shared/Commands.ts
-src/shared/ExtensionManager.ts -> src/shared/Extensions.ts
-src/shared/ScriptManager.ts -> src/shared/Scripts.ts
-src/shared/ExtensionStore.ts -> src/shared/Store.ts
-src/main/ConfigManager.ts -> src/main/Config.ts
+  onSearch(input: string): IAction[] {
+    // Return calculator command
+    return [{
+      id: 'calculator',
+      name: 'Calculator',
+      desc: 'Perform calculations',
+      typeLabel: 'Command'
+    }]
+  }
 
----
+  async doAction(action: IAction) {
+    // Return React component for calculator UI
+    return CalculatorPanel
+  }
 
-重构:
-App目录: /Users/milker/Library/Application Support/keyer
-extensions: 更改为手动安装的插件
-以插件的 package.json 中 name 作为文件夹的名字，例如：calculator
-calculator 文件内 使用 store.json 作为插件的持久化存储文件
+  async onPreview(input: string) {
+    // Live calculation preview
+    if (/^\d+[\+\-\*\/]\d+$/.test(input)) {
+      return <div>Result: {eval(input)}</div>
+    }
+    return null
+  }
+}
+```
 
-新增
-src/main/ExtensionManager.ts 用于插件的安装，支持安装本地 zip 包
-Settings-Extensions 增加安装入口 "本地安装"，点击后选择本地文件（注意校验）
+#### 2. Shell Scripts
 
-src/shared/Extensions.ts 支持 载入本地安装的插件
+Located in `scripts/` directory. Metadata via comments:
 
----
+```bash
+#!/bin/bash
+# @keyer.id com.keyer.finder-to-terminal
+# @keyer.name Open in Terminal
+# @keyer.desc Open current Finder location in Terminal
 
-设置面板，一个列表，可以展开
-一级展示 组件的 title
-二级列出组件 command
-搜索以 command 过滤
+osascript -e 'tell application "Finder"
+  set currentPath to POSIX path of (target of front window as alias)
+  tell application "Terminal"
+    activate
+    do script "cd " & quoted form of currentPath
+  end tell
+end tell'
+```
 
----
+## 🎨 Built-in Extensions
 
-把 Install from zip 暂时先删了。
-每个 command 支持定义快捷键，直接执行，快捷键要持久化 
+### Calculator
+- Quick calculations with live preview
+- Support for basic arithmetic operations
+- Keyboard-friendly interface
 
----
+### Clipboard History
+- Track and search clipboard history
+- Support for text and images
+- Preview panel with metadata
+- Persistent storage
 
-如果是设置界面，窗口变大。
+### App Launcher
+- Search and launch macOS applications
+- English and Chinese search support
+- Filter by categories (Utilities, etc.)
 
----
+### System Preferences
+- Quick access to system settings
+- Network, Wi-Fi, Bluetooth, etc.
+- Deep links to specific preference panes
 
-ExtesnsionTab 去除二级 tab, 去除 alias
+## ⚙️ Configuration
 
----
+Configuration is stored in `~/Library/Application Support/keyer/config.json`:
 
-App.tsx 重构下
-MainView和 SettingView 都采用内部消化掉逻辑
-ViewType 和 面板组件建立映射
+```json
+{
+  "theme": "dark",
+  "globalShortcut": "Shift+Space",
+  "shortcuts": {
+    "calculator": "⌘⇧C",
+    "clipboard-history": "⌘⇧V"
+  },
+  "enabledCommands": {
+    "calculator": true,
+    "clipboard-history": true
+  }
+}
+```
+
+## 🔑 Keyboard Shortcuts
+
+### Global
+- `Shift+Space` - Open/close launcher
+- Custom shortcuts - Trigger specific commands
+
+### In Launcher
+- `↑`/`↓` - Navigate through results
+- `Enter` - Execute selected command
+- `Esc` - Navigate back / Clear input / Close window
+- Type to search
+
+### In Settings
+- `Esc` - Return to main window
+- Click hotkey field - Record custom shortcut
+
+## 🛠️ Development
+
+### Creating an Extension
+
+1. Create a new directory in `extensions/`
+2. Add `package.json`:
+
+```json
+{
+  "name": "my-extension",
+  "title": "My Extension",
+  "description": "Description of my extension",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "commands": [
+    {
+      "id": "my-command",
+      "name": "My Command",
+      "desc": "Command description"
+    }
+  ]
+}
+```
+
+3. Implement `index.ts`:
+
+```typescript
+import { IExtension, IAction } from 'keyerext'
+
+export default class MyExtension implements IExtension {
+  async onPrepare() {}
+
+  onSearch(input: string): IAction[] {
+    return [{
+      id: 'my-command',
+      name: 'My Command',
+      desc: 'Command description',
+      typeLabel: 'Command'
+    }]
+  }
+
+  async doAction(action: IAction) {
+    // Do something
+    return null // Close window
+  }
+}
+```
+
+4. Build extension:
+
+```bash
+cd extensions/my-extension
+npm run build
+```
+
+### Creating a Script
+
+1. Create a shell script in `scripts/`
+2. Add metadata comments
+3. Make it executable: `chmod +x script.sh`
+
+See `samples/blank-plugin/` for a complete template.
+
+## 🏗️ Tech Stack
+
+- **Electron** - Cross-platform desktop framework
+- **React** - UI library
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool
+- **keyerext** - Custom UI component library
+
+## 📝 License
+
+MIT
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit issues and pull requests.
+
+## 🙏 Acknowledgments
+
+Inspired by [Raycast](https://raycast.com/) and [Alfred](https://www.alfredapp.com/).
