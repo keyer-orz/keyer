@@ -12,9 +12,14 @@ let commandShortcuts: Map<string, string> = new Map() // commandId -> shortcut
 
 // 创建主窗口
 function createWindow() {
+  const isDev = !!process.env.VITE_DEV_SERVER_URL
+  const windowSize = isDev
+    ? { width: 1200, height: 800 }
+    : { width: 800, height: 500 }
+
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 500,
+    width: windowSize.width,
+    height: windowSize.height,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -29,10 +34,10 @@ function createWindow() {
   })
 
   // 保存原始窗口大小
-  const originalSize = { width: 800, height: 500 }
+  const originalSize = windowSize
 
   // 开发模式下加载 vite dev server
-  if (process.env.VITE_DEV_SERVER_URL) {
+  if (isDev) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
     mainWindow.webContents.openDevTools()
   } else {
