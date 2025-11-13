@@ -63,7 +63,7 @@ body {
   border: none;
   outline: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-weight: 500;
 }
 
