@@ -3,7 +3,7 @@ import './App.css'
 import { IAction } from '../shared/types'
 import Settings from './components/Settings'
 import MainView from './components/MainView'
-import { CommandManager } from '../shared/CommandManager'
+import { CommandManager } from '../shared/Commands'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { ICommand, IAction, IExtension, ExtensionPackage } from './types'
-import { ExtensionStore } from './ExtensionStore'
+import { ExtensionStore } from './Store'
 
 export class ExtensionManager {
   private extensions: Map<string, IExtension> = new Map()

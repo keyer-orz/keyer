@@ -1,6 +1,6 @@
 import { ICommand, IAction } from './types'
-import { ScriptManager } from './ScriptManager'
-import { ExtensionManager } from './ExtensionManager'
+import { ScriptManager } from './Scripts'
+import { ExtensionManager } from './Extensions'
 
 export class CommandManager {
   private static instance: CommandManager | null = null

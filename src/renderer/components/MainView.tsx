@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { IAction } from '../../shared/types'
-import { CommandManager } from '../../shared/CommandManager'
+import { CommandManager } from '../../shared/Commands'
 import { Input, InputHandle, List, Item, Panel, Text } from 'keyerext'
 import type { ListItem, ListSection } from 'keyerext'
 

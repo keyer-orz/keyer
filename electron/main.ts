@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
-import { ConfigManager } from '../src/main/ConfigManager'
+import { ConfigManager } from '../src/main/Config'
 import { Store } from './Store'
 
 let mainWindow: BrowserWindow | null = null
