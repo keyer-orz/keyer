@@ -42,18 +42,6 @@ export interface IStore {
   has(key: string): boolean
 }
 
-// Extension 执行结果
-export interface IExtensionResult {
-  // 是否保持主窗口打开
-  keepOpen?: boolean
-
-  // 要显示的 React 组件（可选）
-  component?: React.ComponentType<any>
-
-  // 传递给组件的 props（可选）
-  props?: Record<string, any>
-}
-
 export interface IExtension {
   // 扩展的存储实例（由框架注入）
   store?: IStore
@@ -65,9 +53,9 @@ export interface IExtension {
   // 执行命令
   // key: action 的唯一标识符（来自 IActionDef 中定义的 key）
   // 返回值：
-  //   - boolean: true 保持主面板打开，false 自动关闭主面板
-  //   - IExtensionResult: 详细控制结果，可以返回 React 组件
-  doAction(key: string): Promise<boolean | IExtensionResult> | boolean | IExtensionResult
+  //   - null: 关闭主面板
+  //   - React.ComponentType<any>: 切换至插件的二级面板
+  doAction(key: string): Promise<null | React.ComponentType<any>> | null | React.ComponentType<any>
 }
 
 // Extension 的包配置定义

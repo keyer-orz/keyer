@@ -4,7 +4,6 @@ import { IAction } from '../shared/types'
 import Settings from './components/Settings'
 import MainView from './components/MainView'
 import { CommandManager } from '../shared/CommandManager'
-import { IExtensionResult } from 'keyerext'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
@@ -150,33 +149,17 @@ function App() {
       const commandManager = CommandManager.getInstance()
       const result = await commandManager.execute(action)
 
-      // 处理不同类型的返回值
-      if (typeof result === 'boolean') {
-        // 布尔值：true 保持打开，false 关闭
-        if (!result) {
-          const { ipcRenderer } = window.require('electron')
-          await ipcRenderer.invoke('hide-window')
-        }
-      } else {
-        // 扩展结果对象
-        const extResult = result as IExtensionResult
-
-        if (extResult.component) {
-          // 显示扩展组件
-          setViewState({
-            type: 'extension',
-            extensionComponent: extResult.component,
-            extensionProps: {
-              ...extResult.props,
-              onClose: returnToMain
-            }
-          })
-        }
-
-        if (extResult.keepOpen === false) {
-          const { ipcRenderer } = window.require('electron')
-          await ipcRenderer.invoke('hide-window')
-        }
+      // 处理返回值
+      if (result === null) {
+        // null: 关闭主面板
+        const { ipcRenderer } = window.require('electron')
+        await ipcRenderer.invoke('hide-window')
+      } else if (typeof result === 'function') {
+        // React.ComponentType: 切换至插件的二级面板
+        setViewState({
+          type: 'extension',
+          extensionComponent: result
+        })
       }
     } catch (error) {
       console.error('Execute error:', error)
@@ -198,7 +181,7 @@ function App() {
       case 'extension':
         if (viewState.extensionComponent) {
           const ExtComponent = viewState.extensionComponent
-          return <ExtComponent {...viewState.extensionProps} />
+          return <ExtComponent />
         }
         return null
 

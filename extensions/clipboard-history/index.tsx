@@ -4,7 +4,7 @@ const React: typeof ReactType = (window as any).React
 const { useState, useEffect, useRef } = React
 
 import electron from 'electron'
-import { IExtension, IActionDef, IStore, IExtensionResult, List, Item, Input, Panel, Text } from 'keyerext'
+import { IExtension, IActionDef, IStore, List, Item, Input, Panel, Text } from 'keyerext'
 import type { ListItem } from 'keyerext'
 
 const { clipboard } = electron
@@ -14,16 +14,15 @@ export interface ClipboardEntry {
   timestamp: number
 }
 
+// ============ Extension Instance (单例) ============
+let extensionInstance: ClipboardHistoryExtension | null = null
+
 // ============ React Component ============
 
-interface ClipboardHistoryPanelProps {
-  history: ClipboardEntry[]
-  onClose: () => void
-}
-
-function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHistoryPanelProps) {
+function ClipboardHistoryPanel() {
   const [filter, setFilter] = useState('')
-  const [history] = useState<ClipboardEntry[]>(initialHistory || [])
+  // 从扩展实例获取历史记录
+  const [history] = useState<ClipboardEntry[]>(extensionInstance?.getHistory() || [])
 
   // 根据过滤条件筛选历史记录
   const filteredHistory = history.filter(entry => {
@@ -42,7 +41,6 @@ function ClipboardHistoryPanel({ history: initialHistory, onClose }: ClipboardHi
   const copyToClipboard = (item: ListItem<ClipboardEntry>) => {
     clipboard.writeText(item.data.content)
     console.log('Copied to clipboard:', item.data.content.substring(0, 50))
-    onClose()
   }
 
   // 格式化时间
@@ -127,6 +125,8 @@ class ClipboardHistoryExtension implements IExtension {
   private readonly CHECK_INTERVAL_MS = 1000
 
   async onPrepare(): Promise<IActionDef[]> {
+    // 保存实例引用
+    extensionInstance = this
     // 从 store 加载历史记录
     this.loadHistory()
     // 开始监听剪贴板
@@ -135,18 +135,17 @@ class ClipboardHistoryExtension implements IExtension {
     return []
   }
 
-  doAction(key: string): IExtensionResult {
+  doAction(key: string): React.ComponentType<any> | null {
     // 检查是否是打开面板命令
     if (key === 'show-panel') {
-      return {
-        keepOpen: true,
-        component: ClipboardHistoryPanel,
-        props: {
-          history: this.history
-        }
-      }
+      return ClipboardHistoryPanel
     }
-    return { keepOpen: true }
+    return null
+  }
+
+  // 供组件调用的公共方法
+  getHistory(): ClipboardEntry[] {
+    return this.history
   }
 
   private startClipboardMonitoring() {
