@@ -101,7 +101,7 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
       {/* 左右分栏布局 */}
       <div style={{
         display: 'flex',
-        gap: '12px',
+        gap: '0',
         height: 'calc(100% - 60px)',
         padding: '0 12px 12px 12px'
       }}>
@@ -145,24 +145,20 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
               )}
             />
           )}
-
-          {/* 提示信息 */}
-          <Text variant="caption" style={{
-            marginTop: '12px',
-            textAlign: 'center'
-          }}>
-            ↑↓ Navigate • Enter Copy • Esc Close
-          </Text>
         </div>
+
+        {/* 分隔线 */}
+        <div style={{
+          width: '1px',
+          backgroundColor: 'var(--border-color, #e0e0e0)',
+          margin: '0 12px'
+        }} />
 
         {/* 右侧预览 */}
         <div style={{
           flex: 1,
-          border: '1px solid var(--border-color, #e0e0e0)',
-          borderRadius: '8px',
           padding: '12px',
-          overflow: 'auto',
-          backgroundColor: 'var(--bg-secondary, #f9f9f9)'
+          overflow: 'auto'
         }}>
           {selectedEntry ? (
             selectedEntry.type === 'text' ? (
