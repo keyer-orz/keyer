@@ -83,6 +83,7 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
           items={listItems}
           onSelect={handleSelect}
           onEnter={handleEnter}
+          autoHide={false}
           renderItem={(item) => (
             <Item>
               <div className="result-icon">
