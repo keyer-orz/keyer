@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain, globalShortcut, dialog } from 'electron'
 import * as path from 'path'
-import { ConfigManager } from '../src/main/Config'
+import { ConfigManager } from './Config'
 import { Store } from './Store'
-import { ExtensionManager } from '../src/main/ExtensionManager'
+import { ExtensionManager } from './ExtensionManager'
 
 let mainWindow: BrowserWindow | null = null
 let configManager: ConfigManager | null = null
