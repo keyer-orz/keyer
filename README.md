@@ -153,3 +153,7 @@ Section 结构为
 }
 键盘仅支持 选中 Item
 重构剪切板和 MainView
+
+---
+
+新增一个 samples 文件夹, 里面创建一个空白的插件
