@@ -157,3 +157,26 @@ Section 结构为
 ---
 
 新增一个 samples 文件夹, 里面创建一个空白的插件
+
+---
+
+重构:
+src/shared/CommandManager.ts -> src/shared/Commands.ts
+src/shared/ExtensionManager.ts -> src/shared/Extensions.ts
+src/shared/ScriptManager.ts -> src/shared/Scripts.ts
+src/shared/ExtensionStore.ts -> src/shared/Store.ts
+src/main/ConfigManager.ts -> src/main/Config.ts
+
+---
+
+重构:
+App目录: /Users/milker/Library/Application Support/keyer
+extensions: 更改为手动安装的插件
+以插件的 package.json 中 name 作为文件夹的名字，例如：calculator
+calculator 文件内 使用 store.json 作为插件的持久化存储文件
+
+新增
+src/main/ExtensionManager.ts 用于插件的安装，支持安装本地 zip 包
+Settings-Extensions 增加安装入口 "本地安装"，点击后选择本地文件（注意校验）
+
+src/shared/Extensions.ts 支持 载入本地安装的插件

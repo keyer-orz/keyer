@@ -39,11 +39,11 @@ function App() {
         // 从主进程获取路径信息
         const paths = await ipcRenderer.invoke('get-paths') as {
           scriptsDir: string
-          extensionsDir: string
+          extensionsDirs: string[]
           isDev: boolean
         }
 
-        await CommandManager.createInstance(paths.scriptsDir, paths.extensionsDir)
+        await CommandManager.createInstance(paths.scriptsDir, paths.extensionsDirs)
         setCommandManagerReady(true)
         console.log('CommandManager initialized in renderer process')
       } catch (error) {

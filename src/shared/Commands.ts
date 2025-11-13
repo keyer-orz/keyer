@@ -8,9 +8,9 @@ export class CommandManager {
   private scriptManager: ScriptManager
   private extensionManager: ExtensionManager
 
-  constructor(scriptsDir: string, extensionsDir: string) {
+  constructor(scriptsDir: string, extensionsDirs: string[]) {
     this.scriptManager = new ScriptManager(scriptsDir)
-    this.extensionManager = new ExtensionManager(extensionsDir)
+    this.extensionManager = new ExtensionManager(extensionsDirs)
   }
 
   // 获取单例实例
@@ -22,16 +22,16 @@ export class CommandManager {
   }
 
   // 初始化单例（异步工厂方法）
-  static async createInstance(scriptsDir: string, extensionsDir: string): Promise<CommandManager> {
+  static async createInstance(scriptsDir: string, extensionsDirs: string[]): Promise<CommandManager> {
     if (CommandManager.instance) {
       return CommandManager.instance
     }
 
     console.log('Initializing CommandManager')
     console.log('Scripts directory:', scriptsDir)
-    console.log('Extensions directory:', extensionsDir)
+    console.log('Extensions directories:', extensionsDirs)
 
-    CommandManager.instance = new CommandManager(scriptsDir, extensionsDir)
+    CommandManager.instance = new CommandManager(scriptsDir, extensionsDirs)
     await CommandManager.instance.initialize()
 
     return CommandManager.instance

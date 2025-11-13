@@ -8,36 +8,48 @@ export class ExtensionManager {
   private commands: Map<string, ICommand> = new Map()
   private stores: Map<string, ExtensionStore> = new Map()
   private extensionPackages: Map<string, ExtensionPackage> = new Map() // 存储包配置
-  private extensionsDir: string
+  private extensionsDirs: string[]
 
-  constructor(extensionsDir: string) {
-    this.extensionsDir = extensionsDir
+  constructor(extensionsDirs: string[]) {
+    this.extensionsDirs = extensionsDirs
   }
 
-  // 扫描并加载所有 extension
+  // 扫描并加载所有 extension（从所有目录）
   async loadExtensions(): Promise<void> {
-    if (!fs.existsSync(this.extensionsDir)) {
-      console.log('Extensions directory not found, creating:', this.extensionsDir)
-      fs.mkdirSync(this.extensionsDir, { recursive: true })
+    for (let i = 0; i < this.extensionsDirs.length; i++) {
+      const dir = this.extensionsDirs[i]
+      const source = i === 0 ? 'builtin' : 'user'
+      await this.loadExtensionsFromDir(dir, source)
+    }
+
+    console.log(`Loaded ${this.extensions.size} extensions from ${this.extensionsDirs.length} directories`)
+  }
+
+  // 从指定目录加载插件
+  private async loadExtensionsFromDir(extensionsDir: string, source: 'builtin' | 'user'): Promise<void> {
+    if (!fs.existsSync(extensionsDir)) {
+      console.log(`Extensions directory not found (${source}):`, extensionsDir)
+      // 如果是最后一个目录（通常是用户目录），则创建它
+      if (source === 'user') {
+        fs.mkdirSync(extensionsDir, { recursive: true })
+      }
       return
     }
 
-    const dirs = fs.readdirSync(this.extensionsDir)
+    const dirs = fs.readdirSync(extensionsDir)
 
     for (const dir of dirs) {
-      const extDir = path.join(this.extensionsDir, dir)
+      const extDir = path.join(extensionsDir, dir)
       const stat = fs.statSync(extDir)
 
       if (stat.isDirectory()) {
-        await this.loadExtension(extDir)
+        await this.loadExtension(extDir, source)
       }
     }
-
-    console.log(`Loaded ${this.extensions.size} extensions`)
   }
 
   // 加载单个 extension
-  private async loadExtension(extDir: string): Promise<void> {
+  private async loadExtension(extDir: string, source: 'builtin' | 'user'): Promise<void> {
     const packagePath = path.join(extDir, 'package.json')
 
     if (!fs.existsSync(packagePath)) {
@@ -70,7 +82,7 @@ export class ExtensionManager {
       // 注入 Store 到扩展实例
       extension.store = store
 
-      console.log("load extension:", pkg.id)
+      console.log(`load extension (${source}):`, pkg.id)
       // 保存包配置
       this.extensionPackages.set(pkg.id, pkg)
 

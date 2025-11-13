@@ -1,9 +1,20 @@
 import { useState, useEffect } from 'react'
 import './Settings.css'
-import { CommandManager } from '../../shared/CommandManager'
+import { CommandManager } from '../../shared/Commands'
 import { Panel } from 'keyerext'
 
 type TabType = 'general' | 'extensions' | 'scripts'
+
+interface InstalledExtension {
+  name: string
+  pkg: {
+    id: string
+    name: string
+    title?: string
+    version: string
+    description?: string
+  }
+}
 
 function Settings() {
   const [activeTab, setActiveTab] = useState<TabType>('general')
@@ -12,6 +23,8 @@ function Settings() {
   const [expandedExt, setExpandedExt] = useState<string | null>(null)
   const [config, setConfig] = useState<any>(null)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const [installedExtensions, setInstalledExtensions] = useState<InstalledExtension[]>([])
+  const [installMessage, setInstallMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   useEffect(() => {
     const loadData = async () => {
@@ -22,14 +35,17 @@ function Settings() {
         const exts = commandManager.getExtensions()
         const scrs = commandManager.getScripts()
         const cfg = await ipcRenderer.invoke('get-config')
+        const installed = await ipcRenderer.invoke('list-installed-extensions')
 
         console.log('Loaded extensions:', exts)
         console.log('Loaded scripts:', scrs)
         console.log('Loaded config:', cfg)
+        console.log('Installed extensions:', installed)
 
         setExtensions(exts)
         setScripts(scrs)
         setConfig(cfg)
+        setInstalledExtensions(installed || [])
 
         if (cfg && cfg.theme) {
           setTheme(cfg.theme)
@@ -45,6 +61,85 @@ function Settings() {
     setTheme(newTheme)
     const { ipcRenderer } = window.require('electron')
     await ipcRenderer.invoke('update-config', { theme: newTheme })
+  }
+
+  const handleInstallExtension = async () => {
+    const { ipcRenderer } = window.require('electron')
+
+    try {
+      // Show file picker
+      const zipPath = await ipcRenderer.invoke('select-extension-file')
+
+      if (!zipPath) {
+        return // User cancelled
+      }
+
+      // Install extension
+      const result = await ipcRenderer.invoke('install-extension', zipPath)
+
+      if (result.success) {
+        setInstallMessage({
+          type: 'success',
+          text: `Extension "${result.extensionName}" installed successfully. Please restart the app to load it.`
+        })
+
+        // Reload installed extensions list
+        const installed = await ipcRenderer.invoke('list-installed-extensions')
+        setInstalledExtensions(installed || [])
+      } else {
+        setInstallMessage({
+          type: 'error',
+          text: `Installation failed: ${result.error}`
+        })
+      }
+
+      // Clear message after 5 seconds
+      setTimeout(() => setInstallMessage(null), 5000)
+    } catch (error) {
+      console.error('Failed to install extension:', error)
+      setInstallMessage({
+        type: 'error',
+        text: `Installation failed: ${error}`
+      })
+      setTimeout(() => setInstallMessage(null), 5000)
+    }
+  }
+
+  const handleUninstallExtension = async (extensionName: string) => {
+    const { ipcRenderer } = window.require('electron')
+
+    if (!confirm(`Are you sure you want to uninstall "${extensionName}"?`)) {
+      return
+    }
+
+    try {
+      const result = await ipcRenderer.invoke('uninstall-extension', extensionName)
+
+      if (result.success) {
+        setInstallMessage({
+          type: 'success',
+          text: `Extension "${extensionName}" uninstalled successfully. Please restart the app.`
+        })
+
+        // Reload installed extensions list
+        const installed = await ipcRenderer.invoke('list-installed-extensions')
+        setInstalledExtensions(installed || [])
+      } else {
+        setInstallMessage({
+          type: 'error',
+          text: `Uninstall failed: ${result.error}`
+        })
+      }
+
+      setTimeout(() => setInstallMessage(null), 5000)
+    } catch (error) {
+      console.error('Failed to uninstall extension:', error)
+      setInstallMessage({
+        type: 'error',
+        text: `Uninstall failed: ${error}`
+      })
+      setTimeout(() => setInstallMessage(null), 5000)
+    }
   }
 
   return (
@@ -108,6 +203,51 @@ function Settings() {
 
           {activeTab === 'extensions' && (
             <div className="settings-section">
+              {/* Install message */}
+              {installMessage && (
+                <div className={`install-message ${installMessage.type}`}>
+                  {installMessage.text}
+                </div>
+              )}
+
+              {/* Install button */}
+              <div className="extension-install-section">
+                <button className="install-button" onClick={handleInstallExtension}>
+                  📦 本地安装
+                </button>
+              </div>
+
+              {/* Installed extensions list */}
+              {installedExtensions.length > 0 && (
+                <div className="installed-extensions">
+                  <h3>已安装的插件</h3>
+                  {installedExtensions.map(ext => (
+                    <div key={ext.pkg.id} className="installed-extension-item">
+                      <div className="installed-extension-info">
+                        <div className="installed-extension-name">
+                          {ext.pkg.title || ext.pkg.name}
+                        </div>
+                        <div className="installed-extension-version">
+                          v{ext.pkg.version}
+                        </div>
+                        {ext.pkg.description && (
+                          <div className="installed-extension-desc">
+                            {ext.pkg.description}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        className="uninstall-button"
+                        onClick={() => handleUninstallExtension(ext.name)}
+                      >
+                        卸载
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Loaded extensions (from CommandManager) */}
               {extensions.length === 0 ? (
                 <p>没有找到扩展。请在 extensions 目录中添加扩展。</p>
               ) : (

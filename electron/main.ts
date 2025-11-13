@@ -1,11 +1,13 @@
-import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut, dialog } from 'electron'
 import * as path from 'path'
 import { ConfigManager } from '../src/main/Config'
 import { Store } from './Store'
+import { ExtensionManager } from '../src/main/ExtensionManager'
 
 let mainWindow: BrowserWindow | null = null
 let configManager: ConfigManager | null = null
 let store: Store | null = null
+let extensionManager: ExtensionManager | null = null
 
 // 创建主窗口
 function createWindow() {
@@ -84,13 +86,19 @@ function setupIPC() {
   // 获取路径信息（供渲染进程使用）
   ipcMain.handle('get-paths', () => {
     const isDev = !!process.env.VITE_DEV_SERVER_URL
+    const userExtensionsDir = extensionManager ? extensionManager.getExtensionsDir() : null
+
+    // 开发模式：加载 extensions 目录 + Application Support 目录
+    // 生产模式：只加载 Application Support 目录
+    const extensionsDirs = isDev
+      ? [path.join(__dirname, '../extensions'), userExtensionsDir].filter(Boolean) as string[]
+      : userExtensionsDir ? [userExtensionsDir] : []
+
     return {
       scriptsDir: isDev
         ? path.join(__dirname, '../scripts')
         : path.join(process.resourcesPath, 'scripts'),
-      extensionsDir: isDev
-        ? path.join(__dirname, '../extensions')
-        : path.join(process.resourcesPath, 'extensions'),
+      extensionsDirs,
       isDev
     }
   })
@@ -189,6 +197,59 @@ function setupIPC() {
     }
     event.returnValue = store.keys(extensionId)
   })
+
+  // Extension installation handlers
+  ipcMain.handle('install-extension', async (_, zipPath: string) => {
+    if (!extensionManager) {
+      console.log('ExtensionManager not initialized')
+      return { success: false, error: 'ExtensionManager not initialized' }
+    }
+    return await extensionManager.installFromZip(zipPath)
+  })
+
+  ipcMain.handle('uninstall-extension', async (_, extensionName: string) => {
+    if (!extensionManager) {
+      console.log('ExtensionManager not initialized')
+      return { success: false, error: 'ExtensionManager not initialized' }
+    }
+    return await extensionManager.uninstallExtension(extensionName)
+  })
+
+  ipcMain.handle('list-installed-extensions', async () => {
+    if (!extensionManager) {
+      console.log('ExtensionManager not initialized')
+      return []
+    }
+    return extensionManager.getInstalledExtensions()
+  })
+
+  ipcMain.handle('get-extensions-dir', async () => {
+    if (!extensionManager) {
+      console.log('ExtensionManager not initialized')
+      return null
+    }
+    return extensionManager.getExtensionsDir()
+  })
+
+  // Show file picker for extension installation
+  ipcMain.handle('select-extension-file', async () => {
+    if (!mainWindow) {
+      return null
+    }
+    const result = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select Extension Package',
+      filters: [
+        { name: 'Extension Package', extensions: ['zip'] }
+      ],
+      properties: ['openFile']
+    })
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return null
+    }
+
+    return result.filePaths[0]
+  })
 }
 
 // 禁用 GPU 和 Sandbox 以避免在某些系统上的崩溃
@@ -200,6 +261,7 @@ app.commandLine.appendSwitch('disable-software-rasterizer')
 app.whenReady().then(async () => {
   configManager = new ConfigManager()
   store = new Store()
+  extensionManager = new ExtensionManager()
   createWindow()
   registerGlobalShortcut()
   setupIPC()
