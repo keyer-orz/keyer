@@ -126,7 +126,7 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
           onEnter={handleEnter}
           autoHide={false}
           initialSelectedIndex={0}
-          renderItem={(item, isSelected) => {
+          renderItem={(item) => {
             const action = item.data
             return (
               <Item>

@@ -71,16 +71,7 @@ function InputInner({
     value,
     onChange: (e: any) => onChange(e.target.value),
     'data-keyer-input': 'true',
-    style: {
-      width: '100%',
-      fontSize: '16px',
-      border: 'none',
-      outline: 'none',
-      background: 'transparent',
-      color: 'var(--text-secondary)',
-      fontWeight: 400,
-      ...style
-    }
+    style
   })
 }
 

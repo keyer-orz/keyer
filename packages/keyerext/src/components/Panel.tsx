@@ -23,16 +23,7 @@ export function Panel({
   return React.createElement(
     'div',
     {
-      className: 'keyer-panel',
-      style: {
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: direction === 'horizontal' ? 'row' : 'column',
-        boxSizing: 'border-box',
-        backgroundColor: 'var(--bg-primary)',
-        gap: '12px'
-      }
+      className: `keyer-panel keyer-panel-${direction}`
     },
     children
   )

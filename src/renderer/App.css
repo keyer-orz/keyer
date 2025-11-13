@@ -59,12 +59,12 @@ body {
 
 .search-input {
   width: 100%;
-  font-size: 20px;
+  font-size: 18px;
   border: none;
   outline: none;
   background: transparent;
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .search-input::placeholder {
@@ -223,6 +223,24 @@ body {
    Keyerext 组件样式
    供 App 和插件使用的通用组件样式
    ======================================== */
+
+/* Panel 容器 */
+.keyer-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  box-sizing: border-box;
+  background-color: var(--bg-primary);
+  gap: 12px;
+}
+
+.keyer-panel-vertical {
+  flex-direction: column;
+}
+
+.keyer-panel-horizontal {
+  flex-direction: row;
+}
 
 /* List 容器 */
 .keyer-list {
