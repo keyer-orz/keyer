@@ -21,7 +21,6 @@ export interface ListProps<T = any> {
   renderItem: (item: ListItem<T>, index: number, isSelected: boolean) => React.ReactNode
   className?: string
   selectedClassName?: string
-  autoFocus?: boolean
   initialSelectedIndex?: number
   autoHide?: boolean  // 回车后自动隐藏窗口，默认 true
 }
@@ -42,7 +41,6 @@ function ListInner<T = any>({
   renderItem,
   className = 'results-list',
   selectedClassName = 'selected',
-  autoFocus = true,
   initialSelectedIndex = 0,
   autoHide = true
 }: ListProps<T>, ref: React.Ref<ListHandle>) {
@@ -77,13 +75,7 @@ function ListInner<T = any>({
     }
   }, [selectedIndex, items, onSelect])
 
-  // 自动聚焦
-  React.useEffect(() => {
-    if (autoFocus && listRef.current) {
-      listRef.current.focus()
-    }
-  }, [autoFocus])
-  // 监听全局键盘事件（当 List 没有焦点时也能响应）
+  // 监听全局键盘事件
   React.useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // 只要 List 元素存在就处理（不管焦点在哪里）
