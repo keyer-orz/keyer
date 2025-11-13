@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import './Settings.css'
 import { Panel } from 'keyerext'
 import GeneralTab from '../settings/GeneralTab'
 import ExtensionsTab from '../settings/ExtensionsTab'
