@@ -116,3 +116,40 @@ src/renderer/App.tsx 中有 ArrowUp / ArrowDown ，这个去除即可
 keepOpen 不需要了
 props 也没有了
 剪切板的二级面板需要在组件内获取数据
+
+-- 
+
+extensions/clipboard-history 重构下
+1. 将 UI 拆到独立的文件里
+2. UI 分为左右布局，左侧为列表，右侧为预览
+3. 剪切板支持图片和文本类型，列表内展示类型信息（你需要把老的持久化数据删了）, 文本展示文本自适应单元格宽度，图片展示 Image($width x $height)
+
+--
+
+取消剪切版插件的 footer
+右侧预览和左侧列表中间放条线就行
+预览背景和边框也去除
+
+--
+
+IExtension 重构
+增加 onPreview 函数,参数为 Input 和 enabledPreview(默认为 false)
+onPreview 返回 同 doAction
+
+增加一个计算器插件
+开启 enabledPreview
+input输入类似"1+1="
+
+App执行开启了 enabledPreview 的插件，调用其 onPreview
+将返回的结果追加到 主面板列表的 顶部
+
+--
+
+重构 List 组件数据源支持 Section[] 和 Item[]
+Section 结构为
+{
+    header: "xxx",
+    items: Item[]
+}
+键盘仅支持 选中 Item
+重构剪切板和 MainView

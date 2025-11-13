@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { IAction } from '../../shared/types'
 import { CommandManager } from '../../shared/CommandManager'
 import { Input, InputHandle, List, Item, Panel, Text } from 'keyerext'
-import type { ListItem } from 'keyerext'
+import type { ListItem, ListSection } from 'keyerext'
 
 interface MainViewProps {
   onExecute: (action: IAction) => Promise<void>
@@ -49,19 +49,19 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
   }, [input, commandManagerReady])
 
   // List 选中回调
-  const handleSelect = (item: ListItem<IAction>) => {
+  const handleSelect = useCallback((item: ListItem<IAction>) => {
     setSelectedAction(item.data)
-  }
+  }, [])
 
   // List Enter 回调
-  const handleEnter = (item: ListItem<IAction>) => {
+  const handleEnter = useCallback((item: ListItem<IAction>) => {
     // 如果是 Settings，调用 onOpenSettings
     if (item.data.id === 'system:settings') {
       onOpenSettings()
       return
     }
     onExecute(item.data)
-  }
+  }, [onOpenSettings, onExecute])
 
   // 获取图标
   const getIcon = (action: IAction) => {
@@ -74,26 +74,34 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
   }
 
   // 创建常驻的 Suggestions 列表
-  const settingsAction: IAction = {
+  const settingsAction: IAction = useMemo(() => ({
     id: 'system:settings',
     key: 'settings',
     name: 'Settings',
     desc: 'Open settings panel',
     typeLabel: 'System'
-  }
+  }), [])
 
-  const suggestionItems: ListItem<IAction>[] = [
-    {
-      id: settingsAction.id,
-      data: settingsAction
+  // 构建 Section 列表
+  const sections = useMemo(() => {
+    const sections: ListSection<IAction>[] = []
+
+    // 添加 Commands 部分
+    if (results.length > 0) {
+      sections.push({
+        header: 'Commands',
+        items: results.map(action => ({ id: action.id, data: action }))
+      })
     }
-  ]
 
-  // 搜索结果列表
-  const commandItems: ListItem<IAction>[] = results.map(action => ({
-    id: action.id,
-    data: action
-  }))
+    // 添加 Suggestions 部分
+    sections.push({
+      header: 'Suggestions',
+      items: [{ id: settingsAction.id, data: settingsAction }]
+    })
+
+    return sections
+  }, [results, settingsAction])
 
   return (
     <Panel>
@@ -111,67 +119,30 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
         {/* Render preview elements at the top */}
         {previewElements}
 
-        {/* Commands 列表 */}
-        {commandItems.length > 0 && (
-          <div className="list-section">
-            <div className="section-header">Commands</div>
-            <List
-              items={commandItems}
-              onSelect={handleSelect}
-              onEnter={handleEnter}
-              autoHide={false}
-              renderItem={(item) => {
-                // 只渲染 commands
-                if (!commandItems.find(ci => ci.id === item.id)) {
-                  return null
-                }
-                return (
-                  <Item>
-                    <div className="result-icon">
-                      {getIcon(item.data)}
-                    </div>
-                    <div className="result-content">
-                      <div className="result-info">
-                        <Text variant="title" ellipsis>{item.data.name}</Text>
-                      </div>
-                      <Text variant="label">{item.data.typeLabel || 'Extension'}</Text>
-                    </div>
-                  </Item>
-                )
-              }}
-            />
-          </div>
-        )}
-
-        {/* Suggestions 列表 */}
-        <div className="list-section">
-          <div className="section-header">Suggestions</div>
-          <List
-            items={suggestionItems}
-            onSelect={handleSelect}
-            onEnter={handleEnter}
-            autoHide={false}
-            renderItem={(item) => {
-              // 只渲染 suggestions
-              if (!suggestionItems.find(si => si.id === item.id)) {
-                return null
-              }
-              return (
-                <Item>
-                  <div className="result-icon">
-                    {getIcon(item.data)}
+        {/* 统一的列表 */}
+        <List
+          sections={sections}
+          onSelect={handleSelect}
+          onEnter={handleEnter}
+          autoHide={false}
+          initialSelectedIndex={0}
+          renderItem={(item, isSelected) => {
+            const action = item.data
+            return (
+              <Item>
+                <div className="result-icon">
+                  {getIcon(action)}
+                </div>
+                <div className="result-content">
+                  <div className="result-info">
+                    <Text variant="title" ellipsis>{action.name}</Text>
                   </div>
-                  <div className="result-content">
-                    <div className="result-info">
-                      <Text variant="title" ellipsis>{item.data.name}</Text>
-                    </div>
-                    <Text variant="label">{item.data.typeLabel || 'Extension'}</Text>
-                  </div>
-                </Item>
-              )
-            }}
-          />
-        </div>
+                  <Text variant="label">{action.typeLabel || 'Extension'}</Text>
+                </div>
+              </Item>
+            )
+          }}
+        />
       </div>
 
       <div className="footer">

@@ -14,11 +14,17 @@ export interface ListItem<T = any> {
   data: T
 }
 
-export interface ListProps<T = any> {
+export interface ListSection<T = any> {
+  header: string
   items: ListItem<T>[]
-  onSelect?: (item: ListItem<T>, index: number) => void
-  onEnter?: (item: ListItem<T>, index: number) => void
-  renderItem: (item: ListItem<T>, index: number, isSelected: boolean) => React.ReactNode
+}
+
+export interface ListProps<T = any> {
+  sections: ListSection<T>[]
+  onSelect?: (item: ListItem<T>) => void
+  onEnter?: (item: ListItem<T>) => void
+  renderItem: (item: ListItem<T>, isSelected: boolean) => React.ReactNode
+  renderHeader?: (header: string) => React.ReactNode
   className?: string
   selectedClassName?: string
   initialSelectedIndex?: number
@@ -35,10 +41,11 @@ export interface ListHandle {
 }
 
 function ListInner<T = any>({
-  items,
+  sections = [],
   onSelect,
   onEnter,
   renderItem,
+  renderHeader,
   className = 'results-list',
   selectedClassName = 'selected',
   initialSelectedIndex = 0,
@@ -49,14 +56,19 @@ function ListInner<T = any>({
   const listRef = React.useRef<HTMLDivElement>(null)
   const selectedItemRef = React.useRef<HTMLDivElement>(null)
 
+  // 扁平化所有 items，用于索引计算
+  const allItems = React.useMemo(() => {
+    return sections.flatMap(section => section.items)
+  }, [sections])
+
   // 当 items 变化时，重置选中索引
   React.useEffect(() => {
-    if (items.length > 0 && selectedIndex >= items.length) {
-      setSelectedIndex(Math.max(0, items.length - 1))
-    } else if (items.length === 0) {
+    if (allItems.length > 0 && selectedIndex >= allItems.length) {
+      setSelectedIndex(Math.max(0, allItems.length - 1))
+    } else if (allItems.length === 0) {
       setSelectedIndex(0)
     }
-  }, [items.length])
+  }, [allItems.length])
 
   // 自动滚动到选中项
   React.useEffect(() => {
@@ -70,26 +82,25 @@ function ListInner<T = any>({
 
   // 选中项变化时触发回调
   React.useEffect(() => {
-    if (onSelect && items[selectedIndex]) {
-      onSelect(items[selectedIndex], selectedIndex)
+    if (onSelect && allItems[selectedIndex]) {
+      onSelect(allItems[selectedIndex])
     }
-  }, [selectedIndex, items, onSelect])
+  }, [selectedIndex, allItems, onSelect])
 
   // 监听全局键盘事件
   React.useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // 只要 List 元素存在就处理（不管焦点在哪里）
       if (listRef.current) {
         if (e.key === 'ArrowDown') {
           e.preventDefault()
-          setSelectedIndex((prev) => Math.min(prev + 1, items.length - 1))
+          setSelectedIndex((prev) => Math.min(prev + 1, allItems.length - 1))
         } else if (e.key === 'ArrowUp') {
           e.preventDefault()
           setSelectedIndex((prev) => Math.max(prev - 1, 0))
         } else if (e.key === 'Enter') {
           e.preventDefault()
-          if (items[selectedIndex] && onEnter) {
-            onEnter(items[selectedIndex], selectedIndex)
+          if (allItems[selectedIndex] && onEnter) {
+            onEnter(allItems[selectedIndex])
 
             // 如果 autoHide 为 true，回调执行后隐藏窗口
             if (autoHide && typeof window !== 'undefined' && (window as any).require) {
@@ -103,20 +114,29 @@ function ListInner<T = any>({
 
     window.addEventListener('keydown', handleGlobalKeyDown)
     return () => window.removeEventListener('keydown', handleGlobalKeyDown)
-  }, [items.length, selectedIndex, onEnter, autoHide])
+  }, [allItems.length, selectedIndex, onEnter, autoHide])
 
   // 处理点击
-  const handleClick = React.useCallback((item: ListItem<T>, index: number) => {
-    setSelectedIndex(index)
+  const handleClick = React.useCallback((item: ListItem<T>, itemIndex: number) => {
+    setSelectedIndex(itemIndex)
     if (onEnter) {
-      onEnter(item, index)
+      onEnter(item)
     }
   }, [onEnter])
 
-  if (items.length === 0) {
+  // 默认的 header 渲染函数
+  const defaultRenderHeader = (header: string) => {
+    return React.createElement('div', { className: 'section-header' }, header)
+  }
+
+  const headerRenderer = renderHeader || defaultRenderHeader
+
+  if (allItems.length === 0) {
     return null
   }
 
+  // 渲染所有 sections
+  let currentItemIndex = 0
   return React.createElement(
     'div',
     {
@@ -125,18 +145,33 @@ function ListInner<T = any>({
       tabIndex: 0,
       'data-keyer-list': 'true'
     },
-    items.map((item, index) =>
-      React.createElement(
-        'div',
-        {
-          key: item.id,
-          ref: index === selectedIndex ? selectedItemRef : null,
-          className: `keyer-list-item ${index === selectedIndex ? selectedClassName : ''}`,
-          onClick: () => handleClick(item, index)
-        },
-        renderItem(item, index, index === selectedIndex)
+    sections.map((section, sectionIndex) => {
+      const sectionStartIndex = currentItemIndex
+      const sectionItems = section.items.map((item, localIndex) => {
+        const globalIndex = sectionStartIndex + localIndex
+        const isSelected = globalIndex === selectedIndex
+
+        return React.createElement(
+          'div',
+          {
+            key: item.id,
+            ref: isSelected ? selectedItemRef : null,
+            className: `keyer-list-item ${isSelected ? selectedClassName : ''}`,
+            onClick: () => handleClick(item, globalIndex)
+          },
+          renderItem(item, isSelected)
+        )
+      })
+
+      currentItemIndex += section.items.length
+
+      return React.createElement(
+        React.Fragment,
+        { key: `section-${sectionIndex}` },
+        headerRenderer(section.header),
+        ...sectionItems
       )
-    )
+    })
   )
 }
 

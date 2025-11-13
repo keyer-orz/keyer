@@ -8,7 +8,7 @@
     "build": "npm run build:extensions && tsc && vite build && electron-builder",
     "build:extensions": "node tools/build-extensions.js",
     "preview": "vite preview",
-    "electron:dev": "concurrently -n keyerext,vite,electron -c cyan,green,yellow \"npm run watch:keyerext\" \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:dev": "concurrently -n keyerext,vite -c cyan,green,yellow \"npm run watch:keyerext\" \"vite\"",
     "watch:keyerext": "cd packages/keyerext && npm run watch",
     "electron:build": "npm run build:extensions && vite build && electron-builder",
     "electron:build:app": "npm run build:extensions && vite build && electron-builder --mac --dir"

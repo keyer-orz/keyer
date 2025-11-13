@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Calculator extension with preview support",
   "main": "dist/index.js",
+  "commands": [],
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch"

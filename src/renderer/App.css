@@ -78,15 +78,6 @@ body {
   padding: 6px 8px;
 }
 
-/* 列表分组 */
-.list-section {
-  margin-bottom: 12px;
-}
-
-.list-section:last-child {
-  margin-bottom: 0;
-}
-
 .section-header {
   font-size: 11px;
   font-weight: 600;
@@ -95,6 +86,22 @@ body {
   letter-spacing: 0.5px;
   padding: 8px 4px 4px;
   margin-bottom: 2px;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* 确保包含 section-header 的 list-item 不显示 hover 和 selected 样式 */
+.keyer-list-item:has(.section-header) {
+  cursor: default;
+  pointer-events: none;
+}
+
+.keyer-list-item:has(.section-header):hover {
+  background-color: transparent !important;
+}
+
+.keyer-list-item:has(.section-header).selected {
+  background-color: transparent !important;
 }
 
 .result-item {

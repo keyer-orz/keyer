@@ -35,14 +35,24 @@ class ClipboardHistoryExtension implements IExtension {
   }
 
   doAction(key: string): ExtensionUIResult {
+    console.log('[Clipboard History] doAction called with key:', key)
     // 检查是否是打开面板命令
     if (key === 'show-panel') {
+      console.log('[Clipboard History] Opening panel with history length:', this.history.length)
       // 直接返回 React 元素
-      return <ClipboardHistoryPanel
-        history={this.getHistory()}
-        onCopy={this.copyToClipboard.bind(this)}
-      />
+      try {
+        const panel = <ClipboardHistoryPanel
+          history={this.getHistory()}
+          onCopy={this.copyToClipboard.bind(this)}
+        />
+        console.log('[Clipboard History] Panel element created successfully')
+        return panel
+      } catch (error) {
+        console.error('[Clipboard History] Error creating panel:', error)
+        return null
+      }
     }
+    console.log('[Clipboard History] Unknown key:', key)
     return null
   }
 

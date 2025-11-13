@@ -19,6 +19,7 @@ interface ViewState {
   type: ViewType
   // 扩展视图的数据
   extensionComponent?: React.ComponentType<any>
+  extensionElement?: React.ReactElement  // 支持 React 元素
   extensionProps?: Record<string, any>
 }
 
@@ -160,6 +161,12 @@ function App() {
           type: 'extension',
           extensionComponent: result
         })
+      } else if (React.isValidElement(result)) {
+        // React.ReactElement: 直接显示 React 元素
+        setViewState({
+          type: 'extension',
+          extensionElement: result
+        })
       }
     } catch (error) {
       console.error('Execute error:', error)
@@ -179,6 +186,10 @@ function App() {
         )
 
       case 'extension':
+        // 优先显示 React 元素，其次是组件
+        if (viewState.extensionElement) {
+          return viewState.extensionElement
+        }
         if (viewState.extensionComponent) {
           const ExtComponent = viewState.extensionComponent
           return <ExtComponent />

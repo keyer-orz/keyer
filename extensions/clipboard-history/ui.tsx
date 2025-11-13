@@ -1,10 +1,10 @@
 // 使用主 App 的 React 实例，避免多实例冲突
 import type * as ReactType from 'react'
 const React: typeof ReactType = (window as any).React
-const { useState, useEffect } = React
+const { useState, useEffect, useMemo } = React
 
 import { List, Item, Input, Panel, Text } from 'keyerext'
-import type { ListItem } from 'keyerext'
+import type { ListItem, ListSection } from 'keyerext'
 
 export type ClipboardEntryType = 'text' | 'image'
 
@@ -29,19 +29,27 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
   )
 
   // 根据过滤条件筛选历史记录（仅文本可过滤）
-  const filteredHistory = history.filter(entry => {
-    if (!filter) return true
-    if (entry.type === 'text') {
-      return entry.content.toLowerCase().includes(filter.toLowerCase())
-    }
-    return false  // 图片不参与过滤
-  })
+  const filteredHistory = useMemo(() => {
+    return history.filter(entry => {
+      if (!filter) return true
+      if (entry.type === 'text') {
+        return entry.content.toLowerCase().includes(filter.toLowerCase())
+      }
+      return false  // 图片不参与过滤
+    })
+  }, [history, filter])
 
-  // 转换为 ListItem 格式
-  const listItems: ListItem<ClipboardEntry>[] = filteredHistory.map(entry => ({
-    id: entry.timestamp,
-    data: entry
-  }))
+  // 构建 Section 列表
+  const sections = useMemo(() => {
+    if (filteredHistory.length === 0) return []
+    return [{
+      header: 'Clipboard History',
+      items: filteredHistory.map(entry => ({
+        id: entry.timestamp,
+        data: entry
+      }))
+    }]
+  }, [filteredHistory])
 
   // 复制到剪贴板
   const handleCopy = (item: ListItem<ClipboardEntry>) => {
@@ -112,7 +120,7 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
           flexDirection: 'column',
           overflow: 'hidden'
         }}>
-          {listItems.length === 0 ? (
+          {sections.length === 0 ? (
             <div style={{
               padding: '24px',
               textAlign: 'center',
@@ -122,10 +130,10 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
             </div>
           ) : (
             <List
-              items={listItems}
+              sections={sections}
               onEnter={handleCopy}
               onSelect={handleSelect}
-              renderItem={(item) => (
+              renderItem={(item, isSelected) => (
                 <Item>
                   <div style={{ fontSize: '20px', flexShrink: 0 }}>
                     {getIcon(item.data)}
