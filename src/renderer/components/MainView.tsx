@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { IAction } from '../../shared/types'
+import { ICommand } from '../../shared/types'
 import { CommandManager } from '../../shared/Commands'
-import { Input, InputHandle, List, Item, Panel, Text } from 'keyerext'
+import { Input, InputHandle, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
 import type { ListItem, ListSection } from 'keyerext'
 import { useNavigation } from '../contexts/NavigationContext'
-import { executeSystemCommand, getAllSystemActions } from '../utils/SystemCommands'
+import { executeSystemCommand, getAllSystemCommands } from '../utils/SystemCommands'
 
 interface MainViewProps {
   commandManagerReady: boolean
@@ -12,9 +12,9 @@ interface MainViewProps {
 
 function MainView({ commandManagerReady }: MainViewProps) {
   const [input, setInput] = useState('')
-  const [results, setResults] = useState<IAction[]>([])
-  const [previewElements, setPreviewElements] = useState<Array<import('keyerext').ExtensionUIResult>>([])
-  const [selectedAction, setSelectedAction] = useState<IAction | null>(null)
+  const [results, setResults] = useState<ICommand[]>([])
+  const [previewElements, setPreviewElements] = useState<Array<ExtensionResult>>([])
+  const [selectedCommand, setSelectedCommand] = useState<ICommand | null>(null)
 
   const inputRef = useRef<InputHandle>(null)
   const { navigateTo } = useNavigation()
@@ -50,15 +50,15 @@ function MainView({ commandManagerReady }: MainViewProps) {
   }, [input, commandManagerReady])
 
   // 执行命令
-  const handleExecute = useCallback(async (action: IAction) => {
+  const handleExecute = useCallback(async (command: ICommand) => {
     try {
       // 检查是否是系统命令
-      const isSystemCmd = await executeSystemCommand(action.id, navigateTo)
+      const isSystemCmd = await executeSystemCommand(command.ucid, navigateTo)
       if (isSystemCmd) return
 
       // 执行扩展命令
       const commandManager = CommandManager.getInstance()
-      const result = await commandManager.execute(action)
+      const result = await commandManager.execute(command)
 
       // 处理返回值
       if (result === null) {
@@ -84,12 +84,12 @@ function MainView({ commandManagerReady }: MainViewProps) {
   }, [navigateTo])
 
   // List 选中回调
-  const handleSelect = useCallback((item: ListItem<IAction>) => {
-    setSelectedAction(item.data)
+  const handleSelect = useCallback((item: ListItem<ICommand>) => {
+    setSelectedCommand(item.data)
   }, [])
 
   // List Enter 回调
-  const handleEnter = useCallback((item: ListItem<IAction>) => {
+  const handleEnter = useCallback((item: ListItem<ICommand>) => {
     handleExecute(item.data)
   }, [handleExecute])
 
@@ -109,7 +109,7 @@ function MainView({ commandManagerReady }: MainViewProps) {
       const commandManager = CommandManager.getInstance()
       const allCommands = await commandManager.search('')
 
-      const command = allCommands.find(cmd => cmd.id === commandId)
+      const command = allCommands.find(cmd => cmd.ucid === commandId)
       if (command) {
         await handleExecute(command)
       } else {
@@ -125,40 +125,40 @@ function MainView({ commandManagerReady }: MainViewProps) {
   }, [commandManagerReady, handleExecute])
 
   // 获取图标
-  const getIcon = (action: IAction) => {
-    if (action.typeLabel === 'System') {
+  const getIcon = (command: ICommand) => {
+    if (command.type === 'System') {
       return '⚙️'
-    } else if (action.typeLabel === 'Command') {
+    } else if (command.type === 'Command') {
       return '⚡'
     }
     return '📦'
   }
 
   // 获取系统命令
-  const systemActions = useMemo(() => getAllSystemActions(), [])
+  const systemCommands = useMemo(() => getAllSystemCommands(), [])
 
   // 构建 Section 列表
   const sections = useMemo(() => {
-    const sections: ListSection<IAction>[] = []
+    const sections: ListSection<ICommand>[] = []
 
     // 添加 Commands 部分
     if (results.length > 0) {
       sections.push({
         header: 'Commands',
-        items: results.map(action => ({ id: action.id, data: action }))
+        items: results.map(command => ({ id: command.ucid, data: command }))
       })
     }
 
     // 添加 Suggestions 部分（系统命令）
-    if (systemActions.length > 0) {
+    if (systemCommands.length > 0) {
       sections.push({
         header: 'Suggestions',
-        items: systemActions.map(action => ({ id: action.id, data: action }))
+        items: systemCommands.map(command => ({ id: command.ucid, data: command }))
       })
     }
 
     return sections
-  }, [results, systemActions])
+  }, [results, systemCommands])
 
   return (
     <Panel>
@@ -184,17 +184,17 @@ function MainView({ commandManagerReady }: MainViewProps) {
           autoHide={false}
           initialSelectedIndex={0}
           renderItem={(item) => {
-            const action = item.data
+            const command = item.data
             return (
               <Item>
                 <div className="result-icon">
-                  {getIcon(action)}
+                  {getIcon(command)}
                 </div>
                 <div className="result-content">
                   <div className="result-info">
-                    <Text variant="title" ellipsis>{action.name}</Text>
+                    <Text variant="title" ellipsis>{command.title}</Text>
                   </div>
-                  <Text variant="label">{action.typeLabel || 'Extension'}</Text>
+                  <Text variant="label">{command.type || 'Extension'}</Text>
                 </div>
               </Item>
             )
@@ -204,7 +204,7 @@ function MainView({ commandManagerReady }: MainViewProps) {
 
       <div className="footer">
         <div className="footer-desc">
-          {selectedAction?.desc || ''}
+          {selectedCommand?.desc || ''}
         </div>
         <div
           className="footer-settings"

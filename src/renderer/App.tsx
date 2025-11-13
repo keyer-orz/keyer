@@ -41,13 +41,23 @@ function App() {
       try {
         const { ipcRenderer } = window.require('electron')
 
-        const paths = await ipcRenderer.invoke('get-paths') as {
-          scriptsDir: string
-          extensionsDirs: string[]
-          isDev: boolean
-        }
+        const [config, sandboxDir, devPaths] = await Promise.all([
+          ipcRenderer.invoke('get-config'),
+          ipcRenderer.invoke('get-sandbox-dir'),
+          ipcRenderer.invoke('get-dev-paths')
+        ])
 
-        await CommandManager.createInstance(paths.scriptsDir, paths.extensionsDirs)
+        console.log('Config:', config)
+        console.log('Sandbox dir:', sandboxDir)
+        console.log('Dev paths:', devPaths)
+
+        await CommandManager.createInstance({
+          devExtensionsDir: devPaths?.extensionsDir || undefined,
+          devScriptsDir: devPaths?.scriptsDir || undefined,
+          configExtensions: config?.extensions || [],
+          configScripts: config?.scripts || [],
+          sandboxDir: sandboxDir
+        })
         setCommandManagerReady(true)
         console.log('CommandManager initialized in renderer process')
       } catch (error) {

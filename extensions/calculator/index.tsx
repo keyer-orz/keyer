@@ -8,7 +8,7 @@ class CalculatorExtension implements IExtension {
     return []
   }
 
-  doAction(key: string): null {
+  doAction(name: string): null {
     return null
   }
 

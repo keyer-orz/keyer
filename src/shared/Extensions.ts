@@ -1,55 +1,114 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { ICommand, IAction, IExtension, ExtensionPackage } from './types'
+import { ICommand, IExtension, ExtensionPackage, ExtensionResult } from './types'
 import { ExtensionStore } from './Store'
 
+// 扩展来源类型
+type ExtensionSource = 'dev' | 'mine' | 'sandbox'
+
+// 扩展信息（包含来源）
+interface ExtensionInfo {
+  package: ExtensionPackage
+  instance: IExtension
+  source: ExtensionSource
+  path: string
+}
+
 export class ExtensionManager {
-  private extensions: Map<string, IExtension> = new Map()
-  private commands: Map<string, ICommand> = new Map()
+  private extensions: Map<string, ExtensionInfo> = new Map()  // key: ext.name
+  private commands: Map<string, ICommand> = new Map()  // key: ucid
   private stores: Map<string, ExtensionStore> = new Map()
-  private extensionPackages: Map<string, ExtensionPackage> = new Map() // 存储包配置
-  private extensionsDirs: string[]
 
-  constructor(extensionsDirs: string[]) {
-    this.extensionsDirs = extensionsDirs
+  private devDir?: string  // 开发环境目录
+  private mineDirs: string[] = []  // 本地路径目录列表
+  private sandboxDir?: string  // 沙箱目录
+
+  constructor(config: {
+    devDir?: string
+    mineDirs?: string[]
+    sandboxDir?: string
+  }) {
+    this.devDir = config.devDir
+    this.mineDirs = Array.isArray(config.mineDirs) ? config.mineDirs : []
+    this.sandboxDir = config.sandboxDir
+    console.log('ExtensionManager initialized:', { devDir: this.devDir, mineDirs: this.mineDirs, sandboxDir: this.sandboxDir })
   }
 
-  // 扫描并加载所有 extension（从所有目录）
+  // 扫描并加载所有 extension
+  // 按照优先级：开发环境 > 本地路径 > 沙箱
   async loadExtensions(): Promise<void> {
-    for (let i = 0; i < this.extensionsDirs.length; i++) {
-      const dir = this.extensionsDirs[i]
-      const source = i === 0 ? 'builtin' : 'user'
-      await this.loadExtensionsFromDir(dir, source)
+    // 先收集所有扩展（按优先级从低到高）
+    const extensionMap = new Map<string, { path: string; source: ExtensionSource }>()
+
+    // 1. 沙箱（最低优先级）
+    if (this.sandboxDir && fs.existsSync(this.sandboxDir)) {
+      const sandboxExts = await this.scanDirectory(this.sandboxDir)
+      for (const ext of sandboxExts) {
+        extensionMap.set(ext.name, { path: ext.path, source: 'sandbox' })
+      }
     }
 
-    console.log(`Loaded ${this.extensions.size} extensions from ${this.extensionsDirs.length} directories`)
+    // 2. 本地路径（中等优先级）
+    for (const mineDir of this.mineDirs) {
+      if (fs.existsSync(mineDir)) {
+        const mineExts = await this.scanDirectory(mineDir)
+        for (const ext of mineExts) {
+          extensionMap.set(ext.name, { path: ext.path, source: 'mine' })
+        }
+      }
+    }
+
+    // 3. 开发环境（最高优先级）
+    if (this.devDir && fs.existsSync(this.devDir)) {
+      const devExts = await this.scanDirectory(this.devDir)
+      for (const ext of devExts) {
+        extensionMap.set(ext.name, { path: ext.path, source: 'dev' })
+      }
+    }
+
+    // 加载所有扩展
+    for (const [name, info] of extensionMap) {
+      await this.loadExtension(info.path, info.source)
+    }
+
+    console.log(`Loaded ${this.extensions.size} extensions (dev: ${this.devDir}, mine: ${this.mineDirs.length}, sandbox: ${this.sandboxDir})`)
   }
 
-  // 从指定目录加载插件
-  private async loadExtensionsFromDir(extensionsDir: string, source: 'builtin' | 'user'): Promise<void> {
-    if (!fs.existsSync(extensionsDir)) {
-      console.log(`Extensions directory not found (${source}):`, extensionsDir)
-      // 如果是最后一个目录（通常是用户目录），则创建它
-      if (source === 'user') {
-        fs.mkdirSync(extensionsDir, { recursive: true })
-      }
-      return
+  // 扫描目录，返回扩展列表
+  private async scanDirectory(dir: string): Promise<Array<{ name: string; path: string }>> {
+    const result: Array<{ name: string; path: string }> = []
+
+    if (!fs.existsSync(dir)) {
+      return result
     }
 
-    const dirs = fs.readdirSync(extensionsDir)
+    const entries = fs.readdirSync(dir)
 
-    for (const dir of dirs) {
-      const extDir = path.join(extensionsDir, dir)
-      const stat = fs.statSync(extDir)
+    for (const entry of entries) {
+      const entryPath = path.join(dir, entry)
+      const stat = fs.statSync(entryPath)
 
       if (stat.isDirectory()) {
-        await this.loadExtension(extDir, source)
+        const pkgPath = path.join(entryPath, 'package.json')
+        if (fs.existsSync(pkgPath)) {
+          try {
+            const pkgContent = fs.readFileSync(pkgPath, 'utf-8')
+            const pkg: ExtensionPackage = JSON.parse(pkgContent)
+            if (pkg.name) {
+              result.push({ name: pkg.name, path: entryPath })
+            }
+          } catch (error) {
+            console.warn(`Failed to parse package.json in ${entryPath}:`, error)
+          }
+        }
       }
     }
+
+    return result
   }
 
   // 加载单个 extension
-  private async loadExtension(extDir: string, source: 'builtin' | 'user'): Promise<void> {
+  private async loadExtension(extDir: string, source: ExtensionSource): Promise<void> {
     const packagePath = path.join(extDir, 'package.json')
 
     if (!fs.existsSync(packagePath)) {
@@ -61,65 +120,91 @@ export class ExtensionManager {
       const packageContent = fs.readFileSync(packagePath, 'utf-8')
       const pkg: ExtensionPackage = JSON.parse(packageContent)
 
+      if (!pkg.name || !pkg.main) {
+        console.warn(`Invalid package.json in ${extDir}: missing name or main`)
+        return
+      }
+
       // 加载扩展的主文件
-      const mainPath = path.join(extDir, pkg.main || 'index.js')
+      const mainPath = path.join(extDir, pkg.main)
 
       if (!fs.existsSync(mainPath)) {
         console.warn(`Main file not found: ${mainPath}`)
         return
       }
 
-      // 使用 require 加载模块（在 Electron 渲染进程中更可靠）
-      // 清除 require 缓存以确保获取最新版本
+      // 清除 require 缓存
       delete require.cache[require.resolve(mainPath)]
       const extensionModule = require(mainPath)
       const extension: IExtension = extensionModule.default || extensionModule
 
-      // 为扩展创建 Store
-      const store = new ExtensionStore(pkg.id)
-      this.stores.set(pkg.id, store)
+      // 为扩展创建 Store（使用 name 作为标识）
+      const store = new ExtensionStore(pkg.name)
+      this.stores.set(pkg.name, store)
 
       // 注入 Store 到扩展实例
       extension.store = store
 
-      console.log(`load extension (${source}):`, pkg.id)
-      // 保存包配置
-      this.extensionPackages.set(pkg.id, pkg)
+      console.log(`Loading extension (${source}): ${pkg.name} - ${pkg.title}`)
 
-      // 注册扩展
-      this.extensions.set(pkg.id, extension)
+      // 保存扩展信息
+      this.extensions.set(pkg.name, {
+        package: pkg,
+        instance: extension,
+        source,
+        path: extDir
+      })
 
-      // 注册命令（来自 package.json）
-      for (const command of pkg.commands) {
-        console.log(`load extension pkg cmd: ${command.key}`)
-        this.commands.set(`${pkg.id}#${command.key}`, {
-          ...command,
-          id: `${pkg.id}#${command.key}`,
-        })
-      }
-
-      // 调用准备阶段，获取扩展返回的 actions
-      const actionDefs = await extension.onPrepare()
-      if (actionDefs && Array.isArray(actionDefs)) {
-
-        // 为每个 action 生成 id 并存储到 commands（格式：extensionId#key）
-        for (const def of actionDefs) {
-          console.log(`load extension action: ${def.key}`)
-          const action: IAction = {
-            id: `${pkg.id}#${def.key}`,
-            key: def.key,
-            name: def.name,
-            desc: def.desc,
-            typeLabel: def.typeLabel || 'Extension'
+      // 注册静态命令（来自 package.json）
+      if (pkg.commands && Array.isArray(pkg.commands)) {
+        for (const command of pkg.commands) {
+          // 验证必需字段
+          if (!command.name || !command.title || !command.desc) {
+            console.warn(`Static command in ${pkg.name} missing required fields:`, command)
+            continue
           }
 
-          this.commands.set(action.id, action)
-        }
+          // 生成 UCID: ext.name#cmd.name
+          const ucid = `${pkg.name}#${command.name}`
+          console.log(`Register static command: ${ucid}`)
 
-        console.log(`Extension ${pkg.id} registered ${actionDefs.length} actions from onPrepare`)
+          this.commands.set(ucid, {
+            ucid,
+            name: command.name,
+            title: command.title,
+            desc: command.desc,
+            icon: command.icon || pkg.icon,  // 命令图标 >> 扩展图标
+            type: command.type || 'Command',  // 默认为 Command
+            source
+          })
+        }
       }
 
-      console.log(`Loaded extension: ${pkg.id} - ${pkg.title} (with store)`)
+      // 调用准备阶段，获取动态 commands
+      const commandDefs = await extension.onPrepare()
+      if (commandDefs && Array.isArray(commandDefs)) {
+        for (const def of commandDefs) {
+          // 生成 UCID: ext.name#cmd.name
+          const ucid = `${pkg.name}#${def.name}`
+          console.log(`Register dynamic command: ${ucid}`)
+
+          const command: ICommand = {
+            ucid,
+            name: def.name!,
+            title: def.title!,
+            desc: def.desc!,
+            icon: def.icon || pkg.icon,  // 命令图标 >> 扩展图标
+            type: def.type || 'Command',
+            source
+          }
+
+          this.commands.set(ucid, command)
+        }
+
+        console.log(`Extension ${pkg.name} registered ${commandDefs.length} dynamic commands`)
+      }
+
+      console.log(`Loaded extension: ${pkg.name} (${source})`)
     } catch (error) {
       console.error(`Failed to load extension from ${extDir}:`, error)
     }
@@ -133,15 +218,16 @@ export class ExtensionManager {
   // 获取所有扩展信息
   getAllExtensions() {
     const result: any[] = []
-    for (const [extId, _] of this.extensions) {
-      const pkg = this.extensionPackages.get(extId)
-      const extCommands = Array.from(this.commands.values()).filter(cmd => cmd.id.startsWith(extId))
+    for (const [extName, info] of this.extensions) {
+      const extCommands = Array.from(this.commands.values()).filter(cmd => cmd.ucid.startsWith(extName + '#'))
       result.push({
-        id: extId,
-        name: pkg?.name || extId,
-        title: pkg?.title || pkg?.name || extId,
-        description: pkg?.description,
-        version: pkg?.version,
+        name: info.package.name,
+        title: info.package.title,
+        desc: info.package.desc,
+        icon: info.package.icon,
+        version: info.package.version,
+        source: info.source,
+        path: info.path,
         commands: extCommands
       })
     }
@@ -149,48 +235,42 @@ export class ExtensionManager {
   }
 
   // 执行命令
-  // 返回扩展的执行结果
-  async executeAction(action: IAction): Promise<import('keyerext').ExtensionUIResult> {
-    console.log('Executing action:', action.id)
+  async executeAction(command: ICommand): Promise<ExtensionResult> {
+    console.log('Executing command:', command.ucid)
 
-    // 从 action.id 解析 extensionId 和 key（格式：extensionId#key）
-    const parts = action.id.split('#')
+    // 从 ucid 解析 extName 和 commandName（格式：ext.name#cmd.name）
+    const parts = command.ucid.split('#')
 
     if (parts.length !== 2) {
-      throw new Error(`Invalid action id format: ${action.id}. Expected format: extensionId#key`)
+      throw new Error(`Invalid UCID format: ${command.ucid}. Expected format: ext.name#cmd.name`)
     }
 
-    const [extensionId, key] = parts
-    const extension = this.extensions.get(extensionId)
+    const [extName, commandName] = parts
+    const extInfo = this.extensions.get(extName)
 
-    if (!extension) {
-      throw new Error(`Extension ${extensionId} not found for action: ${action.id}`)
+    if (!extInfo) {
+      throw new Error(`Extension ${extName} not found for command: ${command.ucid}`)
     }
 
-    const result = await extension.doAction(key)
-    console.log(`Action ${action.id} executed successfully, result:`, result)
+    const result = await extInfo.instance.doAction(commandName)
+    console.log(`Command ${command.ucid} executed successfully, result:`, result)
     return result
   }
 
-  // 获取有 UI 入口的扩展列表（现在不再使用，保留以防需要）
-  getUIExtensions(): Array<{ id: string, uiPath: string }> {
-    return []
-  }
-
   // 获取预览元素
-  async getPreviewComponents(input: string): Promise<Array<import('keyerext').ExtensionUIResult>> {
-    const previewElements: Array<import('keyerext').ExtensionUIResult> = []
+  async getPreviewComponents(input: string): Promise<Array<ExtensionResult>> {
+    const previewElements: Array<ExtensionResult> = []
 
     // 遍历所有开启了 enabledPreview 的扩展
-    for (const [extensionId, extension] of this.extensions) {
-      if (extension.enabledPreview && extension.onPreview) {
+    for (const [extName, extInfo] of this.extensions) {
+      if (extInfo.instance.enabledPreview && extInfo.instance.onPreview) {
         try {
-          const element = await extension.onPreview(input)
+          const element = await extInfo.instance.onPreview(input)
           if (element) {
             previewElements.push(element)
           }
         } catch (error) {
-          console.error(`Preview error in extension ${extensionId}:`, error)
+          console.error(`Preview error in extension ${extName}:`, error)
         }
       }
     }
@@ -199,16 +279,16 @@ export class ExtensionManager {
   }
 
   // Store 操作方法
-  getStoreValue(extensionId: string, key: string, defaultValue?: any) {
-    const store = this.stores.get(extensionId)
+  getStoreValue(extensionName: string, key: string, defaultValue?: any) {
+    const store = this.stores.get(extensionName)
     if (!store) {
       return defaultValue
     }
     return store.get(key, defaultValue)
   }
 
-  setStoreValue(extensionId: string, key: string, value: any): boolean {
-    const store = this.stores.get(extensionId)
+  setStoreValue(extensionName: string, key: string, value: any): boolean {
+    const store = this.stores.get(extensionName)
     if (!store) {
       return false
     }
@@ -216,8 +296,8 @@ export class ExtensionManager {
     return true
   }
 
-  deleteStoreValue(extensionId: string, key: string): boolean {
-    const store = this.stores.get(extensionId)
+  deleteStoreValue(extensionName: string, key: string): boolean {
+    const store = this.stores.get(extensionName)
     if (!store) {
       return false
     }
@@ -225,8 +305,8 @@ export class ExtensionManager {
     return true
   }
 
-  getStoreKeys(extensionId: string): string[] {
-    const store = this.stores.get(extensionId)
+  getStoreKeys(extensionName: string): string[] {
+    const store = this.stores.get(extensionName)
     if (!store) {
       return []
     }

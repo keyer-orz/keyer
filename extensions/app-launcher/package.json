@@ -1,16 +1,13 @@
 {
-  "id": "com.keyer.app-launcher",
+  "icon": "🚀",
   "name": "app-launcher",
   "title": "App Launcher",
+  "desc": "Launch macOS applications",
   "version": "1.0.0",
-  "description": "Launch macOS applications",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc"
   },
-  "commands": [
-
-  ],
   "devDependencies": {
     "keyerext": "file:../../packages/keyerext",
     "typescript": "^5.0.0",

@@ -159,7 +159,7 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
         <div style={{
           width: '1px',
           backgroundColor: 'var(--border-color, #e0e0e0)',
-          margin: '0 12px'
+          margin: '0 2px 12px'
         }} />
 
         {/* 右侧预览 */}

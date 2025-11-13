@@ -1,19 +1,19 @@
-import { IAction } from '../../shared/types'
+import { ICommand } from '../../shared/types'
 
 export interface SystemCommand {
-  action: IAction
+  command: ICommand
   handler: (navigateTo: (viewState: any) => void) => void | Promise<void>
 }
 
 // 系统命令注册表
 export const SYSTEM_COMMANDS: Record<string, SystemCommand> = {
   'system:settings': {
-    action: {
-      id: 'system:settings',
-      key: 'settings',
-      name: 'Settings',
+    command: {
+      ucid: 'system:settings',
+      name: 'settings',
+      title: 'Settings',
       desc: 'Open settings panel',
-      typeLabel: 'System'
+      type: 'System'
     },
     handler: (navigateTo) => {
       navigateTo({ type: 'settings' })
@@ -26,28 +26,28 @@ export const SYSTEM_COMMANDS: Record<string, SystemCommand> = {
 }
 
 // 检查是否是系统命令
-export function isSystemCommand(actionId: string): boolean {
-  return actionId.startsWith('system:')
+export function isSystemCommand(commandId: string): boolean {
+  return commandId.startsWith('system:')
 }
 
 // 获取系统命令
-export function getSystemCommand(actionId: string): SystemCommand | undefined {
-  return SYSTEM_COMMANDS[actionId]
+export function getSystemCommand(commandId: string): SystemCommand | undefined {
+  return SYSTEM_COMMANDS[commandId]
 }
 
 // 执行系统命令
 export async function executeSystemCommand(
-  actionId: string,
+  commandId: string,
   navigateTo: (viewState: any) => void
 ): Promise<boolean> {
-  const command = getSystemCommand(actionId)
+  const command = getSystemCommand(commandId)
   if (!command) return false
 
   await command.handler(navigateTo)
   return true
 }
 
-// 获取所有系统命令的 actions（用于显示在列表中）
-export function getAllSystemActions(): IAction[] {
-  return Object.values(SYSTEM_COMMANDS).map(cmd => cmd.action)
+// 获取所有系统命令的 commands（用于显示在列表中）
+export function getAllSystemCommands(): ICommand[] {
+  return Object.values(SYSTEM_COMMANDS).map(cmd => cmd.command)
 }

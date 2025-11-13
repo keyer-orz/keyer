@@ -1,5 +1,5 @@
 import { exec } from 'child_process'
-import { IExtension, IActionDef } from 'keyerext'
+import { IExtension, IActionDef, ExtensionResult } from 'keyerext'
 
 // 系统设置项数据库（支持中英文）
 interface PreferenceItem {
@@ -48,28 +48,27 @@ class SystemPreferencesExtension implements IExtension {
 
     // 返回所有系统设置项的 actions
     return this.preferences.map(pref => {
-      const actionName = `打开 ${pref.name}`
-      const actionKey = `open.${pref.enName.toLowerCase().replace(/\s+/g, '-')}`
-      // 保存 key 到 pane 的映射
-      this.paneMap.set(actionKey, pref.pane)
+      const actionName = pref.enName.toLowerCase().replace(/\s+/g, '-')
+      // 保存 name 到 pane 的映射
+      this.paneMap.set(actionName, pref.pane)
 
       return {
-        key: actionKey,
         name: actionName,
+        title: `${pref.name}`,
         desc: pref.desc,
-        typeLabel: 'System'
+        type: 'System'
       }
     })
   }
 
-  async doAction(key: string): Promise<boolean> {
-    console.log('System Preferences: Executing action', key)
+  async doAction(name: string): Promise<ExtensionResult> {
+    console.log('System Preferences: Executing action', name)
 
     // 从映射中获取 pane
-    const pane = this.paneMap.get(key)
+    const pane = this.paneMap.get(name)
 
     if (!pane) {
-      console.error(`Pane not found for key: ${key}`)
+      console.error(`Pane not found for name: ${name}`)
       return false
     }
 

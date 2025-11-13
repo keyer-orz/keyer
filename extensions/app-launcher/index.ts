@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { exec } from 'child_process'
-import { IExtension, IActionDef, IStore } from 'keyerext'
+import { IExtension, IStore, ExtensionResult, ICommand } from 'keyerext'
 
 // 应用数据库（包含中英文名称）
 interface AppInfo {
@@ -35,7 +35,7 @@ class AppLauncherExtension implements IExtension {
   private apps: AppInfo[] = []
   private appPathMap: Map<string, string> = new Map() // key -> appPath
 
-  async onPrepare(): Promise<IActionDef[]> {
+  async onPrepare(): Promise<ICommand[]> {
     // 扫描应用程序目录
     await this.scanApplications()
     console.log(`App Launcher: Loaded ${this.apps.length} applications`)
@@ -49,16 +49,16 @@ class AppLauncherExtension implements IExtension {
 
     // 返回所有应用的 actions
     return this.apps.map(app => {
-      const actionName = `${app.name}`
-      const actionKey = `open.${app.enName.toLowerCase().replace(/\s+/g, '-')}`
-      // 保存 key 到 appPath 的映射
-      this.appPathMap.set(actionKey, app.path)
+      const actionName = app.enName.toLowerCase().replace(/\s+/g, '-')
+      // 保存 name 到 appPath 的映射
+      this.appPathMap.set(actionName, app.path)
 
       return {
-        key: actionKey,
+        ucid: `app-launcher#${actionName}`,
         name: actionName,
+        title: `${app.name}`,
         desc: `${app.enName} - ${app.category}`,
-        typeLabel: 'App'
+        type: 'App'
       }
     })
   }
@@ -95,13 +95,13 @@ class AppLauncherExtension implements IExtension {
     }
   }
 
-  async doAction(key: string): Promise<boolean> {
+  async doAction(name: string): Promise<ExtensionResult> {
     // 从映射中获取 appPath
-    const appPath = this.appPathMap.get(key)
+    const appPath = this.appPathMap.get(name)
 
     if (!appPath) {
-      console.error(`App path not found for key: ${key}`)
-      return false
+      console.error(`App path not found for name: ${name}`)
+      return null
     }
 
     return new Promise<boolean>((resolve, reject) => {

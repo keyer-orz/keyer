@@ -2,82 +2,186 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { ICommand } from './types'
 
-export class ScriptManager {
-  private commands: Map<string, ICommand> = new Map()
-  private scriptsDir: string
+// 脚本来源类型
+type ScriptSource = 'dev' | 'mine' | 'sandbox'
 
-  constructor(scriptsDir: string) {
-    this.scriptsDir = scriptsDir
+// 脚本信息
+interface ScriptInfo {
+  ucid: string        // @script#script.name
+  icon?: string
+  name: string
+  title: string
+  desc: string
+  type: string        // 默认为 Script
+  filePath: string
+  source: ScriptSource
+}
+
+export class ScriptManager {
+  private scripts: Map<string, ScriptInfo> = new Map()  // key: ucid
+  private commands: Map<string, ICommand> = new Map()   // key: ucid
+
+  private devDir?: string  // 开发环境目录
+  private mineDirs: string[] = []  // 本地路径目录列表
+  private sandboxDir?: string  // 沙箱目录
+
+  constructor(config: {
+    devDir?: string
+    mineDirs?: string[]
+    sandboxDir?: string
+  }) {
+    this.devDir = config.devDir
+    this.mineDirs = Array.isArray(config.mineDirs) ? config.mineDirs : []
+    this.sandboxDir = config.sandboxDir
+    console.log('ScriptManager initialized:', { devDir: this.devDir, mineDirs: this.mineDirs, sandboxDir: this.sandboxDir })
   }
 
   // 扫描并注册所有 script
+  // 按照优先级：开发环境 > 本地路径 > 沙箱
   async scanScripts(): Promise<void> {
-    console.log('Scanning scripts directory:', this.scriptsDir)
+    const scriptMap = new Map<string, { path: string; source: ScriptSource }>()
 
-    if (!fs.existsSync(this.scriptsDir)) {
-      console.log('Scripts directory not found, creating:', this.scriptsDir)
-      fs.mkdirSync(this.scriptsDir, { recursive: true })
-      return
-    }
-
-    const files = fs.readdirSync(this.scriptsDir)
-    console.log('Found files in scripts directory:', files)
-
-    for (const file of files) {
-      const filePath = path.join(this.scriptsDir, file)
-      const stat = fs.statSync(filePath)
-
-      if (stat.isFile() && (file.endsWith('.sh') || file.endsWith('.js') || file.endsWith('.py'))) {
-        console.log('Parsing script file:', filePath)
-        await this.parseScriptFile(filePath)
+    // 1. 沙箱（最低优先级）
+    if (this.sandboxDir) {
+      const sandboxScripts = await this.scanDirectory(this.sandboxDir, 'sandbox')
+      for (const script of sandboxScripts) {
+        scriptMap.set(script.name, { path: script.path, source: 'sandbox' })
       }
     }
 
-    console.log(`Loaded ${this.commands.size} script commands`)
-    console.log('Script commands:', Array.from(this.commands.values()))
+    // 2. 本地路径（中等优先级）
+    for (const mineDir of this.mineDirs) {
+      const mineScripts = await this.scanDirectory(mineDir, 'mine')
+      for (const script of mineScripts) {
+        scriptMap.set(script.name, { path: script.path, source: 'mine' })
+      }
+    }
+
+    // 3. 开发环境（最高优先级）
+    if (this.devDir) {
+      const devScripts = await this.scanDirectory(this.devDir, 'dev')
+      for (const script of devScripts) {
+        scriptMap.set(script.name, { path: script.path, source: 'dev' })
+      }
+    }
+
+    // 解析所有脚本
+    for (const [name, info] of scriptMap) {
+      await this.parseScriptFile(info.path, info.source)
+    }
+
+    console.log(`Loaded ${this.scripts.size} script commands`)
+  }
+
+  // 扫描目录，返回脚本列表
+  private async scanDirectory(dir: string, source: ScriptSource): Promise<Array<{ name: string; path: string }>> {
+    const result: Array<{ name: string; path: string }> = []
+
+    if (!fs.existsSync(dir)) {
+      if (source === 'sandbox') {
+        // 创建沙箱目录
+        fs.mkdirSync(dir, { recursive: true })
+      }
+      return result
+    }
+
+    const scanDir = (currentDir: string) => {
+      const entries = fs.readdirSync(currentDir)
+
+      for (const entry of entries) {
+        const entryPath = path.join(currentDir, entry)
+        const stat = fs.statSync(entryPath)
+
+        if (stat.isDirectory()) {
+          // 递归扫描子目录
+          scanDir(entryPath)
+        } else if (stat.isFile() && this.isScriptFile(entry)) {
+          // 从文件中快速读取 name
+          const content = fs.readFileSync(entryPath, 'utf-8')
+          const nameMatch = content.match(/^[#/]+\s*@keyer\.name\s+(.+)/m)
+          if (nameMatch) {
+            const name = nameMatch[1].trim()
+            result.push({ name, path: entryPath })
+          }
+        }
+      }
+    }
+
+    scanDir(dir)
+    return result
+  }
+
+  // 判断是否是脚本文件
+  private isScriptFile(filename: string): boolean {
+    return filename.endsWith('.sh') || filename.endsWith('.js') || filename.endsWith('.py')
   }
 
   // 解析 script 文件，提取命令信息
-  private async parseScriptFile(filePath: string): Promise<void> {
+  private async parseScriptFile(filePath: string, source: ScriptSource): Promise<void> {
     const content = fs.readFileSync(filePath, 'utf-8')
     const lines = content.split('\n')
 
-    let id: string | null = null
-    let key: string | null = null
+    let icon: string | undefined = undefined
     let name: string | null = null
+    let title: string | null = null
     let desc: string | null = null
+    let type: string = 'Script'
 
     // 解析注释中的 @keyer 标记
     for (const line of lines) {
       const trimmed = line.trim()
 
       // 匹配 # @keyer.xxx 或 // @keyer.xxx
-      const idMatch = trimmed.match(/^[#/]+\s*@keyer\.id\s+(.+)/)
-      const keyMatch = trimmed.match(/^[#/]+\s*@keyer\.key\s+(.+)/)
+      const iconMatch = trimmed.match(/^[#/]+\s*@keyer\.icon\s+(.+)/)
       const nameMatch = trimmed.match(/^[#/]+\s*@keyer\.name\s+(.+)/)
+      const titleMatch = trimmed.match(/^[#/]+\s*@keyer\.title\s+(.+)/)
       const descMatch = trimmed.match(/^[#/]+\s*@keyer\.desc\s+(.+)/)
+      const typeMatch = trimmed.match(/^[#/]+\s*@keyer\.type\s+(.+)/)
 
-      if (idMatch) id = idMatch[1].trim()
-      if (keyMatch) key = keyMatch[1].trim()
+      if (iconMatch) icon = iconMatch[1].trim()
       if (nameMatch) name = nameMatch[1].trim()
+      if (titleMatch) title = titleMatch[1].trim()
       if (descMatch) desc = descMatch[1].trim()
+      if (typeMatch) type = typeMatch[1].trim()
 
-      // 如果已经找到所有信息，可以提前退出
-      if (id && name && desc) {
+      // 如果已经找到所有必要信息，可以提前退出
+      if (name && title && desc) {
         break
       }
     }
 
     // 如果找到了完整的命令信息，则注册
-    // 如果没有指定 key，使用 id 作为 key
-    if (id && name && desc) {
-      this.commands.set(id, {
-        id,
-        key: key || id,
+    if (name && title && desc) {
+      // 生成 UCID: @script#script.name
+      const ucid = `@script#${name}`
+
+      const scriptInfo: ScriptInfo = {
+        ucid,
+        icon,
         name,
+        title,
         desc,
-      })
-      console.log(`Registered script command: ${id} - ${name}`)
+        type,
+        filePath,
+        source
+      }
+
+      this.scripts.set(ucid, scriptInfo)
+
+      const command: ICommand = {
+        ucid,
+        icon,
+        name,
+        title,
+        desc,
+        type,
+        source
+      }
+
+      this.commands.set(ucid, command)
+      console.log(`Registered script (${source}): ${ucid} - ${title}`)
+    } else {
+      console.warn(`Incomplete script metadata in ${filePath}`)
     }
   }
 
@@ -86,47 +190,31 @@ export class ScriptManager {
     return Array.from(this.commands.values())
   }
 
-  // 根据 ID 获取命令
-  getCommand(id: string): ICommand | undefined {
-    return this.commands.get(id)
+  // 根据 UCID 获取命令
+  getCommand(ucid: string): ICommand | undefined {
+    return this.commands.get(ucid)
   }
 
   // 执行 script 命令
-  async executeScript(commandId: string): Promise<void> {
-    const command = this.commands.get(commandId)
-    if (!command) {
-      throw new Error(`Script command not found: ${commandId}`)
-    }
-
-    // 在 scripts 目录中查找对应的脚本文件
-    const files = fs.readdirSync(this.scriptsDir)
-    let scriptFile: string | null = null
-
-    for (const file of files) {
-      const filePath = path.join(this.scriptsDir, file)
-      const content = fs.readFileSync(filePath, 'utf-8')
-
-      if (content.includes(`@keyer.id ${commandId}`)) {
-        scriptFile = filePath
-        break
-      }
-    }
-
-    if (!scriptFile) {
-      throw new Error(`Script file not found for command: ${commandId}`)
+  async executeScript(ucid: string): Promise<void> {
+    const scriptInfo = this.scripts.get(ucid)
+    if (!scriptInfo) {
+      throw new Error(`Script command not found: ${ucid}`)
     }
 
     // 根据文件扩展名执行脚本
     const { exec } = require('child_process')
-    const ext = path.extname(scriptFile)
+    const ext = path.extname(scriptInfo.filePath)
 
     let execCommand = ''
     if (ext === '.sh') {
-      execCommand = `bash "${scriptFile}"`
+      execCommand = `bash "${scriptInfo.filePath}"`
     } else if (ext === '.js') {
-      execCommand = `node "${scriptFile}"`
+      execCommand = `node "${scriptInfo.filePath}"`
     } else if (ext === '.py') {
-      execCommand = `python3 "${scriptFile}"`
+      execCommand = `python3 "${scriptInfo.filePath}"`
+    } else {
+      throw new Error(`Unsupported script type: ${ext}`)
     }
 
     return new Promise((resolve, reject) => {
@@ -140,5 +228,10 @@ export class ScriptManager {
         }
       })
     })
+  }
+
+  // 获取所有脚本信息
+  getAllScripts() {
+    return Array.from(this.scripts.values())
   }
 }

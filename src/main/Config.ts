@@ -2,38 +2,25 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { app } from 'electron'
 
+// 文档规范的配置结构
 interface AppConfig {
   theme: 'dark' | 'light'
-  globalShortcut: string
-  shortcuts: {
-    [commandId: string]: string
-  }
-  enabledCommands: {
-    [commandId: string]: boolean
-  }
-  extensions: {
-    [key: string]: {
-      enabled: boolean
-      shortcuts: {
-        [commandId: string]: string
-      }
-    }
-  }
-  scripts: {
-    [key: string]: {
-      enabled: boolean
-      shortcut: string
-    }
+  hotkey: string  // 全局快捷键（文档中为 hotkey）
+  scripts: string[]  // 脚本路径列表
+  extensions: string[]  // 扩展路径列表
+  disabled: string[]  // 禁用列表（ucid 格式）
+  hotkeys: {
+    [ucid: string]: string  // 各个命令的快捷键
   }
 }
 
 const defaultConfig: AppConfig = {
   theme: 'dark',
-  globalShortcut: 'Shift+Space',
-  shortcuts: {},
-  enabledCommands: {},
-  extensions: {},
-  scripts: {}
+  hotkey: 'Shift+Space',
+  scripts: [],
+  extensions: [],
+  disabled: [],
+  hotkeys: {}
 }
 
 export class ConfigManager {
@@ -100,62 +87,93 @@ export class ConfigManager {
   }
 
   // 获取全局快捷键
-  getGlobalShortcut(): string {
-    return this.config.globalShortcut
+  getGlobalHotkey(): string {
+    return this.config.hotkey
   }
 
   // 设置全局快捷键
-  setGlobalShortcut(shortcut: string): void {
-    this.config.globalShortcut = shortcut
+  setGlobalHotkey(hotkey: string): void {
+    this.config.hotkey = hotkey
     this.saveConfig()
   }
 
-  // 获取扩展配置
-  getExtensionConfig(extensionId: string) {
-    return this.config.extensions[extensionId] || { enabled: true, shortcuts: {} }
+  // 获取脚本路径列表
+  getScriptPaths(): string[] {
+    return this.config.scripts || []
   }
 
-  // 设置扩展是否启用
-  setExtensionEnabled(extensionId: string, enabled: boolean): void {
-    if (!this.config.extensions[extensionId]) {
-      this.config.extensions[extensionId] = { enabled, shortcuts: {} }
-    } else {
-      this.config.extensions[extensionId].enabled = enabled
+  // 添加脚本路径
+  addScriptPath(path: string): void {
+    if (!this.config.scripts.includes(path)) {
+      this.config.scripts.push(path)
+      this.saveConfig()
     }
+  }
+
+  // 移除脚本路径
+  removeScriptPath(path: string): void {
+    this.config.scripts = this.config.scripts.filter(p => p !== path)
     this.saveConfig()
   }
 
-  // 设置扩展命令快捷键
-  setExtensionShortcut(extensionId: string, commandId: string, shortcut: string): void {
-    if (!this.config.extensions[extensionId]) {
-      this.config.extensions[extensionId] = { enabled: true, shortcuts: {} }
+  // 获取扩展路径列表
+  getExtensionPaths(): string[] {
+    return this.config.extensions || []
+  }
+
+  // 添加扩展路径
+  addExtensionPath(path: string): void {
+    if (!this.config.extensions.includes(path)) {
+      this.config.extensions.push(path)
+      this.saveConfig()
     }
-    this.config.extensions[extensionId].shortcuts[commandId] = shortcut
+  }
+
+  // 移除扩展路径
+  removeExtensionPath(path: string): void {
+    this.config.extensions = this.config.extensions.filter(p => p !== path)
     this.saveConfig()
   }
 
-  // 获取脚本配置
-  getScriptConfig(scriptId: string) {
-    return this.config.scripts[scriptId] || { enabled: true, shortcut: '' }
+  // 检查是否禁用
+  isDisabled(ucid: string): boolean {
+    return this.config.disabled.includes(ucid) ||
+           this.config.disabled.some(d => ucid.startsWith(d + '#'))
   }
 
-  // 设置脚本是否启用
-  setScriptEnabled(scriptId: string, enabled: boolean): void {
-    if (!this.config.scripts[scriptId]) {
-      this.config.scripts[scriptId] = { enabled, shortcut: '' }
-    } else {
-      this.config.scripts[scriptId].enabled = enabled
+  // 添加到禁用列表
+  addToDisabled(ucid: string): void {
+    if (!this.config.disabled.includes(ucid)) {
+      this.config.disabled.push(ucid)
+      this.saveConfig()
     }
+  }
+
+  // 从禁用列表移除
+  removeFromDisabled(ucid: string): void {
+    this.config.disabled = this.config.disabled.filter(d => d !== ucid)
     this.saveConfig()
   }
 
-  // 设置脚本快捷键
-  setScriptShortcut(scriptId: string, shortcut: string): void {
-    if (!this.config.scripts[scriptId]) {
-      this.config.scripts[scriptId] = { enabled: true, shortcut }
-    } else {
-      this.config.scripts[scriptId].shortcut = shortcut
-    }
+  // 获取命令的快捷键
+  getHotkey(ucid: string): string | undefined {
+    return this.config.hotkeys[ucid]
+  }
+
+  // 设置命令的快捷键
+  setHotkey(ucid: string, hotkey: string): void {
+    this.config.hotkeys[ucid] = hotkey
     this.saveConfig()
+  }
+
+  // 移除命令的快捷键
+  removeHotkey(ucid: string): void {
+    delete this.config.hotkeys[ucid]
+    this.saveConfig()
+  }
+
+  // 获取所有快捷键
+  getAllHotkeys(): { [ucid: string]: string } {
+    return { ...this.config.hotkeys }
   }
 }

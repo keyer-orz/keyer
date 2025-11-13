@@ -75,20 +75,20 @@ function ExtensionsTab() {
   // 构建扩展列表
   const allExtensions = useMemo((): ExtensionItem[] => {
     return extensions.map(ext => ({
-      id: ext.id,
-      title: ext.title || ext.name || ext.id,
-      description: ext.description,
+      id: ext.name,  // 使用 name 作为 id
+      title: ext.title || ext.name,
+      description: ext.desc,
       version: ext.version,
       type: 'extension' as const,
       commands: (ext.commands || []).map((cmd: any) => ({
-        id: cmd.id,
-        name: cmd.name,
+        id: cmd.ucid,  // 使用 ucid 作为 id
+        name: cmd.title,  // 使用 title 作为显示名称
         desc: cmd.desc,
-        extensionId: ext.id,
-        extensionTitle: ext.title || ext.name || ext.id,
+        extensionId: ext.name,
+        extensionTitle: ext.title || ext.name,
         type: 'command' as const
       })),
-      expanded: expandedExtensions.has(ext.id)
+      expanded: expandedExtensions.has(ext.name)
     }))
   }, [extensions, expandedExtensions])
 

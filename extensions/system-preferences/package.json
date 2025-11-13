@@ -1,20 +1,13 @@
 {
-  "id": "com.keyer.system-preferences",
+  "icon": "⚙️",
   "name": "system-preferences",
   "title": "System Preferences",
+  "desc": "Open macOS System Preferences",
   "version": "1.0.0",
-  "description": "Open macOS System Preferences",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc"
   },
-  "commands": [
-    {
-      "id": "com.keyer.system-preferences",
-      "name": "打开系统设置",
-      "desc": "搜索并打开系统设置项"
-    }
-  ],
   "devDependencies": {
     "keyerext": "file:../../packages/keyerext",
     "typescript": "^5.0.0",

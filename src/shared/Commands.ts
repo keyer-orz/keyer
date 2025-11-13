@@ -1,6 +1,14 @@
-import { ICommand, IAction } from './types'
+import { ICommand, ExtensionResult } from './types'
 import { ScriptManager } from './Scripts'
 import { ExtensionManager } from './Extensions'
+
+interface CommandManagerConfig {
+  devExtensionsDir?: string  // 开发环境的 extensions 目录
+  devScriptsDir?: string     // 开发环境的 scripts 目录
+  configExtensions?: string[]
+  configScripts?: string[]
+  sandboxDir?: string
+}
 
 export class CommandManager {
   private static instance: CommandManager | null = null
@@ -8,30 +16,45 @@ export class CommandManager {
   private scriptManager: ScriptManager
   private extensionManager: ExtensionManager
 
-  constructor(scriptsDir: string, extensionsDirs: string[]) {
-    this.scriptManager = new ScriptManager(scriptsDir)
-    this.extensionManager = new ExtensionManager(extensionsDirs)
+  constructor(config: CommandManagerConfig) {
+    console.log('CommandManager config:', config)
+
+    // 初始化 ExtensionManager
+    this.extensionManager = new ExtensionManager({
+      devDir: config.devExtensionsDir,
+      mineDirs: config.configExtensions || [],
+      sandboxDir: config.sandboxDir
+    })
+
+    // 初始化 ScriptManager
+    this.scriptManager = new ScriptManager({
+      devDir: config.devScriptsDir,
+      mineDirs: config.configScripts || [],
+      sandboxDir: config.sandboxDir
+    })
   }
 
   // 获取单例实例
   static getInstance(): CommandManager {
     if (!CommandManager.instance) {
-      throw new Error('CommandManager not initialized. Call CommandManager.initialize first.')
+      throw new Error('CommandManager not initialized. Call CommandManager.createInstance first.')
     }
     return CommandManager.instance
   }
 
   // 初始化单例（异步工厂方法）
-  static async createInstance(scriptsDir: string, extensionsDirs: string[]): Promise<CommandManager> {
+  static async createInstance(config: CommandManagerConfig): Promise<CommandManager> {
     if (CommandManager.instance) {
       return CommandManager.instance
     }
 
     console.log('Initializing CommandManager')
-    console.log('Scripts directory:', scriptsDir)
-    console.log('Extensions directories:', extensionsDirs)
+    console.log('Dev extensions dir:', config.devExtensionsDir)
+    console.log('Dev scripts dir:', config.devScriptsDir)
+    console.log('Config extensions:', config.configExtensions)
+    console.log('Config scripts:', config.configScripts)
 
-    CommandManager.instance = new CommandManager(scriptsDir, extensionsDirs)
+    CommandManager.instance = new CommandManager(config)
     await CommandManager.instance.initialize()
 
     return CommandManager.instance
@@ -57,55 +80,40 @@ export class CommandManager {
   }
 
   // 搜索命令和扩展结果
-  async search(input: string): Promise<IAction[]> {
-    // 获取所有可搜索的 actions：
-    // 1. extension 返回的 actions (来自 onPrepare)
-    // 2. extension 配置的 actions (来自 package.json commands)
-    // 3. script 配置的 actions
-    const allActions: IAction[] = [
-      // extension 配置的 actions
-      ...this.extensionManager.getCommands().map(cmd => ({
-        ...cmd,
-        typeLabel: 'Command',
-      })),
-      // script 配置的 actions
-      ...this.scriptManager.getCommands().map(cmd => ({
-        ...cmd,
-        typeLabel: 'Script',
-      }))
+  async search(input: string): Promise<ICommand[]> {
+    // 获取所有可搜索的 commands
+    const allCommands: ICommand[] = [
+      ...this.extensionManager.getCommands(),
+      ...this.scriptManager.getCommands()
     ]
 
-    // 如果输入为空，返回所有 actions
+    // 如果输入为空，返回所有 commands
     if (!input || input.trim() === '') {
-      return allActions
+      return allCommands
     }
 
     const lowerInput = input.toLowerCase()
 
-    // 进行一级搜索：在所有 actions 中匹配
-    const results = allActions.filter(action =>
-      action.name.toLowerCase().includes(lowerInput) ||
-      action.desc.toLowerCase().includes(lowerInput)
+    // 进行搜索：在所有 commands 中匹配
+    const results = allCommands.filter(command =>
+      command.title.toLowerCase().includes(lowerInput) ||
+      command.desc.toLowerCase().includes(lowerInput) ||
+      command.name.toLowerCase().includes(lowerInput)
     )
 
     return results
   }
 
   // 执行命令
-  // 返回值：
-  //   - null: 关闭主面板
-  //   - React.ReactElement: 切换至插件的二级面板
-  async execute(action: IAction): Promise<import('keyerext').ExtensionUIResult> {
-    // 判断是 script 还是 extension
-    const scriptCommand = this.scriptManager.getCommand(action.id)
-
-    if (scriptCommand) {
+  async execute(command: ICommand): Promise<ExtensionResult> {
+    // 判断是 script 还是 extension (通过 ucid 判断)
+    if (command.ucid.startsWith('@script#')) {
       // 执行 script（脚本执行后默认关闭主面板）
-      await this.scriptManager.executeScript(action.id)
+      await this.scriptManager.executeScript(command.ucid)
       return null
     } else {
-      // 执行 extension（由扩展决定是否关闭）
-      return await this.extensionManager.executeAction(action)
+      // 执行 extension
+      return await this.extensionManager.executeAction(command)
     }
   }
 
@@ -116,33 +124,28 @@ export class CommandManager {
 
   // 获取脚本列表
   getScripts() {
-    return this.scriptManager.getCommands()
-  }
-
-  // 获取 UI 扩展列表
-  getUIExtensions() {
-    return this.extensionManager.getUIExtensions()
+    return this.scriptManager.getAllScripts()
   }
 
   // 获取预览元素
-  async getPreview(input: string): Promise<Array<import('keyerext').ExtensionUIResult>> {
+  async getPreview(input: string): Promise<Array<ExtensionResult>> {
     return await this.extensionManager.getPreviewComponents(input)
   }
 
-  // Extension Store 操作
-  getExtensionStoreValue(extensionId: string, key: string, defaultValue?: any) {
-    return this.extensionManager.getStoreValue(extensionId, key, defaultValue)
+  // Extension Store 操作（使用 extensionName 而不是 extensionId）
+  getExtensionStoreValue(extensionName: string, key: string, defaultValue?: any) {
+    return this.extensionManager.getStoreValue(extensionName, key, defaultValue)
   }
 
-  setExtensionStoreValue(extensionId: string, key: string, value: any) {
-    return this.extensionManager.setStoreValue(extensionId, key, value)
+  setExtensionStoreValue(extensionName: string, key: string, value: any) {
+    return this.extensionManager.setStoreValue(extensionName, key, value)
   }
 
-  deleteExtensionStoreValue(extensionId: string, key: string) {
-    return this.extensionManager.deleteStoreValue(extensionId, key)
+  deleteExtensionStoreValue(extensionName: string, key: string) {
+    return this.extensionManager.deleteStoreValue(extensionName, key)
   }
 
-  getExtensionStoreKeys(extensionId: string) {
-    return this.extensionManager.getStoreKeys(extensionId)
+  getExtensionStoreKeys(extensionName: string) {
+    return this.extensionManager.getStoreKeys(extensionName)
   }
 }

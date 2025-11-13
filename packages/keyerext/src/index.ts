@@ -1,23 +1,15 @@
 // 核心接口定义
 import type * as React from 'react'
 
+// Command 定义（文档规范）
 export interface ICommand {
-  id: string
-  key: string
-  name: string
-  desc: string
-}
-
-export interface IAction extends ICommand {
-  typeLabel?: string  // 类型标签，如 "Command", "Script", "Extension" 等
-}
-
-// Extension Action 定义（用于 onPrepare 返回）
-export interface IActionDef {
-  name: string
-  desc: string
-  typeLabel?: string
-  key: string
+  ucid: string        // unique command id: 如 "ext.name#cmd.name" 或 "@script#script.name"
+  icon?: string       // 图标（emoji 或图标路径）
+  name: string        // 存储名称
+  title: string       // 展示名称
+  desc: string        // 展示描述
+  type?: string       // 类型：Command、Script 等
+  source?: 'dev' | 'mine' | 'sandbox'  // 来源标记
 }
 
 // Store 接口，提供简单的 key-value 存储
@@ -45,7 +37,7 @@ export interface IStore {
 // 扩展返回的 UI 结果类型
 // - null: 关闭主面板 / 不显示 UI
 // - React.ReactElement: 显示 React 元素
-export type ExtensionUIResult = null | React.ReactElement
+export type ExtensionResult = null | React.ReactElement | boolean
 
 export interface IExtension {
   // 扩展的存储实例（由框架注入）
@@ -54,16 +46,18 @@ export interface IExtension {
   // 是否启用预览功能（默认 false）
   enabledPreview?: boolean
 
-  // 准备阶段，返回扩展提供的 actions
-  // 返回的 action 不需要设置 id，由 ExtensionManager 自动生成（格式：extensionId#key）
-  onPrepare(): Promise<IActionDef[]> | IActionDef[]
+  // 准备阶段，返回扩展提供的 commands
+  // 返回的 command 只需要提供 name, title, desc, icon, type
+  // ucid 和 source 由 ExtensionManager 自动生成
+  onPrepare(): Promise<Partial<ICommand>[]> | Partial<ICommand>[]
 
   // 执行命令
-  // key: action 的唯一标识符（来自 IActionDef 中定义的 key）
+  // name: command 的 name 字段（不是 ucid）
   // 返回值：
-  //   - null: 关闭主面板
+  //   - null/false: 关闭主面板
+  //   - true: 保持主面板打开
   //   - React.ReactElement: 切换至插件的二级面板
-  doAction(key: string): Promise<ExtensionUIResult> | ExtensionUIResult
+  doAction(name: string): ExtensionResult | Promise<ExtensionResult>
 
   // 预览功能（可选）
   // 当用户输入时，如果 enabledPreview 为 true，会调用此方法
@@ -71,18 +65,18 @@ export interface IExtension {
   // 返回值：
   //   - null: 不显示预览
   //   - React.ReactElement: 在列表顶部显示的预览元素
-  onPreview?(input: string): Promise<ExtensionUIResult> | ExtensionUIResult
+  onPreview?(input: string): ExtensionResult
 }
 
-// Extension 的包配置定义
+// Extension 的包配置定义（文档规范）
 export interface ExtensionPackage {
-  id: string
-  name: string  // 小写中线命名，如 "panel-demo"
-  title: string  // 对外显示的标题，如 "Panel Demo"
-  description?: string  // 扩展描述
-  version: string
-  commands: ICommand[]
-  main: string  // 主进程入口文件
+  icon?: string         // 展示图标（emoji 或图标路径）
+  name: string          // 存储名称，建议 xxx-xxx-xx 格式，如 "app-launcher"
+  title: string         // 展示名称，如 "App Launcher"
+  desc?: string         // 展示描述
+  version?: string      // 版本号
+  commands?: Partial<ICommand>[] // 静态命令列表（可选，只需提供 name, title, desc, icon, type）
+  main: string          // 主入口文件
 }
 
 // React Components

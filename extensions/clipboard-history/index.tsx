@@ -3,7 +3,7 @@ import type * as ReactType from 'react'
 const React: typeof ReactType = (window as any).React
 
 import electron from 'electron'
-import { IExtension, IActionDef, IStore, ExtensionUIResult } from 'keyerext'
+import { IExtension, IStore, ExtensionResult, ICommand } from 'keyerext'
 import { ClipboardHistoryPanel, ClipboardEntry } from './ui'
 
 const { clipboard } = electron
@@ -23,7 +23,7 @@ class ClipboardHistoryExtension implements IExtension {
   private readonly CHECK_INTERVAL_MS = 1000
   private readonly STORAGE_KEY = 'history_v2'  // 新的存储键名，清除旧数据
 
-  async onPrepare(): Promise<IActionDef[]> {
+  async onPrepare(): Promise<ICommand[]> {
     // 保存实例引用
     extensionInstance = this
     // 从 store 加载历史记录
@@ -34,10 +34,10 @@ class ClipboardHistoryExtension implements IExtension {
     return []
   }
 
-  doAction(key: string): ExtensionUIResult {
-    console.log('[Clipboard History] doAction called with key:', key)
+  doAction(name: string): ExtensionResult {
+    console.log('[Clipboard History] doAction called with name:', name)
     // 检查是否是打开面板命令
-    if (key === 'show-panel') {
+    if (name === 'show-panel') {
       console.log('[Clipboard History] Opening panel with history length:', this.history.length)
       // 直接返回 React 元素
       try {
@@ -52,7 +52,7 @@ class ClipboardHistoryExtension implements IExtension {
         return null
       }
     }
-    console.log('[Clipboard History] Unknown key:', key)
+    console.log('[Clipboard History] Unknown name:', name)
     return null
   }
 
