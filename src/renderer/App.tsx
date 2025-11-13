@@ -89,19 +89,26 @@ function App() {
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault()
+
+        // 1. 如果不在主界面，直接返回主界面
+        if (viewState.type !== 'main') {
+          setViewState({ type: 'main' })
+          return
+        }
+
+        // 2. 在主界面的情况下
         const inputElement = document.querySelector('[data-keyer-input="true"]') as HTMLInputElement
 
         if (inputElement) {
-          // 1. 如果焦点不在 Input 上，让 Input 获取焦点
+          // 2.1 如果焦点不在 Input 上，让 Input 获取焦点
           if (document.activeElement !== inputElement) {
-            e.preventDefault()
             inputElement.focus()
             return
           }
 
-          // 2. 如果焦点在 Input 上且 Input 不为空，清空 Input
+          // 2.2 如果焦点在 Input 上且 Input 不为空，清空 Input
           if (inputElement.value.trim() !== '') {
-            e.preventDefault()
             const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
               window.HTMLInputElement.prototype,
               'value'
@@ -111,19 +118,13 @@ function App() {
             return
           }
 
-          // 3. 如果在主界面且 Input 为空，隐藏窗口
-          if (viewState.type === 'main') {
-            e.preventDefault()
-            const { ipcRenderer } = window.require('electron')
-            ipcRenderer.invoke('hide-window')
-            return
-          }
-        }
-
-        // 如果不在主界面，返回主界面
-        if (viewState.type !== 'main') {
-          e.preventDefault()
-          setViewState({ type: 'main' })
+          // 2.3 如果在主界面、焦点在 Input 上且 Input 为空，隐藏窗口
+          const { ipcRenderer } = window.require('electron')
+          ipcRenderer.invoke('hide-window')
+        } else {
+          // 2.4 在主界面但没有 Input 元素（不太可能），隐藏窗口
+          const { ipcRenderer } = window.require('electron')
+          ipcRenderer.invoke('hide-window')
         }
       }
     }

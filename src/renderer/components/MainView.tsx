@@ -93,6 +93,37 @@ function MainView({ commandManagerReady }: MainViewProps) {
     handleExecute(item.data)
   }, [handleExecute])
 
+  // 监听快捷键触发的命令执行
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron')
+
+    const handleExecuteCommandFromShortcut = async (_: any, commandId: string) => {
+      console.log('Executing command from shortcut:', commandId)
+
+      if (!commandManagerReady) {
+        console.warn('CommandManager not ready')
+        return
+      }
+
+      // 查找命令
+      const commandManager = CommandManager.getInstance()
+      const allCommands = await commandManager.search('')
+
+      const command = allCommands.find(cmd => cmd.id === commandId)
+      if (command) {
+        await handleExecute(command)
+      } else {
+        console.warn('Command not found:', commandId)
+      }
+    }
+
+    ipcRenderer.on('execute-command', handleExecuteCommandFromShortcut)
+
+    return () => {
+      ipcRenderer.removeListener('execute-command', handleExecuteCommandFromShortcut)
+    }
+  }, [commandManagerReady, handleExecute])
+
   // 获取图标
   const getIcon = (action: IAction) => {
     if (action.typeLabel === 'System') {

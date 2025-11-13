@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Input } from 'keyerext'
 import { CommandManager } from '../../shared/Commands'
+import ShortcutRecorder from '../components/ShortcutRecorder'
 
 interface CommandItem {
   id: string
@@ -199,13 +200,10 @@ function ExtensionsTab() {
                     </div>
                     <div className="col-type">Command</div>
                     <div className="col-hotkey">
-                      <input
-                        type="text"
-                        className="hotkey-input"
-                        placeholder="Record Hotkey"
+                      <ShortcutRecorder
                         value={shortcuts[cmd.id] || ''}
-                        onChange={(e) => handleShortcutChange(cmd.id, e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
+                        onChange={(shortcut) => handleShortcutChange(cmd.id, shortcut)}
+                        placeholder="Record Hotkey"
                       />
                     </div>
                     <div className="col-enabled">

@@ -180,3 +180,29 @@ src/main/ExtensionManager.ts 用于插件的安装，支持安装本地 zip 包
 Settings-Extensions 增加安装入口 "本地安装"，点击后选择本地文件（注意校验）
 
 src/shared/Extensions.ts 支持 载入本地安装的插件
+
+---
+
+设置面板，一个列表，可以展开
+一级展示 组件的 title
+二级列出组件 command
+搜索以 command 过滤
+
+---
+
+把 Install from zip 暂时先删了。
+每个 command 支持定义快捷键，直接执行，快捷键要持久化 
+
+---
+
+如果是设置界面，窗口变大。
+
+---
+
+ExtesnsionTab 去除二级 tab, 去除 alias
+
+---
+
+App.tsx 重构下
+MainView和 SettingView 都采用内部消化掉逻辑
+ViewType 和 面板组件建立映射

@@ -5,6 +5,12 @@ import { app } from 'electron'
 interface AppConfig {
   theme: 'dark' | 'light'
   globalShortcut: string
+  shortcuts: {
+    [commandId: string]: string
+  }
+  enabledCommands: {
+    [commandId: string]: boolean
+  }
   extensions: {
     [key: string]: {
       enabled: boolean
@@ -24,6 +30,8 @@ interface AppConfig {
 const defaultConfig: AppConfig = {
   theme: 'dark',
   globalShortcut: 'Shift+Space',
+  shortcuts: {},
+  enabledCommands: {},
   extensions: {},
   scripts: {}
 }
