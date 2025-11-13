@@ -1,8 +1,20 @@
-interface ScriptsTabProps {
-  scripts: any[]
-}
+import { useState, useEffect } from 'react'
+import { CommandManager } from '../../shared/Commands'
 
-function ScriptsTab({ scripts }: ScriptsTabProps) {
+function ScriptsTab() {
+  const [scripts, setScripts] = useState<any[]>([])
+
+  // 加载数据
+  useEffect(() => {
+    try {
+      const commandManager = CommandManager.getInstance()
+      const scrs = commandManager.getScripts()
+      setScripts(scrs)
+    } catch (error) {
+      console.error('Failed to load scripts:', error)
+    }
+  }, [])
+
   return (
     <div className="settings-section">
       {scripts.length === 0 ? (

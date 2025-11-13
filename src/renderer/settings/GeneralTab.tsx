@@ -1,10 +1,34 @@
-interface GeneralTabProps {
-  config: any
-  theme: 'dark' | 'light'
-  onThemeChange: (theme: 'dark' | 'light') => void
-}
+import { useState, useEffect } from 'react'
 
-function GeneralTab({ config, theme, onThemeChange }: GeneralTabProps) {
+function GeneralTab() {
+  const [config, setConfig] = useState<any>(null)
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+
+  // 加载数据
+  useEffect(() => {
+    const loadData = async () => {
+      const { ipcRenderer } = window.require('electron')
+
+      try {
+        const cfg = await ipcRenderer.invoke('get-config')
+        setConfig(cfg)
+
+        if (cfg && cfg.theme) {
+          setTheme(cfg.theme)
+        }
+      } catch (error) {
+        console.error('Failed to load config:', error)
+      }
+    }
+    loadData()
+  }, [])
+
+  const handleThemeChange = async (newTheme: 'dark' | 'light') => {
+    setTheme(newTheme)
+    const { ipcRenderer } = window.require('electron')
+    await ipcRenderer.invoke('update-config', { theme: newTheme })
+  }
+
   return (
     <div className="settings-section">
       <div className="setting-item">
@@ -13,7 +37,7 @@ function GeneralTab({ config, theme, onThemeChange }: GeneralTabProps) {
           <select
             className="setting-select"
             value={theme}
-            onChange={(e) => onThemeChange(e.target.value as 'dark' | 'light')}
+            onChange={(e) => handleThemeChange(e.target.value as 'dark' | 'light')}
           >
             <option value="dark">Dark</option>
             <option value="light">Light</option>
