@@ -44,9 +44,8 @@ function ExtensionsTab() {
         setShortcuts(savedShortcuts)
         setEnabledCommands(savedEnabled)
 
-        // 默认全部展开
-        const allExtIds = exts.map((ext: any) => ext.id)
-        setExpandedExtensions(new Set(allExtIds))
+        // 默认不展开
+        setExpandedExtensions(new Set())
       } catch (error) {
         console.error('Failed to load extensions data:', error)
       }
@@ -76,7 +75,7 @@ function ExtensionsTab() {
   const allExtensions = useMemo((): ExtensionItem[] => {
     return extensions.map(ext => ({
       id: ext.id,
-      title: ext.title || ext.id,
+      title: ext.title || ext.name || ext.id,
       description: ext.description,
       version: ext.version,
       type: 'extension' as const,
@@ -85,7 +84,7 @@ function ExtensionsTab() {
         name: cmd.name,
         desc: cmd.desc,
         extensionId: ext.id,
-        extensionTitle: ext.title || ext.id,
+        extensionTitle: ext.title || ext.name || ext.id,
         type: 'command' as const
       })),
       expanded: expandedExtensions.has(ext.id)

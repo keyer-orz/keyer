@@ -1,22 +1,23 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { IAction } from '../../shared/types'
 import { CommandManager } from '../../shared/Commands'
 import { Input, InputHandle, List, Item, Panel, Text } from 'keyerext'
 import type { ListItem, ListSection } from 'keyerext'
+import { useNavigation } from '../contexts/NavigationContext'
+import { executeSystemCommand, getAllSystemActions } from '../utils/SystemCommands'
 
 interface MainViewProps {
-  onExecute: (action: IAction) => Promise<void>
-  onOpenSettings: () => void
   commandManagerReady: boolean
 }
 
-function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewProps) {
+function MainView({ commandManagerReady }: MainViewProps) {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<IAction[]>([])
   const [previewElements, setPreviewElements] = useState<Array<import('keyerext').ExtensionUIResult>>([])
   const [selectedAction, setSelectedAction] = useState<IAction | null>(null)
 
   const inputRef = useRef<InputHandle>(null)
+  const { navigateTo } = useNavigation()
 
   // 自动聚焦输入框
   useEffect(() => {
@@ -48,6 +49,40 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
     return () => clearTimeout(debounce)
   }, [input, commandManagerReady])
 
+  // 执行命令
+  const handleExecute = useCallback(async (action: IAction) => {
+    try {
+      // 检查是否是系统命令
+      const isSystemCmd = await executeSystemCommand(action.id, navigateTo)
+      if (isSystemCmd) return
+
+      // 执行扩展命令
+      const commandManager = CommandManager.getInstance()
+      const result = await commandManager.execute(action)
+
+      // 处理返回值
+      if (result === null) {
+        // null: 关闭主面板
+        const { ipcRenderer } = window.require('electron')
+        await ipcRenderer.invoke('hide-window')
+      } else if (typeof result === 'function') {
+        // React.ComponentType: 切换至插件的二级面板
+        navigateTo({
+          type: 'extension',
+          extensionComponent: result
+        })
+      } else if (React.isValidElement(result)) {
+        // React.ReactElement: 直接显示 React 元素
+        navigateTo({
+          type: 'extension',
+          extensionElement: result
+        })
+      }
+    } catch (error) {
+      console.error('Execute error:', error)
+    }
+  }, [navigateTo])
+
   // List 选中回调
   const handleSelect = useCallback((item: ListItem<IAction>) => {
     setSelectedAction(item.data)
@@ -55,13 +90,8 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
 
   // List Enter 回调
   const handleEnter = useCallback((item: ListItem<IAction>) => {
-    // 如果是 Settings，调用 onOpenSettings
-    if (item.data.id === 'system:settings') {
-      onOpenSettings()
-      return
-    }
-    onExecute(item.data)
-  }, [onOpenSettings, onExecute])
+    handleExecute(item.data)
+  }, [handleExecute])
 
   // 获取图标
   const getIcon = (action: IAction) => {
@@ -73,14 +103,8 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
     return '📦'
   }
 
-  // 创建常驻的 Suggestions 列表
-  const settingsAction: IAction = useMemo(() => ({
-    id: 'system:settings',
-    key: 'settings',
-    name: 'Settings',
-    desc: 'Open settings panel',
-    typeLabel: 'System'
-  }), [])
+  // 获取系统命令
+  const systemActions = useMemo(() => getAllSystemActions(), [])
 
   // 构建 Section 列表
   const sections = useMemo(() => {
@@ -94,14 +118,16 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
       })
     }
 
-    // 添加 Suggestions 部分
-    sections.push({
-      header: 'Suggestions',
-      items: [{ id: settingsAction.id, data: settingsAction }]
-    })
+    // 添加 Suggestions 部分（系统命令）
+    if (systemActions.length > 0) {
+      sections.push({
+        header: 'Suggestions',
+        items: systemActions.map(action => ({ id: action.id, data: action }))
+      })
+    }
 
     return sections
-  }, [results, settingsAction])
+  }, [results, systemActions])
 
   return (
     <Panel>
@@ -149,7 +175,10 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
         <div className="footer-desc">
           {selectedAction?.desc || ''}
         </div>
-        <div className="footer-settings" onClick={onOpenSettings}>
+        <div
+          className="footer-settings"
+          onClick={() => executeSystemCommand('system:settings', navigateTo)}
+        >
           ⚙️
         </div>
       </div>
