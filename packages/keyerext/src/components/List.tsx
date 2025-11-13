@@ -199,7 +199,7 @@ export function Item({
     padding: '4px 6px',
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '4px',
     minHeight: '32px'
   }
 
