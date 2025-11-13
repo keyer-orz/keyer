@@ -1,0 +1,21 @@
+{
+  "name": "calculator",
+  "version": "1.0.0",
+  "description": "Calculator extension with preview support",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "keyer": {
+    "id": "calculator",
+    "name": "calculator",
+    "title": "Calculator",
+    "version": "1.0.0",
+    "commands": []
+  },
+  "devDependencies": {
+    "keyerext": "file:../../packages/keyerext",
+    "typescript": "^5.0.0"
+  }
+}

@@ -46,6 +46,9 @@ export interface IExtension {
   // 扩展的存储实例（由框架注入）
   store?: IStore
 
+  // 是否启用预览功能（默认 false）
+  enabledPreview?: boolean
+
   // 准备阶段，返回扩展提供的 actions
   // 返回的 action 不需要设置 id，由 ExtensionManager 自动生成（格式：extensionId#key）
   onPrepare(): Promise<IActionDef[]> | IActionDef[]
@@ -56,6 +59,14 @@ export interface IExtension {
   //   - null: 关闭主面板
   //   - React.ComponentType<any>: 切换至插件的二级面板
   doAction(key: string): Promise<null | React.ComponentType<any>> | null | React.ComponentType<any>
+
+  // 预览功能（可选）
+  // 当用户输入时，如果 enabledPreview 为 true，会调用此方法
+  // input: 用户当前输入的内容
+  // 返回值：
+  //   - null: 不显示预览
+  //   - React.ReactElement: 在列表顶部显示的预览元素
+  onPreview?(input: string): Promise<null | React.ReactElement> | null | React.ReactElement
 }
 
 // Extension 的包配置定义

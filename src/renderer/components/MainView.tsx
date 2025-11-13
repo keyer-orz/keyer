@@ -13,6 +13,7 @@ interface MainViewProps {
 function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewProps) {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<IAction[]>([])
+  const [previewElements, setPreviewElements] = useState<React.ReactElement[]>([])
   const [selectedAction, setSelectedAction] = useState<IAction | null>(null)
 
   const inputRef = useRef<InputHandle>(null)
@@ -29,8 +30,15 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
 
       try {
         const commandManager = CommandManager.getInstance()
-        const actions = await commandManager.search(input)
-        setResults(actions)
+
+        // 获取预览元素和搜索结果
+        const [previewElems, searchActions] = await Promise.all([
+          commandManager.getPreview(input),
+          commandManager.search(input)
+        ])
+
+        setPreviewElements(previewElems)
+        setResults(searchActions)
       } catch (error) {
         console.error('Search error:', error)
       }
@@ -79,6 +87,9 @@ function MainView({ onExecute, onOpenSettings, commandManagerReady }: MainViewPr
       </div>
 
       <div className="results-container">
+        {/* Render preview elements at the top */}
+        {previewElements}
+
         <List
           items={listItems}
           onSelect={handleSelect}

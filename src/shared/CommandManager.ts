@@ -122,6 +122,11 @@ export class CommandManager {
     return this.extensionManager.getUIExtensions()
   }
 
+  // 获取预览元素
+  async getPreview(input: string): Promise<Array<React.ReactElement>> {
+    return await this.extensionManager.getPreviewComponents(input)
+  }
+
   // Extension Store 操作
   getExtensionStoreValue(extensionId: string, key: string, defaultValue?: any) {
     return this.extensionManager.getStoreValue(extensionId, key, defaultValue)

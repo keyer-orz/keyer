@@ -160,6 +160,27 @@ export class ExtensionManager {
     return []
   }
 
+  // 获取预览元素
+  async getPreviewComponents(input: string): Promise<Array<React.ReactElement>> {
+    const previewElements: Array<React.ReactElement> = []
+
+    // 遍历所有开启了 enabledPreview 的扩展
+    for (const [extensionId, extension] of this.extensions) {
+      if (extension.enabledPreview && extension.onPreview) {
+        try {
+          const element = await extension.onPreview(input)
+          if (element) {
+            previewElements.push(element)
+          }
+        } catch (error) {
+          console.error(`Preview error in extension ${extensionId}:`, error)
+        }
+      }
+    }
+
+    return previewElements
+  }
+
   // Store 操作方法
   getStoreValue(extensionId: string, key: string, defaultValue?: any) {
     const store = this.stores.get(extensionId)
