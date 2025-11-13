@@ -8,7 +8,8 @@
     "build": "npm run build:extensions && tsc && vite build && electron-builder",
     "build:extensions": "node tools/build-extensions.js",
     "preview": "vite preview",
-    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:dev": "concurrently -n keyerext,vite,electron -c cyan,green,yellow \"npm run watch:keyerext\" \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "watch:keyerext": "cd packages/keyerext && npm run watch",
     "electron:build": "npm run build:extensions && vite build && electron-builder",
     "electron:build:app": "npm run build:extensions && vite build && electron-builder --mac --dir"
   },
@@ -25,7 +26,7 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.0.0",
-    "concurrently": "^8.0.0",
+    "concurrently": "^8.2.2",
     "electron": "^27.0.0",
     "electron-builder": "^24.0.0",
     "typescript": "^5.0.0",
@@ -44,7 +45,10 @@
     "productName": "Keyer",
     "mac": {
       "category": "public.app-category.productivity",
-      "electronLanguages": ["en", "zh_CN"]
+      "electronLanguages": [
+        "en",
+        "zh_CN"
+      ]
     },
     "files": [
       "dist/**/*",

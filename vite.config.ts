@@ -64,16 +64,23 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
+  optimizeDeps: {
+    include: ['keyerext'],
+    // 检测 keyerext 包变化时强制重新预构建
+    force: process.env.FORCE_OPTIMIZE === 'true'
+  },
   server: {
+    watch: {
+      // 监听 packages 目录的变化，强制重启 Vite
+      ignored: ['!**/packages/keyerext/dist/**']
+    },
     fs: {
       // 允许访问项目根目录及 extensions 目录
       allow: [
         path.resolve(__dirname, '.'),
-        path.resolve(__dirname, 'extensions')
+        path.resolve(__dirname, 'extensions'),
+        path.resolve(__dirname, 'packages')
       ]
     }
-  },
-  optimizeDeps: {
-    include: ['keyerext']
   }
 })

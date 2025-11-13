@@ -99,3 +99,20 @@ src/shared/ExtensionStore.ts 只通过 ipc 进行数据的读写
 
 src/renderer/App.tsx 中有 ArrowUp / ArrowDown ，这个去除即可
 当前界面的 Input 组件默认获取焦点，键盘的 ArrowUp / ArrowDown 不会影响 Input 的焦点
+
+--
+
+首页：上下选择，回车 -> 根据回调判断是否隐藏 / 打开二级面板
+二级页面：回车 -> 默认隐藏 App 后回首页
+
+--
+
+重构：IExtension 的 doAction 函数
+返回 null | React.ComponentType<any>
+若返回 null, doAction 后，关闭主面板
+若返回 React.ComponentType<any>，则切换至插件的二级面板
+
+注意：
+keepOpen 不需要了
+props 也没有了
+剪切板的二级面板需要在组件内获取数据
