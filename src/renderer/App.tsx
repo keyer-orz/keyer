@@ -3,6 +3,7 @@ import './App.css'
 import Settings from './components/Settings'
 import MainView from './components/MainView'
 import { CommandManager } from '../shared/Commands'
+import { ConfigManager } from '../shared/Config'
 import { NavigationContext, ViewState, NavigationContextType } from './contexts/NavigationContext'
 
 // 扩展 Window 类型以支持 ipcRenderer
@@ -41,8 +42,11 @@ function App() {
       try {
         const { ipcRenderer } = window.require('electron')
 
-        const [config, sandboxDir, devPaths] = await Promise.all([
-          ipcRenderer.invoke('get-config'),
+        // 直接创建 ConfigManager 实例
+        const configManager = new ConfigManager()
+        const config = configManager.getConfig()
+
+        const [sandboxDir, devPaths] = await Promise.all([
           ipcRenderer.invoke('get-sandbox-dir'),
           ipcRenderer.invoke('get-dev-paths')
         ])
@@ -76,22 +80,17 @@ function App() {
       setViewState({ type: 'main' })
     }
 
-    const handleThemeChanged = (_: any, newTheme: string) => {
-      setTheme(newTheme as 'dark' | 'light')
-    }
-
     ipcRenderer.on('focus-input', handleFocusInput)
-    ipcRenderer.on('theme-changed', handleThemeChanged)
 
-    ipcRenderer.invoke('get-config').then((config: any) => {
-      if (config && config.theme) {
-        setTheme(config.theme)
-      }
-    })
+    // 直接使用 ConfigManager 获取主题
+    const configManager = new ConfigManager()
+    const config = configManager.getConfig()
+    if (config && config.theme) {
+      setTheme(config.theme)
+    }
 
     return () => {
       ipcRenderer.removeListener('focus-input', handleFocusInput)
-      ipcRenderer.removeListener('theme-changed', handleThemeChanged)
     }
   }, [])
 

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { ICommand, IExtension, ExtensionPackage, ExtensionResult } from './types'
-import { ExtensionStore } from './Store'
+import { ExtensionStorage } from './ExtensionStorage'
 
 // 扩展来源类型
 type ExtensionSource = 'dev' | 'mine' | 'sandbox'
@@ -17,7 +17,6 @@ interface ExtensionInfo {
 export class ExtensionManager {
   private extensions: Map<string, ExtensionInfo> = new Map()  // key: ext.name
   private commands: Map<string, ICommand> = new Map()  // key: ucid
-  private stores: Map<string, ExtensionStore> = new Map()
 
   private devDir?: string  // 开发环境目录
   private mineDirs: string[] = []  // 本地路径目录列表
@@ -138,12 +137,8 @@ export class ExtensionManager {
       const extensionModule = require(mainPath)
       const extension: IExtension = extensionModule.default || extensionModule
 
-      // 为扩展创建 Store（使用 name 作为标识）
-      const store = new ExtensionStore(pkg.name)
-      this.stores.set(pkg.name, store)
-
-      // 注入 Store 到扩展实例
-      extension.store = store
+      // 为扩展创建并注入 Store（使用 name 作为标识）
+      extension.store = new ExtensionStorage(pkg.name)
 
       console.log(`Loading extension (${source}): ${pkg.name} - ${pkg.title}`)
 
@@ -276,40 +271,5 @@ export class ExtensionManager {
     }
 
     return previewElements
-  }
-
-  // Store 操作方法
-  getStoreValue(extensionName: string, key: string, defaultValue?: any) {
-    const store = this.stores.get(extensionName)
-    if (!store) {
-      return defaultValue
-    }
-    return store.get(key, defaultValue)
-  }
-
-  setStoreValue(extensionName: string, key: string, value: any): boolean {
-    const store = this.stores.get(extensionName)
-    if (!store) {
-      return false
-    }
-    store.set(key, value)
-    return true
-  }
-
-  deleteStoreValue(extensionName: string, key: string): boolean {
-    const store = this.stores.get(extensionName)
-    if (!store) {
-      return false
-    }
-    store.delete(key)
-    return true
-  }
-
-  getStoreKeys(extensionName: string): string[] {
-    const store = this.stores.get(extensionName)
-    if (!store) {
-      return []
-    }
-    return store.keys()
   }
 }

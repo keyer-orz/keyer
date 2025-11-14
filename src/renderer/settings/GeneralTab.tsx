@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ConfigManager } from '../../shared/Config'
 
 function GeneralTab() {
   const [config, setConfig] = useState<any>(null)
@@ -7,10 +8,10 @@ function GeneralTab() {
   // 加载数据
   useEffect(() => {
     const loadData = async () => {
-      const { ipcRenderer } = window.require('electron')
-
       try {
-        const cfg = await ipcRenderer.invoke('get-config')
+        // 直接使用 ConfigManager
+        const configManager = new ConfigManager()
+        const cfg = configManager.getConfig()
         setConfig(cfg)
 
         if (cfg && cfg.theme) {
@@ -25,8 +26,9 @@ function GeneralTab() {
 
   const handleThemeChange = async (newTheme: 'dark' | 'light') => {
     setTheme(newTheme)
-    const { ipcRenderer } = window.require('electron')
-    await ipcRenderer.invoke('update-config', { theme: newTheme })
+    // 直接使用 ConfigManager 更新配置
+    const configManager = new ConfigManager()
+    configManager.updateConfig({ theme: newTheme })
   }
 
   return (

@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
+    "electron-store": "^11.0.2",
     "keyerext": "file:packages/keyerext",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
@@ -55,20 +56,6 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": "extensions",
-        "to": "extensions",
-        "filter": [
-          "*/dist/**/*",
-          "*/package.json"
-        ]
-      },
-      {
-        "from": "scripts",
-        "to": "scripts"
-      }
     ],
     "directories": {
       "output": "release"

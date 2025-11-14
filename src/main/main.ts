@@ -1,13 +1,9 @@
-import { app, BrowserWindow, ipcMain, globalShortcut, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
-import { ConfigManager } from './Config'
-import { Store } from './Store'
-import { ExtensionManager } from './ExtensionManager'
+import { ConfigManager } from '../shared/Config'
 
 let mainWindow: BrowserWindow | null = null
 let configManager: ConfigManager | null = null
-let store: Store | null = null
-let extensionManager: ExtensionManager | null = null
 let commandShortcuts: Map<string, string> = new Map() // commandId -> shortcut
 
 // 创建主窗口
@@ -38,7 +34,7 @@ function createWindow() {
 
   // 开发模式下加载 vite dev server
   if (isDev) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
+    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL || "")
     mainWindow.webContents.openDevTools()
   } else {
     mainWindow.loadFile(path.join(__dirname, '../dist/index.html'))
@@ -130,7 +126,7 @@ function registerCommandShortcuts() {
   if (!configManager) return
 
   const config = configManager.getConfig()
-  const shortcuts = config.shortcuts || {}
+  const shortcuts = config.hotkeys || {}
 
   // 注册新的快捷键
   Object.entries(shortcuts).forEach(([commandId, shortcut]) => {
@@ -198,35 +194,6 @@ function setupIPC() {
     }
   })
 
-  // 获取路径信息（供渲染进程使用）
-  ipcMain.handle('get-paths', () => {
-    const isDev = !!process.env.VITE_DEV_SERVER_URL
-    const userExtensionsDir = extensionManager ? extensionManager.getExtensionsDir() : null
-
-    // 开发模式：加载 extensions 目录 + Application Support 目录
-    // 生产模式：只加载 Application Support 目录
-    const extensionsDirs = isDev
-      ? [path.join(__dirname, '../extensions'), userExtensionsDir].filter(Boolean) as string[]
-      : userExtensionsDir ? [userExtensionsDir] : []
-
-    return {
-      scriptsDir: isDev
-        ? path.join(__dirname, '../scripts')
-        : path.join(process.resourcesPath, 'scripts'),
-      extensionsDirs,
-      isDev
-    }
-  })
-
-  // 获取配置
-  ipcMain.handle('get-config', () => {
-    if (!configManager) {
-      console.log('ConfigManager not initialized')
-      return null
-    }
-    return configManager.getConfig()
-  })
-
   // 获取沙箱目录路径
   ipcMain.handle('get-sandbox-dir', () => {
     return app.getPath('userData')
@@ -248,182 +215,9 @@ function setupIPC() {
     }
   })
 
-  // 更新配置
-  ipcMain.handle('update-config', (_, updates) => {
-    if (!configManager) {
-      console.log('ConfigManager not initialized')
-      return false
-    }
-    configManager.updateConfig(updates)
-
-    // 如果更新了主题，通知渲染进程
-    if (updates.theme && mainWindow) {
-      mainWindow.webContents.send('theme-changed', updates.theme)
-    }
-
-    return true
-  })
-
-  // Extension Store 操作 (异步)
-  ipcMain.handle('extension-store-get', (_, extensionId: string, key: string, defaultValue?: any) => {
-    if (!store) {
-      console.log('Store not initialized')
-      return defaultValue
-    }
-    return store.get(extensionId, key, defaultValue)
-  })
-
-  ipcMain.handle('extension-store-set', (_, extensionId: string, key: string, value: any) => {
-    if (!store) {
-      console.log('Store not initialized')
-      return false
-    }
-    return store.set(extensionId, key, value)
-  })
-
-  ipcMain.handle('extension-store-delete', (_, extensionId: string, key: string) => {
-    if (!store) {
-      console.log('Store not initialized')
-      return false
-    }
-    return store.delete(extensionId, key)
-  })
-
-  ipcMain.handle('extension-store-keys', (_, extensionId: string) => {
-    if (!store) {
-      console.log('Store not initialized')
-      return []
-    }
-    return store.keys(extensionId)
-  })
-
-  // Extension Store 操作 (同步)
-  ipcMain.on('extension-store-get-sync', (event, extensionId: string, key: string, defaultValue?: any) => {
-    if (!store) {
-      console.log('Store not initialized')
-      event.returnValue = defaultValue
-      return
-    }
-    event.returnValue = store.get(extensionId, key, defaultValue)
-  })
-
-  ipcMain.on('extension-store-set-sync', (event, extensionId: string, key: string, value: any) => {
-    if (!store) {
-      console.log('Store not initialized')
-      event.returnValue = false
-      return
-    }
-    event.returnValue = store.set(extensionId, key, value)
-  })
-
-  ipcMain.on('extension-store-delete-sync', (event, extensionId: string, key: string) => {
-    if (!store) {
-      console.log('Store not initialized')
-      event.returnValue = false
-      return
-    }
-    event.returnValue = store.delete(extensionId, key)
-  })
-
-  ipcMain.on('extension-store-keys-sync', (event, extensionId: string) => {
-    if (!store) {
-      console.log('Store not initialized')
-      event.returnValue = []
-      return
-    }
-    event.returnValue = store.keys(extensionId)
-  })
-
-  // Extension installation handlers
-  ipcMain.handle('install-extension', async (_, zipPath: string) => {
-    if (!extensionManager) {
-      console.log('ExtensionManager not initialized')
-      return { success: false, error: 'ExtensionManager not initialized' }
-    }
-    return await extensionManager.installFromZip(zipPath)
-  })
-
-  ipcMain.handle('uninstall-extension', async (_, extensionName: string) => {
-    if (!extensionManager) {
-      console.log('ExtensionManager not initialized')
-      return { success: false, error: 'ExtensionManager not initialized' }
-    }
-    return await extensionManager.uninstallExtension(extensionName)
-  })
-
-  ipcMain.handle('list-installed-extensions', async () => {
-    if (!extensionManager) {
-      console.log('ExtensionManager not initialized')
-      return []
-    }
-    return extensionManager.getInstalledExtensions()
-  })
-
-  ipcMain.handle('get-extensions-dir', async () => {
-    if (!extensionManager) {
-      console.log('ExtensionManager not initialized')
-      return null
-    }
-    return extensionManager.getExtensionsDir()
-  })
-
-  // Show file picker for extension installation
-  ipcMain.handle('select-extension-file', async () => {
-    if (!mainWindow) {
-      return null
-    }
-    const result = await dialog.showOpenDialog(mainWindow, {
-      title: 'Select Extension Package',
-      filters: [
-        { name: 'Extension Package', extensions: ['zip'] }
-      ],
-      properties: ['openFile']
-    })
-
-    if (result.canceled || result.filePaths.length === 0) {
-      return null
-    }
-
-    return result.filePaths[0]
-  })
-
-  // Shortcuts management
-  ipcMain.handle('get-shortcuts', () => {
-    if (!configManager) {
-      console.log('ConfigManager not initialized')
-      return {}
-    }
-    const config = configManager.getConfig()
-    return config.shortcuts || {}
-  })
-
-  ipcMain.handle('save-shortcuts', (_, shortcuts: Record<string, string>) => {
-    if (!configManager) {
-      console.log('ConfigManager not initialized')
-      return false
-    }
-    configManager.updateConfig({ shortcuts })
-    // 重新注册快捷键
+  // 重新注册快捷键（当渲染进程更新配置后调用）
+  ipcMain.handle('reload-shortcuts', () => {
     registerCommandShortcuts()
-    return true
-  })
-
-  // Enabled commands management
-  ipcMain.handle('get-enabled-commands', () => {
-    if (!configManager) {
-      console.log('ConfigManager not initialized')
-      return {}
-    }
-    const config = configManager.getConfig()
-    return config.enabledCommands || {}
-  })
-
-  ipcMain.handle('save-enabled-commands', (_, enabledCommands: Record<string, boolean>) => {
-    if (!configManager) {
-      console.log('ConfigManager not initialized')
-      return false
-    }
-    configManager.updateConfig({ enabledCommands })
     return true
   })
 }
@@ -436,8 +230,6 @@ app.commandLine.appendSwitch('disable-software-rasterizer')
 // 应用就绪
 app.whenReady().then(async () => {
   configManager = new ConfigManager()
-  store = new Store()
-  extensionManager = new ExtensionManager()
   createWindow()
   registerGlobalShortcut()
   registerCommandShortcuts()  // 注册命令快捷键

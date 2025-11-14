@@ -131,21 +131,4 @@ export class CommandManager {
   async getPreview(input: string): Promise<Array<ExtensionResult>> {
     return await this.extensionManager.getPreviewComponents(input)
   }
-
-  // Extension Store 操作（使用 extensionName 而不是 extensionId）
-  getExtensionStoreValue(extensionName: string, key: string, defaultValue?: any) {
-    return this.extensionManager.getStoreValue(extensionName, key, defaultValue)
-  }
-
-  setExtensionStoreValue(extensionName: string, key: string, value: any) {
-    return this.extensionManager.setStoreValue(extensionName, key, value)
-  }
-
-  deleteExtensionStoreValue(extensionName: string, key: string) {
-    return this.extensionManager.deleteStoreValue(extensionName, key)
-  }
-
-  getExtensionStoreKeys(extensionName: string) {
-    return this.extensionManager.getStoreKeys(extensionName)
-  }
 }

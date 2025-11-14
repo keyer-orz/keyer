@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Input } from 'keyerext'
 import { CommandManager } from '../../shared/Commands'
+import { ConfigManager } from '../../shared/Config'
 import ShortcutRecorder from '../components/ShortcutRecorder'
 
 interface CommandItem {
@@ -33,13 +34,22 @@ function ExtensionsTab() {
   // 加载数据
   useEffect(() => {
     const loadData = async () => {
-      const { ipcRenderer } = window.require('electron')
-
       try {
+        // 直接使用 ConfigManager
+        const configManager = new ConfigManager()
+        const config = configManager.getConfig()
+
         const commandManager = CommandManager.getInstance()
         const exts = commandManager.getExtensions()
-        const savedShortcuts = await ipcRenderer.invoke('get-shortcuts') || {}
-        const savedEnabled = await ipcRenderer.invoke('get-enabled-commands') || {}
+        const savedShortcuts = config.hotkeys || {}
+        const disabled = config.disabled || []
+
+        // 将 disabled 列表转换为 enabledCommands 格式
+        const allCommands = exts.flatMap(ext => ext.commands.map((cmd: any) => cmd.ucid))
+        const savedEnabled: Record<string, boolean> = {}
+        allCommands.forEach((ucid: string) => {
+          savedEnabled[ucid] = !disabled.includes(ucid)
+        })
 
         setExtensions(exts)
         setShortcuts(savedShortcuts)
@@ -59,8 +69,13 @@ function ExtensionsTab() {
     const newShortcuts = { ...shortcuts, [commandId]: shortcut }
     setShortcuts(newShortcuts)
 
+    // 直接使用 ConfigManager 保存
+    const configManager = new ConfigManager()
+    configManager.updateConfig({ hotkeys: newShortcuts })
+
+    // 通知主进程重新注册快捷键
     const { ipcRenderer } = window.require('electron')
-    await ipcRenderer.invoke('save-shortcuts', newShortcuts)
+    await ipcRenderer.invoke('reload-shortcuts')
   }
 
   // 切换启用状态
@@ -68,8 +83,13 @@ function ExtensionsTab() {
     const newEnabled = { ...enabledCommands, [commandId]: enabled }
     setEnabledCommands(newEnabled)
 
-    const { ipcRenderer } = window.require('electron')
-    await ipcRenderer.invoke('save-enabled-commands', newEnabled)
+    // 直接使用 ConfigManager 保存
+    const configManager = new ConfigManager()
+    // 将 enabledCommands 转换为 disabled 列表
+    const disabled = Object.entries(newEnabled)
+      .filter(([_, isEnabled]) => !isEnabled)
+      .map(([ucid]) => ucid)
+    configManager.updateConfig({ disabled })
   }
 
   // 构建扩展列表
