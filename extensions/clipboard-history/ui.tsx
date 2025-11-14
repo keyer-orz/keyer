@@ -51,9 +51,24 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
     }]
   }, [filteredHistory])
 
-  // 复制到剪贴板
-  const handleCopy = (item: ListItem<ClipboardEntry>) => {
-    onCopy(item.data)
+  // 复制到剪贴板并粘贴
+  const handleCopy = async (item: ListItem<ClipboardEntry>) => {
+    try {
+      // 1. 复制到剪贴板
+      onCopy(item.data)
+
+      // 2. 隐藏窗口
+      const { ipcRenderer } = (window as any).require('electron')
+      await ipcRenderer.invoke('hide-window')
+
+      // 3. 等待窗口完全隐藏
+      await new Promise(resolve => setTimeout(resolve, 150))
+
+      // 4. 调用脚本执行粘贴
+      await ipcRenderer.invoke('simulate-paste')
+    } catch (error) {
+      console.error('Failed to copy and paste:', error)
+    }
   }
 
   // 选中项变化

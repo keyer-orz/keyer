@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import * as path from 'path'
+import { exec } from 'child_process'
 import { ConfigManager } from '../shared/Config'
 
 let mainWindow: BrowserWindow | null = null
@@ -210,6 +211,40 @@ function setupIPC() {
       extensionsDir: path.join(projectRoot, 'extensions'),
       scriptsDir: path.join(projectRoot, 'scripts')
     }
+  })
+
+  // 模拟粘贴操作 - 直接使用 AppleScript
+  ipcMain.handle('simulate-paste', async () => {
+    return new Promise<void>((resolve, reject) => {
+      // 使用 Cmd+Tab 切换到前一个应用并粘贴
+      const script = `
+tell application "System Events"
+	-- 模拟 Cmd+Tab 切换应用
+	key down command
+	keystroke tab
+	key up command
+
+	-- 等待应用切换完成
+	delay 0.2
+
+	-- 模拟 Cmd+V 粘贴
+	keystroke "v" using command down
+end tell
+`
+
+      console.log('[Paste] Switching to previous app and pasting...')
+      exec(`osascript -e '${script.replace(/'/g, "'\\''")}'`, (error, stdout, stderr) => {
+        if (error) {
+          console.error('[Paste] Failed to paste:', error)
+          console.error('[Paste] stderr:', stderr)
+          reject(error)
+        } else {
+          console.log('[Paste] Successfully pasted')
+          if (stdout) console.log('[Paste] stdout:', stdout)
+          resolve()
+        }
+      })
+    })
   })
 
 }
