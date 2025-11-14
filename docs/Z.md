@@ -35,3 +35,13 @@ src/renderer/utils
 该类功能是桥接 插件 -> App 功能的调用
 
 例如：hide-window， simulate-paste 等功能
+
+---
+
+src/main/main.ts 按业务拆分
+
+---
+
+Keyer 增加 Feature
+1. showError
+2. showToast
