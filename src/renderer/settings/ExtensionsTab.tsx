@@ -35,8 +35,8 @@ function ExtensionsTab() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // 直接使用 ConfigManager
-        const configManager = new ConfigManager()
+        // 使用 ConfigManager 单例
+        const configManager = ConfigManager.getInstance()
         const config = configManager.getConfig()
 
         const commandManager = CommandManager.getInstance()
@@ -69,13 +69,9 @@ function ExtensionsTab() {
     const newShortcuts = { ...shortcuts, [commandId]: shortcut }
     setShortcuts(newShortcuts)
 
-    // 直接使用 ConfigManager 保存
-    const configManager = new ConfigManager()
+    // 使用 ConfigManager 单例保存（会自动触发主进程的监听器）
+    const configManager = ConfigManager.getInstance()
     configManager.updateConfig({ hotkeys: newShortcuts })
-
-    // 通知主进程重新注册快捷键
-    const { ipcRenderer } = window.require('electron')
-    await ipcRenderer.invoke('reload-shortcuts')
   }
 
   // 切换启用状态
@@ -83,8 +79,8 @@ function ExtensionsTab() {
     const newEnabled = { ...enabledCommands, [commandId]: enabled }
     setEnabledCommands(newEnabled)
 
-    // 直接使用 ConfigManager 保存
-    const configManager = new ConfigManager()
+    // 使用 ConfigManager 单例保存
+    const configManager = ConfigManager.getInstance()
     // 将 enabledCommands 转换为 disabled 列表
     const disabled = Object.entries(newEnabled)
       .filter(([_, isEnabled]) => !isEnabled)

@@ -55,9 +55,10 @@ const schema: Record<keyof AppConfig, any> = {
 }
 
 export class ConfigManager {
+  private static instance: ConfigManager | null = null
   private store: Store<AppConfig>
 
-  constructor() {
+  private constructor() {
     this.store = new Store<AppConfig>({
       name: 'config',
       defaults: defaultConfig,
@@ -66,6 +67,19 @@ export class ConfigManager {
     })
 
     console.log('Config loaded from:', this.store.path)
+  }
+
+  // 获取单例实例
+  static getInstance(): ConfigManager {
+    if (!ConfigManager.instance) {
+      ConfigManager.instance = new ConfigManager()
+    }
+    return ConfigManager.instance
+  }
+
+  // 检查是否已初始化
+  static isReady(): boolean {
+    return ConfigManager.instance !== null
   }
 
   // 获取完整配置
@@ -186,5 +200,23 @@ export class ConfigManager {
   // 获取所有快捷键
   getAllHotkeys(): { [ucid: string]: string } {
     return { ...this.store.get('hotkeys', {}) }
+  }
+
+  // 监听配置变化（仅限 hotkeys 字段）
+  onHotkeysChange(callback: (hotkeys: { [ucid: string]: string }) => void): () => void {
+    const listener = (newValue: any, oldValue: any) => {
+      if (JSON.stringify(newValue) !== JSON.stringify(oldValue)) {
+        callback(newValue || {})
+      }
+    }
+
+    // electron-store 支持监听特定字段的变化
+    this.store.onDidChange('hotkeys', listener)
+
+    // 返回取消监听的函数
+    return () => {
+      // electron-store 没有直接的 off 方法，需要通过其他方式处理
+      // 这里我们返回一个空函数，因为主进程通常不需要取消监听
+    }
   }
 }

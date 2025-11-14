@@ -6,11 +6,7 @@ import type { ListItem, ListSection } from 'keyerext'
 import { useNavigation } from '../contexts/NavigationContext'
 import { executeSystemCommand, getAllSystemCommands } from '../utils/SystemCommands'
 
-interface MainViewProps {
-  commandManagerReady: boolean
-}
-
-function MainView({ commandManagerReady }: MainViewProps) {
+function MainView() {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<ICommand[]>([])
   const [previewElements, setPreviewElements] = useState<Array<ExtensionResult>>([])
@@ -27,7 +23,7 @@ function MainView({ commandManagerReady }: MainViewProps) {
   // 搜索
   useEffect(() => {
     const searchCommands = async () => {
-      if (!commandManagerReady) return
+      if (!CommandManager.isReady()) return
 
       try {
         const commandManager = CommandManager.getInstance()
@@ -47,7 +43,7 @@ function MainView({ commandManagerReady }: MainViewProps) {
 
     const debounce = setTimeout(searchCommands, 150)
     return () => clearTimeout(debounce)
-  }, [input, commandManagerReady])
+  }, [input])
 
   // 执行命令
   const handleExecute = useCallback(async (command: ICommand) => {
@@ -106,7 +102,7 @@ function MainView({ commandManagerReady }: MainViewProps) {
     const handleExecuteCommandFromShortcut = async (_: any, commandId: string) => {
       console.log('Executing command from shortcut:', commandId)
 
-      if (!commandManagerReady) {
+      if (!CommandManager.isReady()) {
         console.warn('CommandManager not ready')
         return
       }
@@ -128,7 +124,7 @@ function MainView({ commandManagerReady }: MainViewProps) {
     return () => {
       ipcRenderer.removeListener('execute-command', handleExecuteCommandFromShortcut)
     }
-  }, [commandManagerReady, handleExecute])
+  }, [handleExecute])
 
   // 获取图标
   const getIcon = (command: ICommand) => {

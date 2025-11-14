@@ -14,7 +14,6 @@ declare global {
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-  const [commandManagerReady, setCommandManagerReady] = useState(false)
   const [viewState, setViewState] = useState<ViewState>(() => {
     return {
       type: 'main',
@@ -41,8 +40,8 @@ function App() {
       try {
         const { ipcRenderer } = window.require('electron')
 
-        // 直接创建 ConfigManager 实例
-        const configManager = new ConfigManager()
+        // 获取 ConfigManager 单例
+        const configManager = ConfigManager.getInstance()
         const config = configManager.getConfig()
 
         const [sandboxDir, devPaths] = await Promise.all([
@@ -61,7 +60,6 @@ function App() {
           configScripts: config?.scripts || [],
           sandboxDir: sandboxDir
         })
-        setCommandManagerReady(true)
         console.log('CommandManager initialized in renderer process')
       } catch (error) {
         console.error('Failed to initialize CommandManager:', error)
@@ -85,8 +83,8 @@ function App() {
 
     ipcRenderer.on('focus-input', handleFocusInput)
 
-    // 直接使用 ConfigManager 获取主题
-    const configManager = new ConfigManager()
+    // 使用 ConfigManager 单例获取主题
+    const configManager = ConfigManager.getInstance()
     const config = configManager.getConfig()
     if (config && config.theme) {
       setTheme(config.theme)
@@ -163,7 +161,7 @@ function App() {
 
     if (type === 'main') {
       const MainComponent = viewState.extensionComponent
-      return MainComponent ? <MainComponent commandManagerReady={commandManagerReady} /> : null
+      return MainComponent ? <MainComponent /> : null
     }
 
     // 处理系统命令视图（动态组件）

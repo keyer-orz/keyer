@@ -9,8 +9,8 @@ function GeneralTab() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // 直接使用 ConfigManager
-        const configManager = new ConfigManager()
+        // 使用 ConfigManager 单例
+        const configManager = ConfigManager.getInstance()
         const cfg = configManager.getConfig()
         setConfig(cfg)
 
@@ -26,8 +26,8 @@ function GeneralTab() {
 
   const handleThemeChange = async (newTheme: 'dark' | 'light') => {
     setTheme(newTheme)
-    // 直接使用 ConfigManager 更新配置
-    const configManager = new ConfigManager()
+    // 使用 ConfigManager 单例更新配置
+    const configManager = ConfigManager.getInstance()
     configManager.updateConfig({ theme: newTheme })
   }
 

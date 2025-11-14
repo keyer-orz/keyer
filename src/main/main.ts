@@ -3,7 +3,6 @@ import * as path from 'path'
 import { ConfigManager } from '../shared/Config'
 
 let mainWindow: BrowserWindow | null = null
-let configManager: ConfigManager | null = null
 let commandShortcuts: Map<string, string> = new Map() // commandId -> shortcut
 
 // 创建主窗口
@@ -114,25 +113,23 @@ function convertShortcutToElectron(shortcut: string): string {
 // 注册命令快捷键
 function registerCommandShortcuts() {
   // 先注销所有命令快捷键
-  commandShortcuts.forEach((_, commandId) => {
-    const shortcut = commandShortcuts.get(commandId)
-    if (shortcut) {
-      const electronShortcut = convertShortcutToElectron(shortcut)
+  commandShortcuts.forEach((shortcut, commandId) => {
+    const electronShortcut = convertShortcutToElectron(shortcut)
+    if (electronShortcut) {
       globalShortcut.unregister(electronShortcut)
     }
   })
   commandShortcuts.clear()
 
-  if (!configManager) return
-
-  const config = configManager.getConfig()
-  const shortcuts = config.hotkeys || {}
+  // 从单例获取配置
+  const configManager = ConfigManager.getInstance()
+  const shortcuts = configManager.getAllHotkeys()
 
   // 注册新的快捷键
   Object.entries(shortcuts).forEach(([commandId, shortcut]) => {
     if (!shortcut) return
 
-    const electronShortcut = convertShortcutToElectron(shortcut as string)
+    const electronShortcut = convertShortcutToElectron(shortcut)
     if (!electronShortcut) return
 
     try {
@@ -147,7 +144,7 @@ function registerCommandShortcuts() {
       })
 
       if (success) {
-        commandShortcuts.set(commandId, shortcut as string)
+        commandShortcuts.set(commandId, shortcut)
         console.log(`Registered shortcut ${electronShortcut} for command ${commandId}`)
       } else {
         console.warn(`Failed to register shortcut ${electronShortcut} for command ${commandId}`)
@@ -215,11 +212,6 @@ function setupIPC() {
     }
   })
 
-  // 重新注册快捷键（当渲染进程更新配置后调用）
-  ipcMain.handle('reload-shortcuts', () => {
-    registerCommandShortcuts()
-    return true
-  })
 }
 
 // 禁用 GPU 和 Sandbox 以避免在某些系统上的崩溃
@@ -229,11 +221,19 @@ app.commandLine.appendSwitch('disable-software-rasterizer')
 
 // 应用就绪
 app.whenReady().then(async () => {
-  configManager = new ConfigManager()
+  // 初始化单例 ConfigManager
+  const configManager = ConfigManager.getInstance()
+
   createWindow()
   registerGlobalShortcut()
   registerCommandShortcuts()  // 注册命令快捷键
   setupIPC()
+
+  // 监听配置变化，自动重新注册快捷键
+  configManager.onHotkeysChange((hotkeys) => {
+    console.log('Hotkeys configuration changed, re-registering shortcuts...')
+    registerCommandShortcuts()
+  })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

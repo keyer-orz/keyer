@@ -34,11 +34,21 @@ export class CommandManager {
     })
   }
 
+  // 检查是否已初始化
+  static isReady(): boolean {
+    return CommandManager.instance !== null
+  }
+
   // 获取单例实例
   static getInstance(): CommandManager {
     if (!CommandManager.instance) {
       throw new Error('CommandManager not initialized. Call CommandManager.createInstance first.')
     }
+    return CommandManager.instance
+  }
+
+  // 安全获取单例实例（返回 null 而不是抛出错误）
+  static getInstanceSafe(): CommandManager | null {
     return CommandManager.instance
   }
 
