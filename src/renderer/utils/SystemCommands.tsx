@@ -1,7 +1,7 @@
 import React from 'react'
-import { ICommand } from '../../shared/types'
-import { WindowSize } from '../contexts/NavigationContext'
-import Settings from '../components/Settings'
+import { ICommand } from '../types'
+import { WindowSize } from './NavigationContext'
+import Settings from '../settings/Settings'
 
 export interface SystemCommand {
   command: ICommand

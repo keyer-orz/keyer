@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { ICommand, IExtension, ExtensionPackage, ExtensionResult } from './types'
-import { ExtensionStorage } from './ExtensionStorage'
+import { ICommand, IExtension, ExtensionPackage, ExtensionResult } from '../types'
+import { ExtensionStorage } from '../utils/ExtensionStorage'
 
 // 扩展来源类型
 type ExtensionSource = 'dev' | 'mine' | 'sandbox'

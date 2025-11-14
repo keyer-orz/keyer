@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { ICommand } from '../../shared/types'
-import { CommandManager } from '../../shared/Commands'
+import { ICommand } from './types'
+import { CommandManager } from './managers/CommandManager'
 import { Input, InputHandle, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
 import type { ListItem, ListSection } from 'keyerext'
-import { useNavigation } from '../contexts/NavigationContext'
-import { executeSystemCommand, getAllSystemCommands } from '../utils/SystemCommands'
+import { useNavigation } from './utils/NavigationContext'
+import { executeSystemCommand, getAllSystemCommands } from './utils/SystemCommands'
 
 function MainView() {
   const [input, setInput] = useState('')

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CommandManager } from '../../shared/Commands'
+import { CommandManager } from '../managers/CommandManager'
 
 function ScriptsTab() {
   const [scripts, setScripts] = useState<any[]>([])
@@ -21,9 +21,9 @@ function ScriptsTab() {
         <p>没有找到脚本。请在 scripts 目录中添加脚本文件。</p>
       ) : (
         scripts.map(script => (
-          <div key={script.id} className="script-item">
+          <div key={script.ucid} className="script-item">
             <div className="script-info">
-              <div className="script-name">{script.name}</div>
+              <div className="script-name">{script.title}</div>
               <div className="script-desc">{script.desc}</div>
             </div>
             <div className="script-controls">

@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { ICommand } from './types'
+import { ICommand } from '../types'
 
 // 脚本来源类型
 type ScriptSource = 'dev' | 'mine' | 'sandbox'

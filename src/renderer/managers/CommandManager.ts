@@ -1,6 +1,6 @@
-import { ICommand, ExtensionResult } from './types'
-import { ScriptManager } from './Scripts'
-import { ExtensionManager } from './Extensions'
+import { ICommand, ExtensionResult } from '../types'
+import { ScriptManager } from './ScriptManager'
+import { ExtensionManager } from './ExtensionManager'
 
 interface CommandManagerConfig {
   devExtensionsDir?: string  // 开发环境的 extensions 目录

@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
-import './App.css'
-import { CommandManager } from '../shared/Commands'
+import './styles/App.css'
+import { CommandManager } from './managers/CommandManager'
 import { ConfigManager } from '../shared/Config'
-import { NavigationContext, ViewState, NavigationContextType } from './contexts/NavigationContext'
-import MainView from './components/MainView'
+import { NavigationContext, ViewState, NavigationContextType } from './utils/NavigationContext'
+import MainView from './MainView'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
