@@ -17,6 +17,8 @@ interface IKeyerAPI {
   simulatePaste(): Promise<void>
   /** 复制并粘贴（组合操作） */
   copyAndPaste(copyAction: () => void): Promise<void>
+  /** 显示提示消息 */
+  showToast(message: string, duration?: number): Promise<void>
 }
 
 declare global {

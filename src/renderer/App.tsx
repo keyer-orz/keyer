@@ -4,6 +4,7 @@ import { CommandManager } from './managers/CommandManager'
 import { ConfigManager } from '../shared/Config'
 import { NavigationContext, ViewState, NavigationContextType } from './utils/NavigationContext'
 import MainView from './MainView'
+import { setToastCallback } from './keyer-api'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
@@ -19,6 +20,10 @@ function App() {
       type: 'main',
       extensionComponent: MainView
     }
+  })
+  const [toast, setToast] = useState<{ message: string; visible: boolean }>({
+    message: '',
+    visible: false
   })
 
   // 监听视图切换，调整窗口大小
@@ -89,6 +94,14 @@ function App() {
     if (config && config.theme) {
       setTheme(config.theme)
     }
+
+    // 设置 toast 回调
+    setToastCallback((message: string, duration: number) => {
+      setToast({ message, visible: true })
+      setTimeout(() => {
+        setToast(prev => ({ ...prev, visible: false }))
+      }, duration)
+    })
 
     return () => {
       ipcRenderer.removeListener('focus-input', handleFocusInput)
@@ -191,6 +204,12 @@ function App() {
     <NavigationContext.Provider value={navigationValue}>
       <div className={`app theme-${theme}`}>
         {renderView()}
+        {/* Toast 提示 */}
+        {toast.visible && (
+          <div className="toast">
+            {toast.message}
+          </div>
+        )}
       </div>
     </NavigationContext.Provider>
   )

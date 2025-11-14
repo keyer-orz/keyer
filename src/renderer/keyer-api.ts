@@ -5,6 +5,13 @@
 
 const { ipcRenderer } = window.require('electron')
 
+// Toast 管理
+let toastCallback: ((message: string, duration: number) => void) | null = null
+
+export function setToastCallback(callback: (message: string, duration: number) => void) {
+  toastCallback = callback
+}
+
 export function initKeyerAPI() {
   ;(window as any).__keyer__ = {
     hideWindow: () => ipcRenderer.invoke('hide-window'),
@@ -21,6 +28,13 @@ export function initKeyerAPI() {
     copyAndPaste: (copyAction: () => void) => {
       copyAction()
       return ipcRenderer.invoke('copy-and-paste')
+    },
+
+    showToast: (message: string, duration = 2000) => {
+      if (toastCallback) {
+        toastCallback(message, duration)
+      }
+      return Promise.resolve()
     }
   }
 }
