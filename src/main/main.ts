@@ -247,6 +247,53 @@ end tell
     })
   })
 
+  // 复制并粘贴 - 组合操作
+  ipcMain.handle('copy-and-paste', async () => {
+    return new Promise<void>(async (resolve, reject) => {
+      try {
+        // 1. 隐藏窗口
+        if (mainWindow) {
+          mainWindow.hide()
+        }
+
+        // 2. 等待窗口完全隐藏
+        await new Promise(resolve => setTimeout(resolve, 150))
+
+        // 3. 使用 Cmd+Tab 切换到前一个应用并粘贴
+        const script = `
+tell application "System Events"
+	-- 模拟 Cmd+Tab 切换应用
+	key down command
+	keystroke tab
+	key up command
+
+	-- 等待应用切换完成
+	delay 0.2
+
+	-- 模拟 Cmd+V 粘贴
+	keystroke "v" using command down
+end tell
+`
+
+        console.log('[CopyAndPaste] Switching to previous app and pasting...')
+        exec(`osascript -e '${script.replace(/'/g, "'\\''")}'`, (error, stdout, stderr) => {
+          if (error) {
+            console.error('[CopyAndPaste] Failed to paste:', error)
+            console.error('[CopyAndPaste] stderr:', stderr)
+            reject(error)
+          } else {
+            console.log('[CopyAndPaste] Successfully pasted')
+            if (stdout) console.log('[CopyAndPaste] stdout:', stdout)
+            resolve()
+          }
+        })
+      } catch (error) {
+        console.error('[CopyAndPaste] Failed:', error)
+        reject(error)
+      }
+    })
+  })
+
 }
 
 // 禁用 GPU 和 Sandbox 以避免在某些系统上的崩溃

@@ -1,10 +1,8 @@
 // 使用主 App 的 React 实例，避免多实例冲突
-import type * as ReactType from 'react'
-const React: typeof ReactType = (window as any).React
-
 import electron from 'electron'
 import { IExtension, IStore, ExtensionResult, ICommand } from 'keyerext'
 import { ClipboardHistoryPanel, ClipboardEntry } from './ui'
+declare const React: any
 
 const { clipboard } = electron
 

@@ -1,6 +1,4 @@
 // 核心接口定义
-import type * as React from 'react'
-
 // Command 定义（文档规范）
 export interface ICommand {
   ucid: string        // unique command id: 如 "ext.name#cmd.name" 或 "@script#script.name"
@@ -88,3 +86,5 @@ export { Panel } from './components/Panel'
 export type { PanelProps } from './components/Panel'
 export { Text } from './components/Text'
 export type { TextProps, TextVariant } from './components/Text'
+// Keyer API
+export { Keyer } from './Keyer'

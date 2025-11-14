@@ -1,10 +1,10 @@
 // 使用主 App 的 React 实例，避免多实例冲突
-import type * as ReactType from 'react'
-const React: typeof ReactType = (window as any).React
-const { useState, useEffect, useMemo } = React
+import { List, Item, Input, Panel, Text, Keyer } from 'keyerext'
+import type { ListItem } from 'keyerext'
 
-import { List, Item, Input, Panel, Text } from 'keyerext'
-import type { ListItem, ListSection } from 'keyerext'
+// 获取全局 React（由 App 注入）
+declare const React: any
+const { useState, useMemo } = React
 
 export type ClipboardEntryType = 'text' | 'image'
 
@@ -24,13 +24,13 @@ export interface ClipboardHistoryPanelProps {
 
 export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanelProps) {
   const [filter, setFilter] = useState('')
-  const [selectedEntry, setSelectedEntry] = useState<ClipboardEntry | null>(
+  const [selectedEntry, setSelectedEntry] = useState(
     history.length > 0 ? history[0] : null
   )
 
   // 根据过滤条件筛选历史记录（仅文本可过滤）
   const filteredHistory = useMemo(() => {
-    return history.filter(entry => {
+    return history.filter((entry: ClipboardEntry) => {
       if (!filter) return true
       if (entry.type === 'text') {
         return entry.content.toLowerCase().includes(filter.toLowerCase())
@@ -44,7 +44,7 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
     if (filteredHistory.length === 0) return []
     return [{
       header: 'Clipboard History',
-      items: filteredHistory.map(entry => ({
+      items: filteredHistory.map((entry: ClipboardEntry) => ({
         id: entry.timestamp,
         data: entry
       }))
@@ -54,18 +54,8 @@ export function ClipboardHistoryPanel({ history, onCopy }: ClipboardHistoryPanel
   // 复制到剪贴板并粘贴
   const handleCopy = async (item: ListItem<ClipboardEntry>) => {
     try {
-      // 1. 复制到剪贴板
-      onCopy(item.data)
-
-      // 2. 隐藏窗口
-      const { ipcRenderer } = (window as any).require('electron')
-      await ipcRenderer.invoke('hide-window')
-
-      // 3. 等待窗口完全隐藏
-      await new Promise(resolve => setTimeout(resolve, 150))
-
-      // 4. 调用脚本执行粘贴
-      await ipcRenderer.invoke('simulate-paste')
+      // 使用 Keyer API 完成复制和粘贴操作
+      await Keyer.copyAndPaste(() => onCopy(item.data))
     } catch (error) {
       console.error('Failed to copy and paste:', error)
     }

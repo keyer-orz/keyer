@@ -1,5 +1,5 @@
-import * as React from 'react'
-import { IExtension, ICommand } from 'keyerext'
+import { IExtension, ICommand, ExtensionResult } from 'keyerext'
+
 
 class CalculatorExtension implements IExtension {
   enabledPreview = true
@@ -12,7 +12,7 @@ class CalculatorExtension implements IExtension {
     return null
   }
 
-  onPreview(input: string): React.ReactElement | null {
+  onPreview(input: string): ExtensionResult {
     // 只处理以等号结尾的表达式
     if (!input || !input.endsWith('=')) {
       return null
