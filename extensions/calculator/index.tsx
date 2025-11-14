@@ -1,5 +1,5 @@
 import { IExtension, ICommand, ExtensionResult } from 'keyerext'
-
+declare const React: any
 
 class CalculatorExtension implements IExtension {
   enabledPreview = true
@@ -40,7 +40,8 @@ class CalculatorExtension implements IExtension {
             padding: '12px 16px',
             fontSize: '32px',
             fontWeight: 500,
-            backgroundColor: 'var(--bg-secondary, #f0f0f0)',
+            backgroundColor: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
             borderRadius: '8px',
             marginBottom: '8px'
           }}
