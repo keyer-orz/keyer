@@ -1,50 +1,43 @@
+import React from 'react'
 import { ICommand } from '../../shared/types'
+import { WindowSize } from '../contexts/NavigationContext'
+import Settings from '../components/Settings'
 
 export interface SystemCommand {
   command: ICommand
-  handler: (navigateTo: (viewState: any) => void) => void | Promise<void>
+  component: React.ComponentType<any>
+  windowSize: WindowSize
 }
 
 // 系统命令注册表
-export const SYSTEM_COMMANDS: Record<string, SystemCommand> = {
-  'system:settings': {
+export const SYSTEM_COMMANDS: SystemCommand[] = [
+  {
     command: {
-      ucid: 'system:settings',
+      ucid: '@system#settings',
       name: 'settings',
       title: 'Settings',
       desc: 'Open settings panel',
       type: 'System'
     },
-    handler: (navigateTo) => {
-      navigateTo({ type: 'settings' })
-    }
+    component: Settings,
+    windowSize: 'large'
   }
-  // 未来可以轻松添加更多系统命令
-  // 'system:quit': { ... },
-  // 'system:reload': { ... },
-  // 'system:about': { ... },
-}
+]
 
 // 检查是否是系统命令
 export function isSystemCommand(commandId: string): boolean {
-  return commandId.startsWith('system:')
+  return commandId.startsWith('@system#')
 }
 
 // 获取系统命令
 export function getSystemCommand(commandId: string): SystemCommand | undefined {
-  return SYSTEM_COMMANDS[commandId]
+  return SYSTEM_COMMANDS.find(cmd => cmd.command.ucid === commandId)
 }
 
-// 执行系统命令
-export async function executeSystemCommand(
-  commandId: string,
-  navigateTo: (viewState: any) => void
-): Promise<boolean> {
+// 执行系统命令 - 返回组件和窗口大小
+export function executeSystemCommand(commandId: string): { component: React.ComponentType; windowSize: WindowSize } | null {
   const command = getSystemCommand(commandId)
-  if (!command) return false
-
-  await command.handler(navigateTo)
-  return true
+  return command ? { component: command.component, windowSize: command.windowSize } : null
 }
 
 // 获取所有系统命令的 commands（用于显示在列表中）

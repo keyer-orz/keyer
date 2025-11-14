@@ -1,13 +1,19 @@
 import React, { createContext, useContext } from 'react'
 
 /**
+ * 窗口大小类型
+ */
+export type WindowSize = 'normal' | 'large'
+
+/**
  * 视图状态定义
  */
 export interface ViewState {
-  type: 'main' | 'extension' | 'settings'
+  type: 'main' | 'extension' | 'system'
   extensionComponent?: React.ComponentType<any>
   extensionElement?: React.ReactElement
   extensionProps?: Record<string, any>
+  windowSize?: WindowSize
 }
 
 /**

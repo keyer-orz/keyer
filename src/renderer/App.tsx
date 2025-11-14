@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import './App.css'
-import Settings from './components/Settings'
-import MainView from './components/MainView'
 import { CommandManager } from '../shared/Commands'
 import { ConfigManager } from '../shared/Config'
 import { NavigationContext, ViewState, NavigationContextType } from './contexts/NavigationContext'
+import MainView from './components/MainView'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
@@ -13,28 +12,28 @@ declare global {
   }
 }
 
-// 视图组件映射
-const VIEW_COMPONENTS = {
-  main: MainView,
-  settings: Settings,
-  extension: null // 动态组件
-} as const
-
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [commandManagerReady, setCommandManagerReady] = useState(false)
-  const [viewState, setViewState] = useState<ViewState>({ type: 'main' })
+  const [viewState, setViewState] = useState<ViewState>(() => {
+    return {
+      type: 'main',
+      extensionComponent: MainView
+    }
+  })
 
   // 监听视图切换，调整窗口大小
   useEffect(() => {
     const { ipcRenderer } = window.require('electron')
 
-    if (viewState.type === 'settings') {
-      ipcRenderer.invoke('resize-window', 1200, 700, true)
-    } else if (viewState.type === 'main') {
+    const windowSize = viewState.windowSize || 'normal'
+
+    if (windowSize === 'large') {
+      ipcRenderer.invoke('resize-window', 1200, 700)
+    } else {
       ipcRenderer.invoke('restore-window-size')
     }
-  }, [viewState.type])
+  }, [viewState.windowSize])
 
   // 初始化 CommandManager
   useEffect(() => {
@@ -77,7 +76,11 @@ function App() {
     const { ipcRenderer } = window.require('electron')
 
     const handleFocusInput = () => {
-      setViewState({ type: 'main' })
+      // 返回主视图
+      setViewState({
+        type: 'main',
+        extensionComponent: MainView
+      })
     }
 
     ipcRenderer.on('focus-input', handleFocusInput)
@@ -100,9 +103,15 @@ function App() {
       if (e.key === 'Escape') {
         e.preventDefault()
 
+        // 检查是否在主界面
+        const isMainView = viewState.type === 'main'
+
         // 1. 如果不在主界面，直接返回主界面
-        if (viewState.type !== 'main') {
-          setViewState({ type: 'main' })
+        if (!isMainView) {
+          setViewState({
+            type: 'main',
+            extensionComponent: MainView
+          })
           return
         }
 
@@ -152,28 +161,32 @@ function App() {
   const renderView = () => {
     const { type } = viewState
 
-    // 处理扩展视图（动态组件）
-    if (type === 'extension') {
+    if (type === 'main') {
+      const MainComponent = viewState.extensionComponent
+      return MainComponent ? <MainComponent commandManagerReady={commandManagerReady} /> : null
+    }
+
+    // 处理系统命令视图（动态组件）
+    if (type === 'system') {
       if (viewState.extensionElement) {
         return viewState.extensionElement
       }
       if (viewState.extensionComponent) {
-        const ExtComponent = viewState.extensionComponent
-        return <ExtComponent />
+        const SystemComponent = viewState.extensionComponent
+        return <SystemComponent />
       }
       return null
     }
 
-    // 使用映射渲染标准视图
-    const Component = VIEW_COMPONENTS[type]
-    if (!Component) return null
-
-    // 传递 commandManagerReady 给需要的组件
-    if (type === 'main') {
-      return <Component commandManagerReady={commandManagerReady} />
+    // 处理扩展视图（React 元素）
+    if (type === 'extension') {
+      if (viewState.extensionElement) {
+        return viewState.extensionElement
+      }
+      return null
     }
 
-    return <Component commandManagerReady={false}/>
+    return null
   }
 
   return (

@@ -66,7 +66,7 @@ export class ExtensionManager {
     }
 
     // 加载所有扩展
-    for (const [name, info] of extensionMap) {
+    for (const [, info] of extensionMap) {
       await this.loadExtension(info.path, info.source)
     }
 

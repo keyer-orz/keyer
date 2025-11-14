@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { IExtension, IActionDef } from 'keyerext'
+import { IExtension, ICommand } from 'keyerext'
 
 class CalculatorExtension implements IExtension {
   enabledPreview = true
 
-  async onPrepare(): Promise<IActionDef[]> {
+  async onPrepare(): Promise<Partial<ICommand>[]> {
     return []
   }
 

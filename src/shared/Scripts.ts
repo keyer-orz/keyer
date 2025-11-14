@@ -66,7 +66,7 @@ export class ScriptManager {
     }
 
     // 解析所有脚本
-    for (const [name, info] of scriptMap) {
+    for (const [, info] of scriptMap) {
       await this.parseScriptFile(info.path, info.source)
     }
 

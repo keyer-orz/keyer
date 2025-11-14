@@ -53,29 +53,35 @@ function MainView({ commandManagerReady }: MainViewProps) {
   const handleExecute = useCallback(async (command: ICommand) => {
     try {
       // 检查是否是系统命令
-      const isSystemCmd = await executeSystemCommand(command.ucid, navigateTo)
-      if (isSystemCmd) return
+      const systemCommand = executeSystemCommand(command.ucid)
+      if (systemCommand) {
+        // 系统命令：直接导航到绑定的组件
+        navigateTo({
+          type: 'system',
+          extensionComponent: systemCommand.component,
+          windowSize: systemCommand.windowSize
+        })
+        return
+      }
 
       // 执行扩展命令
       const commandManager = CommandManager.getInstance()
       const result = await commandManager.execute(command)
 
-      // 处理返回值
-      if (result === null) {
-        // null: 关闭主面板
+      // 处理返回值 (ExtensionResult = null | React.ReactElement | boolean)
+      if (result === null || result === false) {
+        // null/false: 关闭主面板
         const { ipcRenderer } = window.require('electron')
         await ipcRenderer.invoke('hide-window')
-      } else if (typeof result === 'function') {
-        // React.ComponentType: 切换至插件的二级面板
-        navigateTo({
-          type: 'extension',
-          extensionComponent: result
-        })
+      } else if (result === true) {
+        // true: 保持窗口打开，不做任何操作
+        return
       } else if (React.isValidElement(result)) {
-        // React.ReactElement: 直接显示 React 元素
+        // React.ReactElement: 切换至扩展的二级面板
         navigateTo({
           type: 'extension',
-          extensionElement: result
+          extensionElement: result,
+          windowSize: 'normal' // 扩展视图使用大窗口
         })
       }
     } catch (error) {
@@ -208,7 +214,16 @@ function MainView({ commandManagerReady }: MainViewProps) {
         </div>
         <div
           className="footer-settings"
-          onClick={() => executeSystemCommand('system:settings', navigateTo)}
+          onClick={() => {
+            const systemCommand = executeSystemCommand('@system#settings')
+            if (systemCommand) {
+              navigateTo({
+                type: 'system',
+                extensionComponent: systemCommand.component,
+                windowSize: systemCommand.windowSize
+              })
+            }
+          }}
         >
           ⚙️
         </div>

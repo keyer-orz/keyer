@@ -1,5 +1,5 @@
 import { exec } from 'child_process'
-import { IExtension, IActionDef, ExtensionResult } from 'keyerext'
+import { IExtension, ICommand, ExtensionResult } from 'keyerext'
 
 // 系统设置项数据库（支持中英文）
 interface PreferenceItem {
@@ -40,7 +40,7 @@ class SystemPreferencesExtension implements IExtension {
     this.preferences = preferencesDatabase
   }
 
-  async onPrepare(): Promise<IActionDef[]> {
+  async onPrepare(): Promise<Partial<ICommand>[]> {
     console.log(`System Preferences: Loaded ${this.preferences.length} preference panes`)
 
     // 清空之前的映射
