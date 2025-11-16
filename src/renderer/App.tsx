@@ -82,9 +82,10 @@ function App() {
       const command = allCommands.find(cmd => cmd.ucid === commandId)
 
       if (command) {
-        // 创建 navigateTo 函数，将新视图压入栈
+        // 快捷键打开扩展：直接替换整个 viewStack，跳过 MainView
+        // 这样按 Esc 时会直接隐藏窗口，而不是返回 MainView
         const navigateTo = (newViewState: ViewState) => {
-          setViewStack(prev => [...prev, newViewState])
+          setViewStack([newViewState])
         }
         // 调用全局命令执行器
         await executeCommand(command, { navigateTo })

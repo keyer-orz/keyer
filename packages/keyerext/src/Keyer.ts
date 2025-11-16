@@ -26,6 +26,12 @@ export interface NetFetchResponse {
   error?: string
 }
 
+export interface ClipboardImage {
+  dataURL: string  // base64 data URL
+  width: number
+  height: number
+}
+
 interface IKeyerAPI {
   /** 隐藏窗口 */
   hideWindow(): Promise<void>
@@ -43,6 +49,16 @@ interface IKeyerAPI {
   showToast(message: string, duration?: number): Promise<void>
   /** 发起网络请求 */
   fetch(request: NetFetchRequest): Promise<NetFetchResponse>
+
+  // ============ 剪切板 API ============
+  /** 读取剪切板文本 */
+  clipboardReadText(): Promise<string>
+  /** 写入剪切板文本 */
+  clipboardWriteText(text: string): Promise<void>
+  /** 读取剪切板图片 */
+  clipboardReadImage(): Promise<ClipboardImage | null>
+  /** 写入剪切板图片 */
+  clipboardWriteImage(dataURL: string): Promise<void>
 }
 
 declare global {

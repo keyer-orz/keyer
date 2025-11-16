@@ -4,8 +4,9 @@
  */
 
 import type { NetFetchRequest, NetFetchResponse } from '../shared/Net'
+import type { ClipboardImage } from '../../packages/keyerext/src/Keyer'
 
-const { ipcRenderer } = window.require('electron')
+const { ipcRenderer, clipboard, nativeImage } = window.require('electron')
 
 // Toast 管理
 let toastCallback: ((message: string, duration: number) => void) | null = null
@@ -40,6 +41,33 @@ export function initKeyerAPI() {
     },
 
     fetch: (request: NetFetchRequest): Promise<NetFetchResponse> =>
-      ipcRenderer.invoke('net:fetch', request)
+      ipcRenderer.invoke('net:fetch', request),
+
+    // ============ 剪切板 API ============
+    clipboardReadText: async (): Promise<string> => {
+      return clipboard.readText()
+    },
+
+    clipboardWriteText: async (text: string): Promise<void> => {
+      clipboard.writeText(text)
+    },
+
+    clipboardReadImage: async (): Promise<ClipboardImage | null> => {
+      const image = clipboard.readImage()
+      if (image.isEmpty()) {
+        return null
+      }
+      const size = image.getSize()
+      return {
+        dataURL: image.toDataURL(),
+        width: size.width,
+        height: size.height
+      }
+    },
+
+    clipboardWriteImage: async (dataURL: string): Promise<void> => {
+      const image = nativeImage.createFromDataURL(dataURL)
+      clipboard.writeImage(image)
+    }
   }
 }
