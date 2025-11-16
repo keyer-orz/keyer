@@ -308,9 +308,8 @@ export class ExtensionManager {
 
     // 优先查找系统扩展
     if (extName === '@system') {
-      const systemExtInfo = Array.from(this.systemExtensions.values()).find(ext =>
-        ext.instance // 找到提供该命令的系统扩展
-      )
+      // 根据命令名称找到对应的系统扩展
+      const systemExtInfo = this.systemExtensions.get(commandName)
 
       if (systemExtInfo) {
         const result = await systemExtInfo.instance.doAction(commandName)
