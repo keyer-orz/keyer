@@ -44,37 +44,7 @@ function App() {
 
   // 初始化 CommandManager
   useEffect(() => {
-    const init = async () => {
-      try {
-        const { ipcRenderer } = window.require('electron')
-
-        // 获取 ConfigManager 单例
-        const configManager = ConfigManager.getInstance()
-        const config = configManager.getConfig()
-
-        const [sandboxDir, devPaths] = await Promise.all([
-          ipcRenderer.invoke('get-sandbox-dir'),
-          ipcRenderer.invoke('get-dev-paths')
-        ])
-
-        console.log('Config:', config)
-        console.log('Sandbox dir:', sandboxDir)
-        console.log('Dev paths:', devPaths)
-
-        await CommandManager.createInstance({
-          devExtensionsDir: devPaths?.extensionsDir || undefined,
-          devScriptsDir: devPaths?.scriptsDir || undefined,
-          configExtensions: config?.extensions || [],
-          configScripts: config?.scripts || [],
-          sandboxDir: sandboxDir
-        })
-        console.log('CommandManager initialized in renderer process')
-      } catch (error) {
-        console.error('Failed to initialize CommandManager:', error)
-      }
-    }
-
-    init()
+    CommandManager.initializeFromRenderer()
   }, [])
 
   // 监听事件

@@ -75,6 +75,48 @@ export class CommandManager {
     CommandManager.instance = null
   }
 
+  /**
+   * 从渲染进程初始化 CommandManager
+   * 自动从 IPC 获取配置并创建实例
+   */
+  static async initializeFromRenderer(): Promise<CommandManager> {
+    if (CommandManager.instance) {
+      return CommandManager.instance
+    }
+
+    try {
+      const { ipcRenderer } = window.require('electron')
+
+      // 动态导入 ConfigManager 避免循环依赖
+      const { ConfigManager } = await import('../../shared/Config')
+      const configManager = ConfigManager.getInstance()
+      const config = configManager.getConfig()
+
+      // 从主进程获取路径配置
+      const [sandboxDir, devPaths] = await Promise.all([
+        ipcRenderer.invoke('get-sandbox-dir'),
+        ipcRenderer.invoke('get-dev-paths')
+      ])
+
+      console.log('Initializing CommandManager from renderer')
+      console.log('Config:', config)
+      console.log('Sandbox dir:', sandboxDir)
+      console.log('Dev paths:', devPaths)
+
+      // 创建实例
+      return await CommandManager.createInstance({
+        devExtensionsDir: devPaths?.extensionsDir || undefined,
+        devScriptsDir: devPaths?.scriptsDir || undefined,
+        configExtensions: config?.extensions || [],
+        configScripts: config?.scripts || [],
+        sandboxDir: sandboxDir
+      })
+    } catch (error) {
+      console.error('Failed to initialize CommandManager from renderer:', error)
+      throw error
+    }
+  }
+
   // 初始化：扫描所有脚本和扩展
   async initialize(): Promise<void> {
     await this.scriptManager.scanScripts()
