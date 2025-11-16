@@ -55,23 +55,10 @@ function App() {
   useEffect(() => {
     const { ipcRenderer } = window.require('electron')
 
-    const handleFocusInput = () => {
-      // 返回主视图：重置栈为只包含主视图
-      setViewStack([{
-        commandId: '@system#main',
-        element: <MainPanel />
-      }])
-    }
-
     // 处理 execute-command 事件：统一的命令执行入口
     const handleExecuteCommand = async (_: any, commandId: string) => {
-      // 特殊处理：@system#main 直接返回主视图
-      if (commandId === '@system#main') {
-        handleFocusInput()
-        return
-      }
+      console.log("handleExecuteCommand", commandId)
 
-      // 其他命令：查找并执行
       if (!CommandManager.isReady()) {
         console.warn('CommandManager not ready')
         return
@@ -82,7 +69,9 @@ function App() {
       const command = allCommands.find(cmd => cmd.ucid === commandId)
 
       if (command) {
-        // 快捷键打开扩展：直接替换整个 viewStack，跳过 MainView
+        // 快捷键打开命令：直接替换整个 viewStack
+        // 对于 @system#main：重置为主面板
+        // 对于其他扩展：跳过 MainView，直接显示扩展
         // 这样按 Esc 时会直接隐藏窗口，而不是返回 MainView
         const navigateTo = (newViewState: ViewState) => {
           setViewStack([newViewState])
@@ -94,7 +83,6 @@ function App() {
       }
     }
 
-    ipcRenderer.on('focus-input', handleFocusInput)
     ipcRenderer.on('execute-command', handleExecuteCommand)
 
     // 使用 ConfigManager 单例获取主题
@@ -113,7 +101,6 @@ function App() {
     })
 
     return () => {
-      ipcRenderer.removeListener('focus-input', handleFocusInput)
       ipcRenderer.removeListener('execute-command', handleExecuteCommand)
     }
   }, [])

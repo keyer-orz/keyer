@@ -51,14 +51,14 @@ export function registerGlobalShortcut() {
   const ret = globalShortcut.register('Shift+Space', () => {
     const mainWindow = getMainWindow()
     if (mainWindow) {
-      if (mainWindow.isVisible()) {
-        mainWindow.hide()
-      } else {
+      if (!mainWindow.isVisible()) {
+        // 窗口未显示：显示并打开主面板
         mainWindow.show()
         mainWindow.center()
-        // 对齐插件快捷键呼出方式：发送 execute-command 事件执行 @system#main
-        mainWindow.webContents.send('execute-command', '@system#main')
       }
+      // 无论窗口是否可见，都发送 execute-command 打开主面板
+      // 这样可以实现：在其他面板时按 Shift+Space 返回主面板
+      mainWindow.webContents.send('execute-command', '@system#main')
     }
   })
 
