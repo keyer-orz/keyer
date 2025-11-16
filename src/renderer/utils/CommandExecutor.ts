@@ -2,7 +2,8 @@
  * 统一的命令执行工具
  * 处理系统命令、扩展命令、脚本命令的执行
  */
-import { ICommand, ExtensionResult } from '../types'
+import React from 'react'
+import { ICommand } from '../types'
 import { CommandManager } from '../managers/CommandManager'
 import { executeSystemCommand } from './SystemCommands'
 import { NavigationContextType } from './NavigationContext'
