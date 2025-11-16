@@ -3,7 +3,8 @@ import './styles/App.css'
 import { CommandManager } from './managers/CommandManager'
 import { ConfigManager } from '../shared/Config'
 import { NavigationContext, ViewState, NavigationContextType } from './utils/NavigationContext'
-import MainView from './MainView'
+import { getSystemCommand } from './utils/SystemCommands'
+import { executeCommand } from './utils/CommandExecutor'
 import { setToastCallback } from './keyer-api'
 
 // 扩展 Window 类型以支持 ipcRenderer
@@ -16,9 +17,11 @@ declare global {
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const [viewState, setViewState] = useState<ViewState>(() => {
+    // 从 SystemCommands 获取主视图
+    const mainCommand = getSystemCommand('@system#main')
     return {
       type: 'main',
-      extensionComponent: MainView
+      extensionComponent: mainCommand?.component
     }
   })
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
@@ -80,13 +83,41 @@ function App() {
 
     const handleFocusInput = () => {
       // 返回主视图
+      const mainCommand = getSystemCommand('@system#main')
       setViewState({
         type: 'main',
-        extensionComponent: MainView
+        extensionComponent: mainCommand?.component
       })
     }
 
+    // 处理 execute-command 事件：统一的命令执行入口
+    const handleExecuteCommand = async (_: any, commandId: string) => {
+      // 特殊处理：@system#main 直接返回主视图
+      if (commandId === '@system#main') {
+        handleFocusInput()
+        return
+      }
+
+      // 其他命令：查找并执行
+      if (!CommandManager.isReady()) {
+        console.warn('CommandManager not ready')
+        return
+      }
+
+      const commandManager = CommandManager.getInstance()
+      const allCommands = await commandManager.search('')
+      const command = allCommands.find(cmd => cmd.ucid === commandId)
+
+      if (command) {
+        // 调用全局命令执行器
+        await executeCommand(command, { navigateTo: setViewState })
+      } else {
+        console.warn('Command not found:', commandId)
+      }
+    }
+
     ipcRenderer.on('focus-input', handleFocusInput)
+    ipcRenderer.on('execute-command', handleExecuteCommand)
 
     // 使用 ConfigManager 单例获取主题
     const configManager = ConfigManager.getInstance()
@@ -105,6 +136,7 @@ function App() {
 
     return () => {
       ipcRenderer.removeListener('focus-input', handleFocusInput)
+      ipcRenderer.removeListener('execute-command', handleExecuteCommand)
     }
   }, [])
 
@@ -119,9 +151,10 @@ function App() {
 
         // 1. 如果不在主界面，直接返回主界面
         if (!isMainView) {
+          const mainCommand = getSystemCommand('@system#main')
           setViewState({
             type: 'main',
-            extensionComponent: MainView
+            extensionComponent: mainCommand?.component
           })
           return
         }

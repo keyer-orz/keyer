@@ -3,7 +3,7 @@
  * 插件商店面板，显示可安装的插件
  */
 import React, { useState, useEffect, useMemo } from 'react'
-import type { StorePlugin } from '../managers/StoreManager'
+import type { StorePlugin } from './StoreManager'
 
 interface StorePanelProps {
   storeManager: any

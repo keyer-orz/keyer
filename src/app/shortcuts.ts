@@ -56,7 +56,8 @@ export function registerGlobalShortcut() {
       } else {
         mainWindow.show()
         mainWindow.center()
-        mainWindow.webContents.send('focus-input')
+        // 对齐插件快捷键呼出方式：发送 execute-command 事件执行 @system#main
+        mainWindow.webContents.send('execute-command', '@system#main')
       }
     }
   })

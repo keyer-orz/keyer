@@ -45,3 +45,23 @@ src/main/main.ts 按业务拆分
 Keyer 增加 Feature
 1. showError
 2. showToast
+
+---
+
+使用 extension模式 改造 mainview（代码都放到main里面）
+直接硬编码注册和配置
+keyer/src/renderer/App.tsx 负责页面切换
+main/setting/store
+
+---
+
+keyer/src/main/MainPanel.tsx 治理
+handleExecute 直接调用全局的命令执行即可
+handleExecuteCommandFromShortcut 应该不用了
+
+---
+class Main implements IExtension
+
+整个 app 面板采用 栈结构管理
+IExtension 增加 onBack(): boolean
+按下 Esc 时，执行当前 Extension 

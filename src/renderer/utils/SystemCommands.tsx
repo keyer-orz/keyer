@@ -1,8 +1,9 @@
 import React from 'react'
 import { ICommand } from '../types'
 import { WindowSize } from './NavigationContext'
-import Settings from '../settings/Settings'
-import Store from '../components/Store'
+import MainView from '../../main'
+import Settings from '../../setting'
+import Store from '../../store'
 
 export interface SystemCommand {
   command: ICommand
@@ -12,6 +13,17 @@ export interface SystemCommand {
 
 // 系统命令注册表
 export const SYSTEM_COMMANDS: SystemCommand[] = [
+  {
+    command: {
+      ucid: '@system#main',
+      name: 'main',
+      title: 'Main',
+      desc: 'Main search panel',
+      type: 'System'
+    },
+    component: MainView,
+    windowSize: 'normal'
+  },
   {
     command: {
       ucid: '@system#settings',

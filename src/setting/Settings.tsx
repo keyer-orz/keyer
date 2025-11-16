@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react'
 import { Panel, List, Item, type ListItem, type ListSection } from 'keyerext'
-import GeneralTab from '../settings/GeneralTab'
-import ExtensionsTab from '../settings/ExtensionsTab'
-import ScriptsTab from '../settings/ScriptsTab'
-import type { TabType } from '../settings/types'
+import GeneralTab from './GeneralTab'
+import ExtensionsTab from './ExtensionsTab'
+import ScriptsTab from './ScriptsTab'
+import type { TabType } from './types'
 
 interface TabData {
   id: TabType
