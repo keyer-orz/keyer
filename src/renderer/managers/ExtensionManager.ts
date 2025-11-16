@@ -17,6 +17,7 @@ interface ExtensionInfo {
 export class ExtensionManager {
   private extensions: Map<string, ExtensionInfo> = new Map()  // key: ext.name
   private commands: Map<string, ICommand> = new Map()  // key: ucid
+  private systemExtensions: Map<string, ExtensionInfo> = new Map()  // 系统扩展
 
   private devDir?: string  // 开发环境目录
   private mineDirs: string[] = []  // 本地路径目录列表
@@ -31,6 +32,26 @@ export class ExtensionManager {
     this.mineDirs = Array.isArray(config.mineDirs) ? config.mineDirs : []
     this.sandboxDir = config.sandboxDir
     console.log('ExtensionManager initialized:', { devDir: this.devDir, mineDirs: this.mineDirs, sandboxDir: this.sandboxDir })
+  }
+
+  /**
+   * 注册系统扩展
+   * 系统扩展具有最高优先级，不会被其他扩展覆盖
+   */
+  registerSystemExtension(name: string, instance: IExtension): void {
+    const extInfo: ExtensionInfo = {
+      package: {
+        name,
+        title: name,
+        main: '' // 系统扩展不需要 main 路径
+      },
+      instance,
+      source: 'dev', // 系统扩展标记为 dev
+      path: ''
+    }
+
+    this.systemExtensions.set(name, extInfo)
+    console.log(`System extension registered: ${name}`)
   }
 
   // 扫描并加载所有 extension
@@ -70,7 +91,42 @@ export class ExtensionManager {
       await this.loadExtension(info.path, info.source)
     }
 
-    console.log(`Loaded ${this.extensions.size} extensions (dev: ${this.devDir}, mine: ${this.mineDirs.length}, sandbox: ${this.sandboxDir})`)
+    // 加载系统扩展的命令
+    await this.loadSystemExtensionCommands()
+
+    console.log(`Loaded ${this.extensions.size} extensions + ${this.systemExtensions.size} system extensions`)
+  }
+
+  /**
+   * 加载系统扩展的命令
+   */
+  private async loadSystemExtensionCommands(): Promise<void> {
+    for (const [name, extInfo] of this.systemExtensions) {
+      const { instance } = extInfo
+
+      // 调用 onPrepare 获取命令
+      const commandDefs = await instance.onPrepare()
+      if (commandDefs && Array.isArray(commandDefs)) {
+        for (const def of commandDefs) {
+          // 系统扩展的 UCID 使用 @system# 前缀
+          const ucid = `@system#${def.name}`
+          console.log(`Register system command: ${ucid}`)
+
+          const command: ICommand = {
+            ucid,
+            name: def.name!,
+            title: def.title!,
+            desc: def.desc!,
+            icon: def.icon,
+            type: def.type || 'System',
+            source: 'dev',
+            windowSize: def.windowSize
+          }
+
+          this.commands.set(ucid, command)
+        }
+      }
+    }
   }
 
   // 扫描目录，返回扩展列表
@@ -241,7 +297,7 @@ export class ExtensionManager {
   async executeAction(command: ICommand): Promise<ExtensionResult> {
     console.log('Executing command:', command.ucid)
 
-    // 从 ucid 解析 extName 和 commandName（格式：ext.name#cmd.name）
+    // 从 ucid 解析 extName 和 commandName（格式：ext.name#cmd.name 或 @system#cmd.name）
     const parts = command.ucid.split('#')
 
     if (parts.length !== 2) {
@@ -249,6 +305,23 @@ export class ExtensionManager {
     }
 
     const [extName, commandName] = parts
+
+    // 优先查找系统扩展
+    if (extName === '@system') {
+      const systemExtInfo = Array.from(this.systemExtensions.values()).find(ext =>
+        ext.instance // 找到提供该命令的系统扩展
+      )
+
+      if (systemExtInfo) {
+        const result = await systemExtInfo.instance.doAction(commandName)
+        console.log(`System command ${command.ucid} executed successfully`)
+        return result
+      }
+
+      throw new Error(`System extension not found for command: ${command.ucid}`)
+    }
+
+    // 查找普通扩展
     const extInfo = this.extensions.get(extName)
 
     if (!extInfo) {
@@ -279,5 +352,62 @@ export class ExtensionManager {
     }
 
     return previewElements
+  }
+
+  /**
+   * 获取系统扩展实例（根据 commandId）
+   * @param commandId 命令ID，格式：@system#commandName
+   * @returns 扩展实例和命令名称，如果不是系统命令则返回 null
+   */
+  getSystemExtension(commandId: string): { instance: IExtension; commandName: string } | null {
+    if (!commandId.startsWith('@system#')) {
+      return null
+    }
+
+    const parts = commandId.split('#')
+    if (parts.length !== 2) {
+      return null
+    }
+
+    const [, commandName] = parts
+
+    // 查找提供该命令的系统扩展
+    for (const [, extInfo] of this.systemExtensions) {
+      // 简单返回第一个系统扩展（因为命令名称是唯一的）
+      // 实际上可以通过检查 onPrepare 返回的命令来确定
+      return {
+        instance: extInfo.instance,
+        commandName
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * 根据 commandId 获取扩展实例
+   * @param commandId 命令ID，格式：extName#commandName 或 @system#commandName
+   * @returns 扩展实例，如果未找到则返回 null
+   */
+  getExtensionByCommand(commandId: string): IExtension | null {
+    const parts = commandId.split('#')
+    if (parts.length !== 2) {
+      return null
+    }
+
+    const [extName] = parts
+
+    // 1. 检查是否是系统扩展
+    if (extName === '@system') {
+      // 返回第一个系统扩展实例（系统扩展都共享相同的 doBack 行为）
+      for (const [, extInfo] of this.systemExtensions) {
+        return extInfo.instance
+      }
+      return null
+    }
+
+    // 2. 查找普通扩展
+    const extInfo = this.extensions.get(extName)
+    return extInfo ? extInfo.instance : null
   }
 }

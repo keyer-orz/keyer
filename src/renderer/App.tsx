@@ -3,9 +3,9 @@ import './styles/App.css'
 import { CommandManager } from './managers/CommandManager'
 import { ConfigManager } from '../shared/Config'
 import { NavigationContext, ViewState, NavigationContextType } from './utils/NavigationContext'
-import { getSystemCommand } from './utils/SystemCommands'
 import { executeCommand } from './utils/CommandExecutor'
 import { setToastCallback } from './keyer-api'
+import MainPanel from '../main'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
@@ -19,11 +19,9 @@ function App() {
 
   // 使用栈管理视图：存储 ViewState
   const [viewStack, setViewStack] = useState<ViewState[]>(() => {
-    const mainCommand = getSystemCommand('@system#main')
     return [{
       commandId: '@system#main',
-      type: 'main',
-      extensionComponent: mainCommand?.component
+      element: <MainPanel />
     }]
   })
 
@@ -59,11 +57,9 @@ function App() {
 
     const handleFocusInput = () => {
       // 返回主视图：重置栈为只包含主视图
-      const mainCommand = getSystemCommand('@system#main')
       setViewStack([{
         commandId: '@system#main',
-        type: 'main',
-        extensionComponent: mainCommand?.component
+        element: <MainPanel />
       }])
     }
 
@@ -128,10 +124,15 @@ function App() {
         e.preventDefault()
 
         // 1. 调用当前扩展的 doBack() 方法
-        // TODO: 需要获取当前扩展实例并调用 doBack()
-        // 暂时默认返回 true
+        let shouldGoBack = true
 
-        const shouldGoBack = true // 默认行为
+        if (CommandManager.isReady()) {
+          const commandManager = CommandManager.getInstance()
+          const currentCommandId = viewState.commandId
+
+          // 调用当前视图对应扩展的 doBack()
+          shouldGoBack = commandManager.callDoBack(currentCommandId)
+        }
 
         if (!shouldGoBack) {
           // 扩展自己处理了 Esc，不执行默认行为
@@ -152,21 +153,13 @@ function App() {
 
     window.addEventListener('keydown', handleGlobalKeyDown)
     return () => window.removeEventListener('keydown', handleGlobalKeyDown)
-  }, [viewStack])
+  }, [viewStack, viewState])
 
   // 创建导航上下文值
   const navigationValue: NavigationContextType = useMemo(() => ({
-    navigateToCommand: (commandId: string) => {
-      // 根据 commandId 创建 ViewState 并压入栈
-      const systemCommand = getSystemCommand(commandId)
-      if (systemCommand) {
-        setViewStack(prev => [...prev, {
-          commandId,
-          type: 'system',
-          extensionComponent: systemCommand.component,
-          windowSize: systemCommand.windowSize
-        }])
-      }
+    navigateTo: (newViewState: ViewState) => {
+      // 将新视图压入栈
+      setViewStack(prev => [...prev, newViewState])
     },
     navigateBack: () => {
       // 出栈
@@ -178,43 +171,12 @@ function App() {
         ipcRenderer.invoke('hide-window')
       }
     },
-    navigateTo: (newViewState: ViewState) => {
-      // 将新视图压入栈
-      setViewStack(prev => [...prev, newViewState])
-    },
     currentView: viewState
   }), [viewState, viewStack])
 
   // 渲染当前视图
   const renderView = () => {
-    const { type } = viewState
-
-    if (type === 'main') {
-      const MainComponent = viewState.extensionComponent
-      return MainComponent ? <MainComponent /> : null
-    }
-
-    // 处理系统命令视图（动态组件）
-    if (type === 'system') {
-      if (viewState.extensionElement) {
-        return viewState.extensionElement
-      }
-      if (viewState.extensionComponent) {
-        const SystemComponent = viewState.extensionComponent
-        return <SystemComponent />
-      }
-      return null
-    }
-
-    // 处理扩展视图（React 元素）
-    if (type === 'extension') {
-      if (viewState.extensionElement) {
-        return viewState.extensionElement
-      }
-      return null
-    }
-
-    return null
+    return viewState.element
   }
 
   return (

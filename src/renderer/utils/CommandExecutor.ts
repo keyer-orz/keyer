@@ -5,7 +5,6 @@
 import React from 'react'
 import { ICommand } from '../types'
 import { CommandManager } from '../managers/CommandManager'
-import { executeSystemCommand } from './SystemCommands'
 import { NavigationContextType } from './NavigationContext'
 
 export interface CommandExecutorOptions {
@@ -22,24 +21,12 @@ export async function executeCommand(
   options: CommandExecutorOptions
 ): Promise<void> {
   try {
-    // 1. 检查是否是系统命令
-    const systemCommand = executeSystemCommand(command.ucid)
-    if (systemCommand) {
-      // 系统命令：直接导航到绑定的组件
-      options.navigateTo({
-        commandId: command.ucid,
-        type: 'system',
-        extensionComponent: systemCommand.component,
-        windowSize: systemCommand.windowSize
-      })
-      return
-    }
-
-    // 2. 执行扩展/脚本命令
     const commandManager = CommandManager.getInstance()
+
+    // 执行命令
     const result = await commandManager.execute(command)
 
-    // 3. 处理返回值 (ExtensionResult = null | React.ReactElement | boolean)
+    // 处理返回值 (ExtensionResult = null | React.ReactElement | boolean)
     if (result === null || result === false) {
       // null/false: 关闭主面板
       const { ipcRenderer } = window.require('electron')
@@ -48,12 +35,11 @@ export async function executeCommand(
       // true: 保持窗口打开，不做任何操作
       return
     } else if (React.isValidElement(result)) {
-      // React.ReactElement: 切换至扩展的二级面板
+      // React.ReactElement: 导航到命令视图
       options.navigateTo({
-        commandId: `${command.ucid}#panel`,  // 扩展二级面板使用特殊的 commandId
-        type: 'extension',
-        extensionElement: result,
-        windowSize: 'normal'
+        commandId: command.ucid,
+        element: result,
+        windowSize: command.windowSize || 'normal'
       })
     }
   } catch (error) {

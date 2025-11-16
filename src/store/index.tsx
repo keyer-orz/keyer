@@ -10,13 +10,24 @@ class StoreExtension implements IExtension {
   enabledPreview = false
 
   async onPrepare(): Promise<Partial<ICommand>[]> {
-    // Store 扩展不提供命令，它是插件商店面板
-    return []
+    // 返回插件商店命令
+    return [{
+      name: 'store',
+      title: 'Plugin Store',
+      desc: 'Browse and install plugins',
+      icon: '🏪',
+      windowSize: 'large'
+    }]
   }
 
   doAction(name: string): ExtensionResult {
     // Store 扩展的 doAction 返回商店面板
     return <Store />
+  }
+
+  doBack(): boolean {
+    // Store 面板按 Esc 直接返回
+    return true
   }
 }
 

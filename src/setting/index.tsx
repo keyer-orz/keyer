@@ -10,13 +10,24 @@ class SettingsExtension implements IExtension {
   enabledPreview = false
 
   async onPrepare(): Promise<Partial<ICommand>[]> {
-    // Settings 扩展不提供命令，它是系统设置面板
-    return []
+    // 返回设置面板命令
+    return [{
+      name: 'settings',
+      title: 'Settings',
+      desc: 'Open settings panel',
+      icon: '⚙️',
+      windowSize: 'large'
+    }]
   }
 
   doAction(name: string): ExtensionResult {
     // Settings 扩展的 doAction 返回设置面板
     return <Settings />
+  }
+
+  doBack(): boolean {
+    // Settings 面板按 Esc 直接返回
+    return true
   }
 }
 

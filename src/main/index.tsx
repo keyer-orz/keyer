@@ -10,14 +10,25 @@ class Main implements IExtension {
   enabledPreview = false
 
   async onPrepare(): Promise<Partial<ICommand>[]> {
-    // Main 扩展不提供命令，它本身就是主面板
-    return []
+    // 返回主面板命令
+    return [{
+      name: 'main',
+      title: 'Main',
+      desc: 'Main search panel',
+      icon: '🏠',
+      windowSize: 'normal'
+    }]
   }
 
   doAction(name: string): ExtensionResult {
     // Main 扩展的 doAction 返回主面板
-    // name 参数在这里不使用，因为 Main 只有一个功能：显示主面板
     return <MainPanel />
+  }
+
+  doBack(): boolean {
+    // Main 面板的 Esc 行为由内部处理（Input 清空等）
+    // 暂时返回 true，让系统处理
+    return true
   }
 }
 

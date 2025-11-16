@@ -1,6 +1,9 @@
 import { ICommand, ExtensionResult } from '../types'
 import { ScriptManager } from './ScriptManager'
 import { ExtensionManager } from './ExtensionManager'
+import { MainExtension } from '@/main'
+import { SettingsExtensionInstance } from '@/setting'
+import { StoreExtensionInstance } from '@/store'
 
 interface CommandManagerConfig {
   devExtensionsDir?: string  // 开发环境的 extensions 目录
@@ -119,8 +122,20 @@ export class CommandManager {
 
   // 初始化：扫描所有脚本和扩展
   async initialize(): Promise<void> {
+    // 注册系统扩展
+    this.registerSystemExtensions()
+
     await this.scriptManager.scanScripts()
     await this.extensionManager.loadExtensions()
+  }
+
+  // 注册系统扩展
+  private registerSystemExtensions(): void {
+    this.extensionManager.registerSystemExtension('main', MainExtension)
+    this.extensionManager.registerSystemExtension('settings', SettingsExtensionInstance)
+    this.extensionManager.registerSystemExtension('store', StoreExtensionInstance)
+
+    console.log('System extensions registered')
   }
 
   // 获取所有可用的命令
@@ -182,5 +197,37 @@ export class CommandManager {
   // 获取预览元素
   async getPreview(input: string): Promise<Array<ExtensionResult>> {
     return await this.extensionManager.getPreviewComponents(input)
+  }
+
+  // 获取系统命令对应的扩展实例
+  getSystemExtension(commandId: string): { instance: any; commandName: string } | null {
+    return this.extensionManager.getSystemExtension(commandId)
+  }
+
+  // 获取命令信息（通过 ucid）
+  getCommand(ucid: string): ICommand | undefined {
+    return this.getAllCommands().find(cmd => cmd.ucid === ucid)
+  }
+
+  /**
+   * 调用扩展的 doBack() 方法
+   * @param commandId 命令ID
+   * @returns true 表示应该执行默认返回行为，false 表示扩展自己处理了返回
+   */
+  callDoBack(commandId: string): boolean {
+    const extension = this.extensionManager.getExtensionByCommand(commandId)
+
+    if (!extension) {
+      // 未找到扩展，执行默认行为
+      return true
+    }
+
+    // 调用扩展的 doBack 方法（如果存在）
+    if (typeof extension.doBack === 'function') {
+      return extension.doBack()
+    }
+
+    // 扩展未实现 doBack，默认返回 true
+    return true
   }
 }

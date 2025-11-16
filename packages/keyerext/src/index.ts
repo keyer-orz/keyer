@@ -8,6 +8,7 @@ export interface ICommand {
   desc: string        // 展示描述
   type?: string       // 类型：Command、Script 等
   source?: 'dev' | 'mine' | 'sandbox'  // 来源标记
+  windowSize?: 'normal' | 'large'  // 窗口大小
 }
 
 // Store 接口，提供简单的 key-value 存储

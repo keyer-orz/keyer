@@ -5,7 +5,6 @@ import { Input, InputHandle, List, Item, Panel, Text, ExtensionResult } from 'ke
 import type { ListItem, ListSection } from 'keyerext'
 import { useNavigation } from '../renderer/utils/NavigationContext'
 import { executeCommand } from '../renderer/utils/CommandExecutor'
-import { getAllSystemCommands } from '../renderer/utils/SystemCommands'
 
 function MainPanel() {
   const [input, setInput] = useState('')
@@ -71,8 +70,14 @@ function MainPanel() {
     return '📦'
   }
 
-  // 获取系统命令
-  const systemCommands = useMemo(() => getAllSystemCommands(), [])
+  // 获取系统命令（从 CommandManager 获取所有 @system# 开头的命令）
+  const systemCommands = useMemo(() => {
+    if (!CommandManager.isReady()) return []
+
+    const commandManager = CommandManager.getInstance()
+    const allCommands = commandManager.getAllCommands()
+    return allCommands.filter(cmd => cmd.ucid.startsWith('@system#'))
+  }, [])
 
   // 构建 Section 列表
   const sections = useMemo(() => {
