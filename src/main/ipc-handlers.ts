@@ -5,6 +5,7 @@ import { setupWindowIPCHandlers } from './ipc-window'
 import { setupPasteIPCHandlers } from './ipc-paste'
 import { setupPathsIPCHandlers } from './ipc-paths'
 import { setupNetIPCHandlers } from './ipc-net'
+import { setupStoreIPCHandlers } from './ipc-store'
 
 /**
  * 注册所有 IPC 处理器
@@ -14,4 +15,5 @@ export function setupIPCHandlers() {
   setupPasteIPCHandlers()
   setupPathsIPCHandlers()
   setupNetIPCHandlers()
+  setupStoreIPCHandlers()
 }

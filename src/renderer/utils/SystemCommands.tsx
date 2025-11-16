@@ -2,6 +2,7 @@ import React from 'react'
 import { ICommand } from '../types'
 import { WindowSize } from './NavigationContext'
 import Settings from '../settings/Settings'
+import Store from '../components/Store'
 
 export interface SystemCommand {
   command: ICommand
@@ -20,6 +21,18 @@ export const SYSTEM_COMMANDS: SystemCommand[] = [
       type: 'System'
     },
     component: Settings,
+    windowSize: 'large'
+  },
+  {
+    command: {
+      ucid: '@system#store',
+      icon: '🏪',
+      name: 'store',
+      title: 'Plugin Store',
+      desc: 'Browse and install plugins',
+      type: 'System'
+    },
+    component: Store,
     windowSize: 'large'
   }
 ]
