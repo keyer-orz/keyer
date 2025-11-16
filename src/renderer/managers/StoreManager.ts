@@ -2,9 +2,6 @@
  * Store Manager
  * 管理插件商店，包括获取、搜索和安装插件
  */
-
-import { Keyer } from '../types'
-
 const { ipcRenderer } = window.require('electron')
 
 // 插件商店数据类型
@@ -25,7 +22,7 @@ export class StoreManager {
   private storeData: StoreData = {}
   private loading = false
   private error: string | null = null
-  private storeUrl = 'https://github.com/keyer-orz/store/raw/refs/heads/main/app.json'
+  private storeUrl = 'https://keyer-orz.github.io/store/app.json'
 
   async initialize() {
     console.log('Initializing StoreManager...')
@@ -38,17 +35,13 @@ export class StoreManager {
     this.error = null
 
     try {
-      const response = await Keyer.fetch({
-        url: this.storeUrl,
-        method: 'GET',
-        responseType: 'json'
-      })
+      const response = await fetch(this.storeUrl)
 
       if (!response.ok) {
         throw new Error(`Failed to fetch store data: ${response.statusText}`)
       }
 
-      this.storeData = response.body as StoreData
+      this.storeData = await response.json() as StoreData
       console.log(`Store loaded: ${Object.keys(this.storeData).length} plugins available`)
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
