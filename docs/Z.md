@@ -60,8 +60,22 @@ handleExecute 直接调用全局的命令执行即可
 handleExecuteCommandFromShortcut 应该不用了
 
 ---
-class Main implements IExtension
 
-整个 app 面板采用 栈结构管理
-IExtension 增加 onBack(): boolean
-按下 Esc 时，执行当前 Extension 
+1. IExtension 增加 doBack(): boolean, 可选择实现，不实现等同于返回 true
+2. App.tsx Esc按键监听 中去除 [data-keyer-input="true"] 的逻辑，转成插件的 doBack(), 返回 true 则返回上一个界面
+3. App.tsx 页面切换重做下，使用栈存储 commandId, Esc按键出栈，栈空则隐藏 App
+4. Input组件要 移除 data-keyer-input
+5. 具有二级 UI的 插件都要更新下
+
+---
+
+ICommand 增加 windowSize
+SYSTEM_COMMANDS 去除，移到对应插件的 onPrepare 
+增加系统插件的注册(和安装的插件要分离开)
+NavigationContext.tsx 再简化下
+现在已经全部是Extension机制了
+
+---
+
+keyer/packages/keyerext/src/Keyer.ts 增加剪切板的 API
+完善下剪切板插件
