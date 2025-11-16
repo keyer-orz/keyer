@@ -10,12 +10,12 @@ export default defineConfig({
     react(),
     electron([
       {
-        entry: 'src/main/main.ts',
+        entry: 'src/app/main.ts',
         vite: {
           build: {
             outDir: 'dist-electron'
           }
-        }
+        },
       }
     ]),
     renderer(),

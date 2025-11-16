@@ -1,11 +1,11 @@
 /**
  * IPC 处理器聚合模块
  */
-import { setupWindowIPCHandlers } from '../main/ipc-window'
-import { setupPasteIPCHandlers } from '../main/ipc-paste'
-import { setupPathsIPCHandlers } from '../main/ipc-paths'
-import { setupNetIPCHandlers } from '../main/ipc-net'
-import { setupStoreIPCHandlers } from '../main/ipc-store'
+import { setupWindowIPCHandlers } from './ipc-window'
+import { setupPasteIPCHandlers } from './ipc-paste'
+import { setupPathsIPCHandlers } from './ipc-paths'
+import { setupNetIPCHandlers } from './ipc-net'
+import { setupStoreIPCHandlers } from './ipc-store'
 
 /**
  * 注册所有 IPC 处理器

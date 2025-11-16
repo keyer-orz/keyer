@@ -52,18 +52,16 @@ export function registerGlobalShortcut() {
     const mainWindow = getMainWindow()
     if (mainWindow) {
       if (!mainWindow.isVisible()) {
-        // 窗口未显示：显示并打开主面板
         mainWindow.show()
         mainWindow.center()
       }
       // 无论窗口是否可见，都发送 execute-command 打开主面板
-      // 这样可以实现：在其他面板时按 Shift+Space 返回主面板
       mainWindow.webContents.send('execute-command', '@system#main')
     }
   })
 
   if (!ret) {
-    console.log('Failed to register global shortcut')
+    console.log('Failed to register global shortcut Shift+Space')
   }
 }
 

@@ -57,8 +57,6 @@ function App() {
 
     // 处理 execute-command 事件：统一的命令执行入口
     const handleExecuteCommand = async (_: any, commandId: string) => {
-      console.log("handleExecuteCommand", commandId)
-
       if (!CommandManager.isReady()) {
         console.warn('CommandManager not ready')
         return
