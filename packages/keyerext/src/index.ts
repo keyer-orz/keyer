@@ -64,6 +64,13 @@ export interface IExtension {
   //   - null: 不显示预览
   //   - React.ReactElement: 在列表顶部显示的预览元素
   onPreview?(input: string): ExtensionResult
+
+  // 返回功能（可选）
+  // 当用户按下 Esc 键时调用
+  // 返回值：
+  //   - true: 返回上一个界面（默认行为）
+  //   - false: 由扩展自己处理，不返回上一个界面
+  doBack?(): boolean
 }
 
 // Extension 的包配置定义（文档规范）

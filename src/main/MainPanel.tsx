@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ICommand } from '../renderer/types'
 import { CommandManager } from '../renderer/managers/CommandManager'
 import { Input, InputHandle, List, Item, Panel, Text, ExtensionResult } from 'keyerext'

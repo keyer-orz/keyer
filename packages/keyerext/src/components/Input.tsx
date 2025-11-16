@@ -70,7 +70,6 @@ function InputInner({
     placeholder,
     value,
     onChange: (e: any) => onChange(e.target.value),
-    'data-keyer-input': 'true',
     style
   })
 }

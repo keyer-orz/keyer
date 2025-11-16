@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect } from 'react'
 import { StorePanel } from './StorePanel'
-import { StoreManager } from '../managers/StoreManager'
+import { StoreManager } from './StoreManager'
 
 // 全局 StoreManager 实例
 let storeManagerInstance: StoreManager | null = null

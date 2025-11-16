@@ -16,18 +16,24 @@ declare global {
 
 function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-  const [viewState, setViewState] = useState<ViewState>(() => {
-    // 从 SystemCommands 获取主视图
+
+  // 使用栈管理视图：存储 ViewState
+  const [viewStack, setViewStack] = useState<ViewState[]>(() => {
     const mainCommand = getSystemCommand('@system#main')
-    return {
+    return [{
+      commandId: '@system#main',
       type: 'main',
       extensionComponent: mainCommand?.component
-    }
+    }]
   })
+
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
     message: '',
     visible: false
   })
+
+  // 当前视图是栈顶元素
+  const viewState = viewStack[viewStack.length - 1]
 
   // 监听视图切换，调整窗口大小
   useEffect(() => {
@@ -52,12 +58,13 @@ function App() {
     const { ipcRenderer } = window.require('electron')
 
     const handleFocusInput = () => {
-      // 返回主视图
+      // 返回主视图：重置栈为只包含主视图
       const mainCommand = getSystemCommand('@system#main')
-      setViewState({
+      setViewStack([{
+        commandId: '@system#main',
         type: 'main',
         extensionComponent: mainCommand?.component
-      })
+      }])
     }
 
     // 处理 execute-command 事件：统一的命令执行入口
@@ -79,8 +86,12 @@ function App() {
       const command = allCommands.find(cmd => cmd.ucid === commandId)
 
       if (command) {
+        // 创建 navigateTo 函数，将新视图压入栈
+        const navigateTo = (newViewState: ViewState) => {
+          setViewStack(prev => [...prev, newViewState])
+        }
         // 调用全局命令执行器
-        await executeCommand(command, { navigateTo: setViewState })
+        await executeCommand(command, { navigateTo })
       } else {
         console.warn('Command not found:', commandId)
       }
@@ -112,49 +123,27 @@ function App() {
 
   // 全局键盘快捷键处理
   useEffect(() => {
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+    const handleGlobalKeyDown = async (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
 
-        // 检查是否在主界面
-        const isMainView = viewState.type === 'main'
+        // 1. 调用当前扩展的 doBack() 方法
+        // TODO: 需要获取当前扩展实例并调用 doBack()
+        // 暂时默认返回 true
 
-        // 1. 如果不在主界面，直接返回主界面
-        if (!isMainView) {
-          const mainCommand = getSystemCommand('@system#main')
-          setViewState({
-            type: 'main',
-            extensionComponent: mainCommand?.component
-          })
+        const shouldGoBack = true // 默认行为
+
+        if (!shouldGoBack) {
+          // 扩展自己处理了 Esc，不执行默认行为
           return
         }
 
-        // 2. 在主界面的情况下
-        const inputElement = document.querySelector('[data-keyer-input="true"]') as HTMLInputElement
-
-        if (inputElement) {
-          // 2.1 如果焦点不在 Input 上，让 Input 获取焦点
-          if (document.activeElement !== inputElement) {
-            inputElement.focus()
-            return
-          }
-
-          // 2.2 如果焦点在 Input 上且 Input 不为空，清空 Input
-          if (inputElement.value.trim() !== '') {
-            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-              window.HTMLInputElement.prototype,
-              'value'
-            )?.set
-            nativeInputValueSetter?.call(inputElement, '')
-            inputElement.dispatchEvent(new Event('input', { bubbles: true }))
-            return
-          }
-
-          // 2.3 如果在主界面、焦点在 Input 上且 Input 为空，隐藏窗口
-          const { ipcRenderer } = window.require('electron')
-          ipcRenderer.invoke('hide-window')
+        // 2. 默认行为：出栈
+        if (viewStack.length > 1) {
+          // 有多个视图，出栈返回上一个
+          setViewStack(prev => prev.slice(0, -1))
         } else {
-          // 2.4 在主界面但没有 Input 元素（不太可能），隐藏窗口
+          // 只剩主视图，隐藏窗口
           const { ipcRenderer } = window.require('electron')
           ipcRenderer.invoke('hide-window')
         }
@@ -163,13 +152,38 @@ function App() {
 
     window.addEventListener('keydown', handleGlobalKeyDown)
     return () => window.removeEventListener('keydown', handleGlobalKeyDown)
-  }, [viewState.type])
+  }, [viewStack])
 
   // 创建导航上下文值
   const navigationValue: NavigationContextType = useMemo(() => ({
-    navigateTo: (newViewState: ViewState) => setViewState(newViewState),
+    navigateToCommand: (commandId: string) => {
+      // 根据 commandId 创建 ViewState 并压入栈
+      const systemCommand = getSystemCommand(commandId)
+      if (systemCommand) {
+        setViewStack(prev => [...prev, {
+          commandId,
+          type: 'system',
+          extensionComponent: systemCommand.component,
+          windowSize: systemCommand.windowSize
+        }])
+      }
+    },
+    navigateBack: () => {
+      // 出栈
+      if (viewStack.length > 1) {
+        setViewStack(prev => prev.slice(0, -1))
+      } else {
+        // 只剩主视图，隐藏窗口
+        const { ipcRenderer } = window.require('electron')
+        ipcRenderer.invoke('hide-window')
+      }
+    },
+    navigateTo: (newViewState: ViewState) => {
+      // 将新视图压入栈
+      setViewStack(prev => [...prev, newViewState])
+    },
     currentView: viewState
-  }), [viewState])
+  }), [viewState, viewStack])
 
   // 渲染当前视图
   const renderView = () => {

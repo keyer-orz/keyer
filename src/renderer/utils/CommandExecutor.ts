@@ -27,6 +27,7 @@ export async function executeCommand(
     if (systemCommand) {
       // 系统命令：直接导航到绑定的组件
       options.navigateTo({
+        commandId: command.ucid,
         type: 'system',
         extensionComponent: systemCommand.component,
         windowSize: systemCommand.windowSize
@@ -49,6 +50,7 @@ export async function executeCommand(
     } else if (React.isValidElement(result)) {
       // React.ReactElement: 切换至扩展的二级面板
       options.navigateTo({
+        commandId: `${command.ucid}#panel`,  // 扩展二级面板使用特殊的 commandId
         type: 'extension',
         extensionElement: result,
         windowSize: 'normal'
