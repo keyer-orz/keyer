@@ -90,7 +90,15 @@ export class ScriptManager {
 
       for (const entry of entries) {
         const entryPath = path.join(currentDir, entry)
-        const stat = fs.statSync(entryPath)
+
+        // 跳过无效的符号链接或无法访问的文件
+        let stat
+        try {
+          stat = fs.statSync(entryPath)
+        } catch (err) {
+          // 忽略无法访问的文件（如损坏的符号链接）
+          continue
+        }
 
         if (stat.isDirectory()) {
           // 递归扫描子目录

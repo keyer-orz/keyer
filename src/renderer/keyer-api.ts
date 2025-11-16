@@ -3,6 +3,8 @@
  * 注入到 window.__keyer__，供插件使用
  */
 
+import type { NetFetchRequest, NetFetchResponse } from '../shared/Net'
+
 const { ipcRenderer } = window.require('electron')
 
 // Toast 管理
@@ -35,6 +37,9 @@ export function initKeyerAPI() {
         toastCallback(message, duration)
       }
       return Promise.resolve()
-    }
+    },
+
+    fetch: (request: NetFetchRequest): Promise<NetFetchResponse> =>
+      ipcRenderer.invoke('net:fetch', request)
   }
 }

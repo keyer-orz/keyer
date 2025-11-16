@@ -28,6 +28,8 @@ export function createWindow(): BrowserWindow {
       nodeIntegration: true,
       contextIsolation: false,
       sandbox: false,
+      webSecurity: false, // 关闭 web 安全策略
+      allowRunningInsecureContent: true // 允许不安全内容
     },
   })
 

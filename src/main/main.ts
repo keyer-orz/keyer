@@ -3,7 +3,7 @@
  */
 import { app, BrowserWindow } from 'electron'
 import { ConfigManager } from '../shared/Config'
-import { createWindow } from './window'
+import { createWindow, getMainWindow } from './window'
 import { registerGlobalShortcut, registerCommandShortcuts, unregisterAllShortcuts } from './shortcuts'
 import { setupIPCHandlers } from './ipc-handlers'
 
@@ -12,8 +12,30 @@ app.commandLine.appendSwitch('disable-gpu-sandbox')
 app.commandLine.appendSwitch('no-sandbox')
 app.commandLine.appendSwitch('disable-software-rasterizer')
 
+// 保证热重载只保留单实例
+const hasSingleInstanceLock = app.requestSingleInstanceLock()
+
+if (!hasSingleInstanceLock) {
+  app.quit()
+  process.exit(0)
+}
+
+app.on('second-instance', () => {
+  const existingWindow = getMainWindow()
+  if (existingWindow) {
+    if (existingWindow.isMinimized()) {
+      existingWindow.restore()
+    }
+    existingWindow.show()
+
+    existingWindow.focus()
+  } else {
+    createWindow()
+  }
+})
+
 // 应用就绪
-app.whenReady().then(async () => {
+app.whenReady().then(async () => { 
   // 初始化配置管理器
   const configManager = ConfigManager.getInstance()
 

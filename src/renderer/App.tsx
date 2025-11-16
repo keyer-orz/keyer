@@ -5,6 +5,7 @@ import { ConfigManager } from '../shared/Config'
 import { NavigationContext, ViewState, NavigationContextType } from './utils/NavigationContext'
 import MainView from './MainView'
 import { setToastCallback } from './keyer-api'
+import { Keyer } from 'keyerext'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {

@@ -85,7 +85,15 @@ export class ExtensionManager {
 
     for (const entry of entries) {
       const entryPath = path.join(dir, entry)
-      const stat = fs.statSync(entryPath)
+
+      // 跳过无效的符号链接或无法访问的文件
+      let stat
+      try {
+        stat = fs.statSync(entryPath)
+      } catch (err) {
+        // 忽略无法访问的文件（如损坏的符号链接）
+        continue
+      }
 
       if (stat.isDirectory()) {
         const pkgPath = path.join(entryPath, 'package.json')

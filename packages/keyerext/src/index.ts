@@ -88,3 +88,4 @@ export { Text } from './components/Text'
 export type { TextProps, TextVariant } from './components/Text'
 // Keyer API
 export { Keyer } from './Keyer'
+export type { NetResponseType, NetFetchRequest, NetFetchResponse } from './Keyer'
