@@ -1,7 +1,7 @@
 import { ICommand, ExtensionResult } from '../types'
 import { ScriptManager } from './ScriptManager'
 import { ExtensionManager } from './ExtensionManager'
-import { MainExtension } from '@/main'
+import { MainExtensionInstance } from '@/main'
 import { SettingsExtensionInstance } from '@/setting'
 import { StoreExtensionInstance } from '@/store'
 
@@ -131,7 +131,7 @@ export class CommandManager {
 
   // 注册系统扩展
   private registerSystemExtensions(): void {
-    this.extensionManager.registerSystemExtension('main', MainExtension)
+    this.extensionManager.registerSystemExtension('main', MainExtensionInstance)
     this.extensionManager.registerSystemExtension('settings', SettingsExtensionInstance)
     this.extensionManager.registerSystemExtension('store', StoreExtensionInstance)
 
@@ -197,16 +197,6 @@ export class CommandManager {
   // 获取预览元素
   async getPreview(input: string): Promise<Array<ExtensionResult>> {
     return await this.extensionManager.getPreviewComponents(input)
-  }
-
-  // 获取系统命令对应的扩展实例
-  getSystemExtension(commandId: string): { instance: any; commandName: string } | null {
-    return this.extensionManager.getSystemExtension(commandId)
-  }
-
-  // 获取命令信息（通过 ucid）
-  getCommand(ucid: string): ICommand | undefined {
-    return this.getAllCommands().find(cmd => cmd.ucid === ucid)
   }
 
   /**

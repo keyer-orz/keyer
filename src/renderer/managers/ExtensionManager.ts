@@ -101,7 +101,7 @@ export class ExtensionManager {
    * 加载系统扩展的命令
    */
   private async loadSystemExtensionCommands(): Promise<void> {
-    for (const [name, extInfo] of this.systemExtensions) {
+    for (const [, extInfo] of this.systemExtensions) {
       const { instance } = extInfo
 
       // 调用 onPrepare 获取命令
@@ -351,36 +351,6 @@ export class ExtensionManager {
     }
 
     return previewElements
-  }
-
-  /**
-   * 获取系统扩展实例（根据 commandId）
-   * @param commandId 命令ID，格式：@system#commandName
-   * @returns 扩展实例和命令名称，如果不是系统命令则返回 null
-   */
-  getSystemExtension(commandId: string): { instance: IExtension; commandName: string } | null {
-    if (!commandId.startsWith('@system#')) {
-      return null
-    }
-
-    const parts = commandId.split('#')
-    if (parts.length !== 2) {
-      return null
-    }
-
-    const [, commandName] = parts
-
-    // 查找提供该命令的系统扩展
-    for (const [, extInfo] of this.systemExtensions) {
-      // 简单返回第一个系统扩展（因为命令名称是唯一的）
-      // 实际上可以通过检查 onPrepare 返回的命令来确定
-      return {
-        instance: extInfo.instance,
-        commandName
-      }
-    }
-
-    return null
   }
 
   /**

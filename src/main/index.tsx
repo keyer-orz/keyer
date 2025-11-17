@@ -64,7 +64,7 @@ class Main implements IExtension {
 }
 
 // 导出扩展实例（用于扩展系统）
-export const MainExtension = new Main()
+export const MainExtensionInstance = new Main()
 
 // 导出组件（用于 SystemCommands）
 export default MainPanel

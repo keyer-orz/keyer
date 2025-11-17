@@ -198,11 +198,6 @@ export class ScriptManager {
     return Array.from(this.commands.values())
   }
 
-  // 根据 UCID 获取命令
-  getCommand(ucid: string): ICommand | undefined {
-    return this.commands.get(ucid)
-  }
-
   // 执行 script 命令
   async executeScript(ucid: string): Promise<void> {
     const scriptInfo = this.scripts.get(ucid)
