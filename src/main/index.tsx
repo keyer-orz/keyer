@@ -1,6 +1,5 @@
 import { IExtension, ICommand, ExtensionResult } from 'keyerext'
 import MainPanel, { MainPanelHandle } from './MainPanel'
-declare const React: any
 
 /**
  * Main Extension

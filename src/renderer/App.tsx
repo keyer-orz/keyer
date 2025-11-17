@@ -5,7 +5,6 @@ import { ConfigManager } from '../shared/Config'
 import { NavigationContext, ViewState, NavigationContextType } from './utils/NavigationContext'
 import { executeCommand } from './utils/CommandExecutor'
 import { setToastCallback } from './keyer-api'
-import MainPanel from '../main'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
@@ -19,10 +18,7 @@ function App() {
 
   // 使用栈管理视图：存储 ViewState
   const [viewStack, setViewStack] = useState<ViewState[]>(() => {
-    return [{
-      commandId: '@system#main',
-      element: <MainPanel />
-    }]
+    return []
   })
 
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
@@ -35,6 +31,8 @@ function App() {
 
   // 监听视图切换，调整窗口大小
   useEffect(() => {
+    if (!viewState) return
+
     const { ipcRenderer } = window.require('electron')
 
     const windowSize = viewState.windowSize || 'normal'
@@ -44,7 +42,7 @@ function App() {
     } else {
       ipcRenderer.invoke('restore-window-size')
     }
-  }, [viewState.windowSize])
+  }, [viewState])
 
   // 初始化 CommandManager
   useEffect(() => {
@@ -67,11 +65,8 @@ function App() {
       const command = allCommands.find(cmd => cmd.ucid === commandId)
 
       if (command) {
-        // 快捷键打开命令：直接替换整个 viewStack
-        // 对于 @system#main：重置为主面板
-        // 对于其他扩展：跳过 MainView，直接显示扩展
-        // 这样按 Esc 时会直接隐藏窗口，而不是返回 MainView
         const navigateTo = (newViewState: ViewState) => {
+          newViewState.windowSize = newViewState.windowSize || 'normal'
           setViewStack([newViewState])
         }
         // 调用全局命令执行器
@@ -112,7 +107,7 @@ function App() {
         // 1. 调用当前扩展的 doBack() 方法
         let shouldGoBack = true
 
-        if (CommandManager.isReady()) {
+        if (CommandManager.isReady() && viewState) {
           const commandManager = CommandManager.getInstance()
           const currentCommandId = viewState.commandId
 
@@ -162,6 +157,9 @@ function App() {
 
   // 渲染当前视图
   const renderView = () => {
+    if (!viewState) {
+      return null
+    }
     return viewState.element
   }
 
