@@ -62,7 +62,6 @@ function Settings() {
           renderItem={renderTabItem}
           onSelect={handleTabSelect}
           onEnter={handleTabEnter}
-          autoHide={false}
         />
       </div>
 

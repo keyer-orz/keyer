@@ -141,7 +141,6 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
           sections={sections}
           onSelect={handleSelect}
           onEnter={handleEnter}
-          autoHide={false}
           initialSelectedIndex={0}
           renderItem={(item) => {
             const command = item.data

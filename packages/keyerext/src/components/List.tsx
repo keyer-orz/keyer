@@ -28,7 +28,6 @@ export interface ListProps<T = any> {
   className?: string
   selectedClassName?: string
   initialSelectedIndex?: number
-  autoHide?: boolean  // 回车后自动隐藏窗口，默认 true
 }
 
 export interface ListHandle {
@@ -48,8 +47,7 @@ function ListInner<T = any>({
   renderHeader,
   className = 'results-list',
   selectedClassName = 'selected',
-  initialSelectedIndex = 0,
-  autoHide = true
+  initialSelectedIndex = 0
 }: ListProps<T>, ref: React.Ref<ListHandle>) {
   const React = getReact()
   const [selectedIndex, setSelectedIndex] = React.useState(initialSelectedIndex)
@@ -101,12 +99,6 @@ function ListInner<T = any>({
           e.preventDefault()
           if (allItems[selectedIndex] && onEnter) {
             onEnter(allItems[selectedIndex])
-
-            // 如果 autoHide 为 true，回调执行后隐藏窗口
-            if (autoHide && typeof window !== 'undefined' && (window as any).require) {
-              const { ipcRenderer } = (window as any).require('electron')
-              ipcRenderer.invoke('hide-window')
-            }
           }
         }
       }
@@ -114,7 +106,7 @@ function ListInner<T = any>({
 
     window.addEventListener('keydown', handleGlobalKeyDown)
     return () => window.removeEventListener('keydown', handleGlobalKeyDown)
-  }, [allItems.length, selectedIndex, onEnter, autoHide])
+  }, [allItems.length, selectedIndex, onEnter])
 
   // 处理点击
   const handleClick = React.useCallback((item: ListItem<T>, itemIndex: number) => {
