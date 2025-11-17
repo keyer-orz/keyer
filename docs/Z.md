@@ -79,3 +79,56 @@ NavigationContext.tsx 再简化下
 
 keyer/packages/keyerext/src/Keyer.ts 增加剪切板的 API
 完善下剪切板插件
+
+---
+
+完善主界面和剪切板插件
+UI返回 input 是否为空和聚焦
+doBack 实现:
+1. 未聚焦：聚焦，return false
+2. 聚焦：
+    1. 不为空，清空 return false
+    2. 为空 return true
+
+---
+
+工程A: bstar-ios
+工程B: BBStudio
+将工程B的keep/bstar_main_01分支以及历史提交合并入工程A的srcs/app/BBStudio
+执行每一个命令都要询问我且告知命令的目的
+
+---
+
+Input 组件的 focus 状态获取不准确，请优化
+
+
+---
+
+keyer/packages/keyerext/src/components/Input.tsx 这是个输入框组件
+在 Extension 
+1. 能够感知到它 是否聚焦/是否有能通
+2. 能够操作它聚焦，清空它的内容
+我该如何实现
+
+---
+
+keyer/src/renderer/App.tsx 中 viewStack 中的 element 必须是 keyer/src/renderer/managers/CommandManager.ts doAction 返回的结果 
+
+---
+
+keyer/packages/keyerext/src/components/Input.tsx 重构下
+使用 forwardRef 对外提供
+focus() 获取焦点
+clear() 清空输入
+isFocus() 判断是否有焦点
+isEmpty() 判断是否为空
+
+并改造使用的地方
+
+---
+
+keyer/src/main/index.tsx
+未聚焦->聚焦
+已聚焦
+    有内容->清空
+    无内容->return true
