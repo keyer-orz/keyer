@@ -3,7 +3,6 @@
  * 处理系统命令、扩展命令、脚本命令的执行
  */
 import React from 'react'
-import { ICommand } from '../types'
 import { CommandManager } from '../managers/CommandManager'
 import { NavigationContextType } from './NavigationContext'
 
@@ -17,7 +16,7 @@ export interface CommandExecutorOptions {
  * @param options 执行选项
  */
 export async function executeCommand(
-  command: ICommand,
+  command: string,
   options: CommandExecutorOptions
 ): Promise<void> {
   try {
@@ -37,9 +36,9 @@ export async function executeCommand(
     } else if (React.isValidElement(result)) {
       // React.ReactElement: 导航到命令视图
       options.navigateTo({
-        commandId: command.ucid,
+        commandId: command,
         element: result,
-        windowSize: command.windowSize || 'normal'
+        windowSize: 'normal'
       })
     }
   } catch (error) {

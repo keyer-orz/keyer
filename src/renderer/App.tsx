@@ -5,6 +5,7 @@ import { ConfigManager } from '../shared/Config'
 import { NavigationContext, ViewState, NavigationContextType } from './utils/NavigationContext'
 import { executeCommand } from './utils/CommandExecutor'
 import { setToastCallback } from './keyer-api'
+import { MainExtensionInstance } from '../main'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
@@ -18,7 +19,13 @@ function App() {
 
   // 使用栈管理视图：存储 ViewState
   const [viewStack, setViewStack] = useState<ViewState[]>(() => {
-    return []
+    return [
+    {
+      commandId: '@system#main',
+      element: MainExtensionInstance.doAction('main') as React.ReactElement,
+      windowSize: 'normal'
+    }
+    ]
   })
 
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
@@ -70,7 +77,7 @@ function App() {
           setViewStack([newViewState])
         }
         // 调用全局命令执行器
-        await executeCommand(command, { navigateTo })
+        await executeCommand(command.ucid, { navigateTo })
       } else {
         console.warn('Command not found:', commandId)
       }

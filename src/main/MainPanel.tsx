@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useImperativeHandle, forwardRef, useRef } from 'react'
 import { ICommand } from '../renderer/types'
 import { CommandManager } from '../renderer/managers/CommandManager'
 import { Input, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
-import type { ListItem, ListSection } from 'keyerext'
+import type { ListItem, ListSection, InputHandle } from 'keyerext'
 import { useNavigation } from '../renderer/utils/NavigationContext'
 import { executeCommand } from '../renderer/utils/CommandExecutor'
 
@@ -19,21 +19,20 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
   const [previewElements, setPreviewElements] = useState<Array<ExtensionResult>>([])
   const [selectedCommand, setSelectedCommand] = useState<ICommand | null>(null)
 
-  const [inputFocused, setInputFocused] = useState(false)
-  const [shouldFocus, setShouldFocus] = useState(true)  // 控制 autoFocus
+  const inputRef = useRef<InputHandle>(null)
   const { navigateTo } = useNavigation()
 
   // 暴露给父组件的方法
   useImperativeHandle(ref, () => ({
-    isEmpty: () => !input,
-    isFocused: () => inputFocused,
+    isEmpty: () => inputRef.current?.isEmpty() ?? true,
+    isFocused: () => inputRef.current?.isFocused() ?? false,
     focus: () => {
-      // 通过切换 autoFocus 触发聚焦
-      setShouldFocus(false)
-      setTimeout(() => setShouldFocus(true), 0)
+      inputRef.current?.focus()
     },
-    clear: () => setInput('')
-  }), [input, inputFocused])
+    clear: () => {
+      inputRef.current?.clear()
+    }
+  }), [])
 
   // 搜索
   useEffect(() => {
@@ -62,7 +61,7 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
 
   // 执行命令 - 调用全局命令执行器
   const handleExecute = useCallback(async (command: ICommand) => {
-    await executeCommand(command, { navigateTo })
+    await executeCommand(command.ucid, { navigateTo })
   }, [navigateTo])
 
   // List 选中回调
@@ -121,12 +120,11 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
     <Panel>
       <div className="search-container">
         <Input
+          ref={inputRef}
           value={input}
           onChange={setInput}
           placeholder="Search for apps and commands..."
-          autoFocus={shouldFocus}
-          onFocus={() => setInputFocused(true)}
-          onBlur={() => setInputFocused(false)}
+          autoFocus={true}
         />
       </div>
 
@@ -166,15 +164,7 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
         <div
           className="footer-settings"
           onClick={() => {
-            // 创建 settings 命令并执行
-            const settingsCommand: ICommand = {
-              ucid: '@system#settings',
-              name: 'settings',
-              title: 'Settings',
-              desc: 'Open settings panel',
-              type: 'System'
-            }
-            executeCommand(settingsCommand, { navigateTo })
+            executeCommand('@system#settings', { navigateTo })
           }}
         >
           ⚙️

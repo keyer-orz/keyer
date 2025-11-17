@@ -7,7 +7,7 @@ import MainPanel, { MainPanelHandle } from './MainPanel'
  */
 class Main implements IExtension {
   enabledPreview = false
-  private panelRef: { current: MainPanelHandle | null } | null = null
+  private panelRef: { current: MainPanelHandle | null } = { current: null }
 
   async onPrepare(): Promise<Partial<ICommand>[]> {
     // 返回主面板命令
@@ -22,8 +22,7 @@ class Main implements IExtension {
 
   doAction(name: string): ExtensionResult {
     console.log('[Main] doAction called with name:', name)
-    // 创建新的 ref 对象
-    this.panelRef = { current: null }
+    // 使用持久的 ref 对象
     return <MainPanel ref={this.panelRef} />
   }
 

@@ -172,11 +172,11 @@ export class CommandManager {
   }
 
   // 执行命令
-  async execute(command: ICommand): Promise<ExtensionResult> {
+  async execute(command: string): Promise<ExtensionResult> {
     // 判断是 script 还是 extension (通过 ucid 判断)
-    if (command.ucid.startsWith('@script#')) {
+    if (command.startsWith('@script#')) {
       // 执行 script（脚本执行后默认关闭主面板）
-      await this.scriptManager.executeScript(command.ucid)
+      await this.scriptManager.executeScript(command)
       return null
     } else {
       // 执行 extension

@@ -33,8 +33,8 @@ export function createWindow(): BrowserWindow {
     },
   })
 
-  // 保存原始窗口大小
-  ;(mainWindow as any).originalSize = windowSize
+    // 保存原始窗口大小
+    ; (mainWindow as any).originalSize = windowSize
 
   // 加载页面
   if (isDev) {

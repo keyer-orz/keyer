@@ -12,7 +12,14 @@ export interface InputProps {
   onBlur?: () => void
 }
 
-export function Input({
+export interface InputHandle {
+  focus: () => void
+  clear: () => void
+  isFocused: () => boolean
+  isEmpty: () => boolean
+}
+
+export const Input = React.forwardRef<InputHandle, InputProps>(({
   value,
   onChange,
   placeholder = '',
@@ -21,15 +28,24 @@ export function Input({
   style = {},
   onFocus,
   onBlur
-}: InputProps) {
-  const inputRef = React.useRef(null as HTMLInputElement | null)
+}, ref) => {
+  const inputRef = React.useRef<HTMLInputElement>(null)
 
-  // 自动聚焦（响应 autoFocus 变化）
-  React.useEffect(() => {
-    if (autoFocus && inputRef.current) {
-      inputRef.current.focus()
+  // 暴露方法给父组件
+  React.useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus()
+    },
+    clear: () => {
+      onChange('')
+    },
+    isFocused: () => {
+      return document.activeElement === inputRef.current
+    },
+    isEmpty: () => {
+      return !value || value.trim() === ''
     }
-  }, [autoFocus])
+  }), [value, onChange])
 
   return (
     <input
@@ -38,10 +54,13 @@ export function Input({
       className={`keyer-input search-input ${className}`}
       placeholder={placeholder}
       value={value}
+      autoFocus={autoFocus}
       onChange={(e) => onChange(e.target.value)}
       onFocus={onFocus}
       onBlur={onBlur}
       style={style}
     />
   )
-}
+})
+
+Input.displayName = 'Input'

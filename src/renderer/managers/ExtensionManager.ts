@@ -294,14 +294,14 @@ export class ExtensionManager {
   }
 
   // 执行命令
-  async executeAction(command: ICommand): Promise<ExtensionResult> {
-    console.log('Executing command:', command.ucid)
+  async executeAction(command: string): Promise<ExtensionResult> {
+    console.log('Executing command:', command)
 
     // 从 ucid 解析 extName 和 commandName（格式：ext.name#cmd.name 或 @system#cmd.name）
-    const parts = command.ucid.split('#')
+    const parts = command.split('#')
 
     if (parts.length !== 2) {
-      throw new Error(`Invalid UCID format: ${command.ucid}. Expected format: ext.name#cmd.name`)
+      throw new Error(`Invalid UCID format: ${command}. Expected format: ext.name#cmd.name`)
     }
 
     const [extName, commandName] = parts
@@ -313,22 +313,22 @@ export class ExtensionManager {
 
       if (systemExtInfo) {
         const result = await systemExtInfo.instance.doAction(commandName)
-        console.log(`System command ${command.ucid} executed successfully`)
+        console.log(`System command ${command} executed successfully`)
         return result
       }
 
-      throw new Error(`System extension not found for command: ${command.ucid}`)
+      throw new Error(`System extension not found for command: ${command}`)
     }
 
     // 查找普通扩展
     const extInfo = this.extensions.get(extName)
 
     if (!extInfo) {
-      throw new Error(`Extension ${extName} not found for command: ${command.ucid}`)
+      throw new Error(`Extension ${extName} not found for command: ${command}`)
     }
 
     const result = await extInfo.instance.doAction(commandName)
-    console.log(`Command ${command.ucid} executed successfully, result:`, result)
+    console.log(`Command ${command} executed successfully, result:`, result)
     return result
   }
 

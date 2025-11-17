@@ -12,8 +12,8 @@ const React = (typeof window !== 'undefined' && (window as any).React)
   ? (window as any).React
   : ReactModule
 
-// 默认导出 React 实例供 JSX 使用
-export default React
+// 默认导出 React 实例供 JSX 使用，类型始终使用 ReactModule 的类型
+export default React as typeof ReactModule
 
 /**
  * 获取全局 React 实例
