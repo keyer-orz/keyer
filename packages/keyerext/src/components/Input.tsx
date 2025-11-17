@@ -7,49 +7,27 @@ export interface InputProps {
   autoFocus?: boolean
   className?: string
   style?: React.CSSProperties
+  // 焦点事件回调
+  onFocus?: () => void
+  onBlur?: () => void
 }
 
-export interface InputHandle {
-  focus: () => void
-  clear: () => void
-  getValue: () => string
-  isEmpty: () => boolean
-}
-
-function InputInner({
+export function Input({
   value,
   onChange,
   placeholder = '',
   autoFocus = false,
   className = '',
-  style = {}
-}: InputProps, ref: React.Ref<InputHandle>) {
-  const inputRef = React.useRef<HTMLInputElement>(null)
+  style = {},
+  onFocus,
+  onBlur
+}: InputProps) {
+  const inputRef = React.useRef(null as HTMLInputElement | null)
 
-  // 暴露方法给父组件
-  React.useImperativeHandle(ref, () => ({
-    focus: () => {
-      inputRef.current?.focus()
-    },
-    clear: () => {
-      onChange('')
-    },
-    getValue: () => {
-      return value
-    },
-    isEmpty: () => {
-      return value.trim() === ''
-    }
-  }), [value, onChange])
-
-  // 自动聚焦
+  // 自动聚焦（响应 autoFocus 变化）
   React.useEffect(() => {
     if (autoFocus && inputRef.current) {
-      // 使用 setTimeout 确保在组件完全渲染后聚焦
-      const timer = setTimeout(() => {
-        inputRef.current?.focus()
-      }, 0)
-      return () => clearTimeout(timer)
+      inputRef.current.focus()
     }
   }, [autoFocus])
 
@@ -61,9 +39,9 @@ function InputInner({
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
+      onFocus={onFocus}
+      onBlur={onBlur}
       style={style}
     />
   )
 }
-
-export const Input = React.forwardRef(InputInner)

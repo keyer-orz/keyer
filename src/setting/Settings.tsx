@@ -44,7 +44,7 @@ function Settings() {
   }
 
   // 处理标签选择（方向键移动时）
-  const handleTabSelect = (item: ListItem<TabData>) => {
+  const handleTabSelect = (item: ListItem<TabData>, _index: number) => {
     setActiveTab(item.data.id)
   }
 

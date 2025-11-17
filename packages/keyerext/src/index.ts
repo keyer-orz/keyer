@@ -87,9 +87,9 @@ export interface ExtensionPackage {
 
 // React Components
 export { List, Item } from './components/List'
-export type { ListItem, ListSection, ListProps, ItemProps, ListHandle } from './components/List'
+export type { ListItem, ListSection, ListProps, ItemProps } from './components/List'
 export { Input } from './components/Input'
-export type { InputProps, InputHandle } from './components/Input'
+export type { InputProps } from './components/Input'
 export { Panel } from './components/Panel'
 export type { PanelProps } from './components/Panel'
 export { Text } from './components/Text'

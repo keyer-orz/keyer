@@ -12,7 +12,7 @@ export interface ListSection<T = any> {
 
 export interface ListProps<T = any> {
   sections: ListSection<T>[]
-  onSelect?: (item: ListItem<T>) => void
+  onSelect?: (item: ListItem<T>, index: number) => void
   onEnter?: (item: ListItem<T>) => void
   renderItem: (item: ListItem<T>, isSelected: boolean) => React.ReactNode
   renderHeader?: (header: string) => React.ReactNode
@@ -21,16 +21,7 @@ export interface ListProps<T = any> {
   initialSelectedIndex?: number
 }
 
-export interface ListHandle {
-  focus: () => void
-  selectNext: () => void
-  selectPrev: () => void
-  enter: () => void
-  getSelectedIndex: () => number
-  getSelectedItem: () => any
-}
-
-function ListInner<T = any>({
+export function List<T = any>({
   sections = [],
   onSelect,
   onEnter,
@@ -39,10 +30,10 @@ function ListInner<T = any>({
   className = 'results-list',
   selectedClassName = 'selected',
   initialSelectedIndex = 0
-}: ListProps<T>, ref: React.Ref<ListHandle>) {
+}: ListProps<T>) {
   const [selectedIndex, setSelectedIndex] = React.useState(initialSelectedIndex)
-  const listRef = React.useRef<HTMLDivElement>(null)
-  const selectedItemRef = React.useRef<HTMLDivElement>(null)
+  const listRef = React.useRef(null as HTMLDivElement | null)
+  const selectedItemRef = React.useRef(null as HTMLDivElement | null)
 
   // 扁平化所有 items，用于索引计算
   const allItems = React.useMemo(() => {
@@ -71,7 +62,7 @@ function ListInner<T = any>({
   // 选中项变化时触发回调
   React.useEffect(() => {
     if (onSelect && allItems[selectedIndex]) {
-      onSelect(allItems[selectedIndex])
+      onSelect(allItems[selectedIndex], selectedIndex)
     }
   }, [selectedIndex, allItems, onSelect])
 
@@ -81,10 +72,10 @@ function ListInner<T = any>({
       if (listRef.current) {
         if (e.key === 'ArrowDown') {
           e.preventDefault()
-          setSelectedIndex((prev) => Math.min(prev + 1, allItems.length - 1))
+          setSelectedIndex((prev: number) => Math.min(prev + 1, allItems.length - 1))
         } else if (e.key === 'ArrowUp') {
           e.preventDefault()
-          setSelectedIndex((prev) => Math.max(prev - 1, 0))
+          setSelectedIndex((prev: number) => Math.max(prev - 1, 0))
         } else if (e.key === 'Enter') {
           e.preventDefault()
           if (allItems[selectedIndex] && onEnter) {
@@ -156,11 +147,6 @@ function ListInner<T = any>({
     </div>
   )
 }
-
-// 使用 forwardRef 包装
-export const List = React.forwardRef(ListInner) as <T = any>(
-  props: ListProps<T> & { ref?: React.Ref<ListHandle> }
-) => ReturnType<typeof ListInner>
 
 // Item 组件（纯容器组件，外部自定义内容）
 export interface ItemProps {

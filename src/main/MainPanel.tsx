@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react'
 import { ICommand } from '../renderer/types'
 import { CommandManager } from '../renderer/managers/CommandManager'
-import { Input, InputHandle, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
+import { Input, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
 import type { ListItem, ListSection } from 'keyerext'
 import { useNavigation } from '../renderer/utils/NavigationContext'
 import { executeCommand } from '../renderer/utils/CommandExecutor'
@@ -19,24 +19,21 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
   const [previewElements, setPreviewElements] = useState<Array<ExtensionResult>>([])
   const [selectedCommand, setSelectedCommand] = useState<ICommand | null>(null)
 
-  const inputRef = useRef<InputHandle>(null)
+  const [inputFocused, setInputFocused] = useState(false)
+  const [shouldFocus, setShouldFocus] = useState(true)  // 控制 autoFocus
   const { navigateTo } = useNavigation()
 
   // 暴露给父组件的方法
   useImperativeHandle(ref, () => ({
     isEmpty: () => !input,
-    isFocused: () => {
-      const inputElement = document.querySelector('.keyer-input')
-      return document.activeElement === inputElement
+    isFocused: () => inputFocused,
+    focus: () => {
+      // 通过切换 autoFocus 触发聚焦
+      setShouldFocus(false)
+      setTimeout(() => setShouldFocus(true), 0)
     },
-    focus: () => inputRef.current?.focus(),
     clear: () => setInput('')
-  }), [input])
-
-  // 自动聚焦输入框
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
+  }), [input, inputFocused])
 
   // 搜索
   useEffect(() => {
@@ -69,7 +66,7 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
   }, [navigateTo])
 
   // List 选中回调
-  const handleSelect = useCallback((item: ListItem<ICommand>) => {
+  const handleSelect = useCallback((item: ListItem<ICommand>, _index: number) => {
     setSelectedCommand(item.data)
   }, [])
 
@@ -124,11 +121,12 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
     <Panel>
       <div className="search-container">
         <Input
-          ref={inputRef}
           value={input}
           onChange={setInput}
           placeholder="Search for apps and commands..."
-          autoFocus={true}
+          autoFocus={shouldFocus}
+          onFocus={() => setInputFocused(true)}
+          onBlur={() => setInputFocused(false)}
         />
       </div>
 

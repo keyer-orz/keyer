@@ -23,14 +23,14 @@ class Main implements IExtension {
 
   doAction(name: string): ExtensionResult {
     console.log('[Main] doAction called with name:', name)
-    // 创建新的 ref
+    // 创建新的 ref 对象
     this.panelRef = { current: null }
-    // Main 扩展的 doAction 返回主面板
     return <MainPanel ref={this.panelRef} />
   }
 
   doBack(): boolean {
     console.log('[Main] doBack called')
+
     if (!this.panelRef?.current) {
       console.log('[Main] No panel ref, returning true')
       return true
@@ -40,25 +40,24 @@ class Main implements IExtension {
     const isFocused = panel.isFocused()
     const isEmpty = panel.isEmpty()
 
-    console.log('[Main] Panel state - isFocused:', isFocused, 'isEmpty:', isEmpty)
+    console.log('[Main] Panel state:', { isFocused, isEmpty })
 
-    // 1. 未聚焦：聚焦，return false
+    // 如果输入框未聚焦，先聚焦
     if (!isFocused) {
-      console.log('[Main] Input not focused, focusing now')
+      console.log('[Main] Input not focused, focusing...')
       panel.focus()
       return false
     }
 
-    // 2. 聚焦：
-    //    a. 不为空，清空 return false
+    // 如果有内容，先清空
     if (!isEmpty) {
-      console.log('[Main] Input not empty, clearing now')
+      console.log('[Main] Input not empty, clearing...')
       panel.clear()
       return false
     }
 
-    //    b. 为空 return true
-    console.log('[Main] Input empty, returning true to close')
+    // 都满足条件，允许关闭
+    console.log('[Main] Allowing close')
     return true
   }
 }
