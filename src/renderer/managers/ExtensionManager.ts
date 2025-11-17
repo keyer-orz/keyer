@@ -373,11 +373,17 @@ export class ExtensionManager {
   async getPreviewComponents(input: string): Promise<Array<ExtensionResult>> {
     const previewElements: Array<ExtensionResult> = []
 
+    console.log(`[ExtensionManager] getPreviewComponents called with input: "${input}"`)
+    console.log(`[ExtensionManager] Total extensions: ${this.extensions.size}`)
+
     // 遍历所有开启了 enabledPreview 的扩展
     for (const [extName, extInfo] of this.extensions) {
+      console.log(`[ExtensionManager] Checking extension: ${extName}, enabledPreview: ${extInfo.instance.enabledPreview}`)
+
       if (extInfo.instance.enabledPreview && extInfo.instance.onPreview) {
         try {
           const element = await extInfo.instance.onPreview(input)
+          console.log(`[ExtensionManager] Preview result from ${extName}:`, element)
           if (element) {
             previewElements.push(element)
           }
@@ -387,6 +393,7 @@ export class ExtensionManager {
       }
     }
 
+    console.log(`[ExtensionManager] Total preview elements: ${previewElements.length}`)
     return previewElements
   }
 

@@ -5,7 +5,7 @@ import { Input, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
 import type { ListItem, ListSection, InputHandle } from 'keyerext'
 import { useNavigation } from '../renderer/utils/NavigationContext'
 import { executeCommand } from '../renderer/utils/CommandExecutor'
-
+import React from 'react'
 export interface MainPanelHandle {
   isEmpty: () => boolean
   isFocused: () => boolean
@@ -130,7 +130,9 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
 
       <div className="results-container">
         {/* Render preview elements at the top */}
-        {previewElements}
+        {previewElements.map((element, index) => (
+          <React.Fragment key={`preview-${index}`}>{element}</React.Fragment>
+        ))}
 
         {/* 统一的列表 */}
         <List

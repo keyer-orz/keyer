@@ -1,3 +1,4 @@
+import React from 'react'
 import { IExtension, ICommand, ExtensionResult } from 'keyerext'
 import MainPanel, { MainPanelHandle } from './MainPanel'
 
