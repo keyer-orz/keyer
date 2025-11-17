@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react'
 import { ICommand } from '../renderer/types'
 import { CommandManager } from '../renderer/managers/CommandManager'
 import { Input, InputHandle, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
@@ -6,7 +6,14 @@ import type { ListItem, ListSection } from 'keyerext'
 import { useNavigation } from '../renderer/utils/NavigationContext'
 import { executeCommand } from '../renderer/utils/CommandExecutor'
 
-function MainPanel() {
+export interface MainPanelHandle {
+  isEmpty: () => boolean
+  isFocused: () => boolean
+  focus: () => void
+  clear: () => void
+}
+
+const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
   const [input, setInput] = useState('')
   const [results, setResults] = useState<ICommand[]>([])
   const [previewElements, setPreviewElements] = useState<Array<ExtensionResult>>([])
@@ -14,6 +21,17 @@ function MainPanel() {
 
   const inputRef = useRef<InputHandle>(null)
   const { navigateTo } = useNavigation()
+
+  // 暴露给父组件的方法
+  useImperativeHandle(ref, () => ({
+    isEmpty: () => !input,
+    isFocused: () => {
+      const inputElement = document.querySelector('.keyer-input')
+      return document.activeElement === inputElement
+    },
+    focus: () => inputRef.current?.focus(),
+    clear: () => setInput('')
+  }), [input])
 
   // 自动聚焦输入框
   useEffect(() => {
@@ -167,6 +185,8 @@ function MainPanel() {
       </div>
     </Panel>
   )
-}
+})
+
+MainPanel.displayName = 'MainPanel'
 
 export default MainPanel
