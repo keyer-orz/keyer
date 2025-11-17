@@ -1,4 +1,4 @@
-import React from '../utils/react'
+import React, { forwardRef, useRef, useImperativeHandle, CSSProperties } from 'react'
 
 export interface InputProps {
   value: string
@@ -6,7 +6,7 @@ export interface InputProps {
   placeholder?: string
   autoFocus?: boolean
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
   // 焦点事件回调
   onFocus?: () => void
   onBlur?: () => void
@@ -19,7 +19,7 @@ export interface InputHandle {
   isEmpty: () => boolean
 }
 
-export const Input = React.forwardRef<InputHandle, InputProps>(({
+export const Input = forwardRef<InputHandle, InputProps>(({
   value,
   onChange,
   placeholder = '',
@@ -29,10 +29,10 @@ export const Input = React.forwardRef<InputHandle, InputProps>(({
   onFocus,
   onBlur
 }, ref) => {
-  const inputRef = React.useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // 暴露方法给父组件
-  React.useImperativeHandle(ref, () => ({
+  useImperativeHandle(ref, () => ({
     focus: () => {
       inputRef.current?.focus()
     },

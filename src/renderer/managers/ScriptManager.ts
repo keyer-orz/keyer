@@ -199,7 +199,7 @@ export class ScriptManager {
   }
 
   // 执行 script 命令
-  async executeScript(ucid: String): Promise<void> {
+  async executeScript(ucid: string): Promise<void> {
     const scriptInfo = this.scripts.get(ucid)
     if (!scriptInfo) {
       throw new Error(`Script command not found: ${ucid}`)

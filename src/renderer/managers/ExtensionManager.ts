@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { ICommand, IExtension, ExtensionPackage, ExtensionResult } from '../types'
 import { ExtensionStorage } from '../utils/ExtensionStorage'
+import React from 'react'
 
 // 扩展来源类型
 type ExtensionSource = 'dev' | 'mine' | 'sandbox'
@@ -22,6 +23,8 @@ export class ExtensionManager {
   private devDir?: string  // 开发环境目录
   private mineDirs: string[] = []  // 本地路径目录列表
   private sandboxDir?: string  // 沙箱目录
+
+  private reactHookInstalled = false  // 标记是否已安装 React hook
 
   constructor(config: {
     devDir?: string
@@ -170,6 +173,36 @@ export class ExtensionManager {
     return result
   }
 
+  // 注入全局 React 到 require 缓存
+  // 让扩展的 require('react') 使用主应用的 React 实例
+  private injectGlobalReact(extDir: string): void {
+    // 只安装一次 hook
+    if (this.reactHookInstalled) {
+      return
+    }
+
+    try {
+      const Module = require('module')
+      const originalRequire = Module.prototype.require
+
+      // Hook require 函数
+      Module.prototype.require = function(this: any, id: string) {
+        // 如果是 require('react')，返回主应用的 React
+        if (id === 'react') {
+          console.log('[ExtensionManager] Intercepted require("react"), returning global React')
+          return React
+        }
+        // 其他模块正常加载
+        return originalRequire.apply(this, arguments)
+      }
+
+      this.reactHookInstalled = true
+      console.log(`[ExtensionManager] Installed require hook for React injection`)
+    } catch (error) {
+      console.warn(`[ExtensionManager] Failed to inject global React:`, error)
+    }
+  }
+
   // 加载单个 extension
   private async loadExtension(extDir: string, source: ExtensionSource): Promise<void> {
     const packagePath = path.join(extDir, 'package.json')
@@ -195,6 +228,10 @@ export class ExtensionManager {
         console.warn(`Main file not found: ${mainPath}`)
         return
       }
+
+      // 注入全局 React 到 require 缓存中
+      // 这样扩展的 require('react') 会使用主应用的 React 实例
+      this.injectGlobalReact(extDir)
 
       // 清除 require 缓存
       delete require.cache[require.resolve(mainPath)]

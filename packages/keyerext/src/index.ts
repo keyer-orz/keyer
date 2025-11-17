@@ -97,5 +97,3 @@ export type { TextProps, TextVariant } from './components/Text'
 // Keyer API
 export { Keyer } from './Keyer'
 export type { NetResponseType, NetFetchRequest, NetFetchResponse, ClipboardImage } from './Keyer'
-// Utils
-export { getReact } from './utils/react'
