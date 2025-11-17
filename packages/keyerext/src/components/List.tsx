@@ -1,13 +1,4 @@
-// 使用主 App 的 React 实例，避免多实例冲突
-import type * as ReactType from 'react'
-
-// 延迟获取 React，避免在模块加载时就访问 window.React
-function getReact(): typeof ReactType {
-  if (typeof window !== 'undefined' && (window as any).React) {
-    return (window as any).React
-  }
-  return require('react')
-}
+import React from '../utils/react'
 
 export interface ListItem<T = any> {
   id: string | number
@@ -49,7 +40,6 @@ function ListInner<T = any>({
   selectedClassName = 'selected',
   initialSelectedIndex = 0
 }: ListProps<T>, ref: React.Ref<ListHandle>) {
-  const React = getReact()
   const [selectedIndex, setSelectedIndex] = React.useState(initialSelectedIndex)
   const listRef = React.useRef<HTMLDivElement>(null)
   const selectedItemRef = React.useRef<HTMLDivElement>(null)
@@ -118,7 +108,7 @@ function ListInner<T = any>({
 
   // 默认的 header 渲染函数
   const defaultRenderHeader = (header: string) => {
-    return React.createElement('div', { className: 'section-header' }, header)
+    return <div className="section-header">{header}</div>
   }
 
   const headerRenderer = renderHeader || defaultRenderHeader
@@ -129,46 +119,46 @@ function ListInner<T = any>({
 
   // 渲染所有 sections
   let currentItemIndex = 0
-  return React.createElement(
-    'div',
-    {
-      ref: listRef,
-      className: `keyer-list ${className}`,
-      tabIndex: 0,
-      'data-keyer-list': 'true'
-    },
-    sections.map((section, sectionIndex) => {
-      const sectionStartIndex = currentItemIndex
-      const sectionItems = section.items.map((item, localIndex) => {
-        const globalIndex = sectionStartIndex + localIndex
-        const isSelected = globalIndex === selectedIndex
+  return (
+    <div
+      ref={listRef}
+      className={`keyer-list ${className}`}
+      tabIndex={0}
+      data-keyer-list="true"
+    >
+      {sections.map((section, sectionIndex) => {
+        const sectionStartIndex = currentItemIndex
+        const sectionItems = section.items.map((item, localIndex) => {
+          const globalIndex = sectionStartIndex + localIndex
+          const isSelected = globalIndex === selectedIndex
 
-        return React.createElement(
-          'div',
-          {
-            key: item.id,
-            ref: isSelected ? selectedItemRef : null,
-            className: `keyer-list-item ${isSelected ? selectedClassName : ''}`,
-            onClick: () => handleClick(item, globalIndex)
-          },
-          renderItem(item, isSelected)
+          return (
+            <div
+              key={item.id}
+              ref={isSelected ? selectedItemRef : null}
+              className={`keyer-list-item ${isSelected ? selectedClassName : ''}`}
+              onClick={() => handleClick(item, globalIndex)}
+            >
+              {renderItem(item, isSelected)}
+            </div>
+          )
+        })
+
+        currentItemIndex += section.items.length
+
+        return (
+          <React.Fragment key={`section-${sectionIndex}`}>
+            {headerRenderer(section.header)}
+            {sectionItems}
+          </React.Fragment>
         )
-      })
-
-      currentItemIndex += section.items.length
-
-      return React.createElement(
-        React.Fragment,
-        { key: `section-${sectionIndex}` },
-        headerRenderer(section.header),
-        ...sectionItems
-      )
-    })
+      })}
+    </div>
   )
 }
 
 // 使用 forwardRef 包装
-export const List = getReact().forwardRef(ListInner) as <T = any>(
+export const List = React.forwardRef(ListInner) as <T = any>(
   props: ListProps<T> & { ref?: React.Ref<ListHandle> }
 ) => ReturnType<typeof ListInner>
 
@@ -184,8 +174,6 @@ export function Item({
   style = {},
   children
 }: ItemProps): React.ReactElement {
-  const React = getReact()
-
   // 默认样式
   const defaultStyle: React.CSSProperties = {
     padding: '4px 6px',
@@ -198,9 +186,9 @@ export function Item({
   // 合并默认样式和用户传入的样式
   const mergedStyle = { ...defaultStyle, ...style }
 
-  return React.createElement(
-    'div',
-    { className: `keyer-item ${className}`, style: mergedStyle },
-    children
+  return (
+    <div className={`keyer-item ${className}`} style={mergedStyle}>
+      {children}
+    </div>
   )
 }

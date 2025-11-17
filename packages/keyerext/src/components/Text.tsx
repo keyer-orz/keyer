@@ -1,13 +1,4 @@
-// 使用主 App 的 React 实例，避免多实例冲突
-import type * as ReactType from 'react'
-
-// 延迟获取 React，避免在模块加载时就访问 window.React
-function getReact(): typeof ReactType {
-  if (typeof window !== 'undefined' && (window as any).React) {
-    return (window as any).React
-  }
-  return require('react')
-}
+import React from '../utils/react'
 
 export type TextVariant = 'title' | 'body' | 'caption' | 'input' | 'label'
 
@@ -26,8 +17,6 @@ export function Text({
   children,
   ellipsis = false
 }: TextProps) {
-  const React = getReact()
-
   // 构建 className
   const variantClass = `keyer-text-${variant}`
   const ellipsisClass = ellipsis ? 'keyer-text-ellipsis' : ''
@@ -35,9 +24,9 @@ export function Text({
     .filter(Boolean)
     .join(' ')
 
-  return React.createElement(
-    'div',
-    { className: combinedClassName, style },
-    children
+  return (
+    <div className={combinedClassName} style={style}>
+      {children}
+    </div>
   )
 }

@@ -1,13 +1,4 @@
-// 使用主 App 的 React 实例，避免多实例冲突
-import type * as ReactType from 'react'
-
-// 延迟获取 React，避免在模块加载时就访问 window.React
-function getReact(): typeof ReactType {
-  if (typeof window !== 'undefined' && (window as any).React) {
-    return (window as any).React
-  }
-  return require('react')
-}
+import React from '../utils/react'
 
 export interface InputProps {
   value: string
@@ -33,7 +24,6 @@ function InputInner({
   className = '',
   style = {}
 }: InputProps, ref: React.Ref<InputHandle>) {
-  const React = getReact()
   const inputRef = React.useRef<HTMLInputElement>(null)
 
   // 暴露方法给父组件
@@ -63,15 +53,17 @@ function InputInner({
     }
   }, [autoFocus])
 
-  return React.createElement('input', {
-    ref: inputRef,
-    type: 'text',
-    className: `keyer-input search-input ${className}`,
-    placeholder,
-    value,
-    onChange: (e: any) => onChange(e.target.value),
-    style
-  })
+  return (
+    <input
+      ref={inputRef}
+      type="text"
+      className={`keyer-input search-input ${className}`}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      style={style}
+    />
+  )
 }
 
-export const Input = getReact().forwardRef(InputInner)
+export const Input = React.forwardRef(InputInner)
