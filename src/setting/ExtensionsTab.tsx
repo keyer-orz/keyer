@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Input } from 'keyerext'
-import { CommandManager } from '../renderer/managers/CommandManager'
-import { ConfigManager } from '../shared/Config'
-import ShortcutRecorder from '../renderer/utils/ShortcutRecorder'
+import { CommandManager } from '@/managers/CommandManager'
+import { ConfigManager } from '@/shared/Config'
+import ShortcutRecorder from '@/utils/ShortcutRecorder'
 
 interface CommandItem {
   id: string

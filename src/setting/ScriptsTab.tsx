@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CommandManager } from '../renderer/managers/CommandManager'
+import { CommandManager } from '@/managers/CommandManager'
 
 function ScriptsTab() {
   const [scripts, setScripts] = useState<any[]>([])

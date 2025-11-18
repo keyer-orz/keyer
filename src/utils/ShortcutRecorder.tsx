@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import '../styles/ShortcutRecorder.css'
+import '@/styles/ShortcutRecorder.css'
 
 interface ShortcutRecorderProps {
   value: string

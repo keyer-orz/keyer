@@ -3,8 +3,8 @@
  * 处理系统命令、扩展命令、脚本命令的执行
  */
 import React from 'react'
-import { CommandManager } from '../managers/CommandManager'
-import { UsageManager } from '../managers/UsageManager'
+import { CommandManager } from '@/managers/CommandManager'
+import { UsageManager } from '@/managers/UsageManager'
 import { NavigationContextType } from './NavigationContext'
 
 export interface CommandExecutorOptions {

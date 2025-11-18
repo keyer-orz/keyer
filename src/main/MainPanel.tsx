@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef, useRef } from 'react'
-import { ICommand } from '../renderer/types'
-import { CommandManager } from '../renderer/managers/CommandManager'
+import { ICommand } from 'keyerext'
+import { CommandManager } from '@/managers/CommandManager'
 import { Input, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
 import type { ListItem, ListSection, InputHandle } from 'keyerext'
-import { useNavigation } from '../renderer/utils/NavigationContext'
-import { executeCommand } from '../renderer/utils/CommandExecutor'
+import { useNavigation } from '@/utils/NavigationContext'
+import { executeCommand } from '@/utils/CommandExecutor'
 import React from 'react'
 export interface MainPanelHandle {
   isEmpty: () => boolean

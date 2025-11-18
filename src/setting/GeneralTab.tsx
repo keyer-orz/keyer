@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ConfigManager } from '../shared/Config'
+import { ConfigManager } from '@/shared/Config'
 
 function GeneralTab() {
   const [config, setConfig] = useState<any>(null)

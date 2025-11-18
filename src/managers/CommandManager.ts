@@ -1,4 +1,4 @@
-import { ICommand, ExtensionResult } from '../types'
+import { ICommand, ExtensionResult } from 'keyerext'
 import { ScriptManager } from './ScriptManager'
 import { ExtensionManager } from './ExtensionManager'
 import { MainExtensionInstance } from '@/main'
@@ -93,7 +93,7 @@ export class CommandManager {
       const { ipcRenderer } = window.require('electron')
 
       // 动态导入 ConfigManager 避免循环依赖
-      const { ConfigManager } = await import('../../shared/Config')
+      const { ConfigManager } = await import('../shared/Config')
       const configManager = ConfigManager.getInstance()
       const config = configManager.getConfig()
 
