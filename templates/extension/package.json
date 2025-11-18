@@ -1,0 +1,30 @@
+{
+  "icon": "😄",
+  "name": "${name}",
+  "title": "${title}",
+  "desc": "${desc}",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --watch"
+  },
+  "commands": [
+    {
+      "icon": "📋",
+      "name": "show-panel",
+      "title": "Clipboard History Panel",
+      "desc": "Open clipboard history panel with filtering"
+    }
+  ],
+  "dependencies": {
+    "keyerext": "github:keyer-orz/keyerext"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
+}

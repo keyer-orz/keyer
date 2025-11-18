@@ -71,15 +71,15 @@ export default defineConfig({
   },
   server: {
     watch: {
-      // 监听 packages 目录的变化，强制重启 Vite
-      ignored: ['!**/packages/keyerext/dist/**']
+      // 监听 keyerext 目录的变化，强制重启 Vite
+      ignored: ['!**/keyerext/dist/**']
     },
     fs: {
-      // 允许访问项目根目录及 extensions 目录
+      // 允许访问项目根目录、extensions 目录和外部 keyerext 包
       allow: [
         path.resolve(__dirname, '.'),
         path.resolve(__dirname, 'extensions'),
-        path.resolve(__dirname, 'packages')
+        path.resolve(__dirname, '../keyerext')
       ]
     }
   }

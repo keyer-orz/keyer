@@ -20,7 +20,7 @@ class StoreExtension implements IExtension {
     }]
   }
 
-  doAction(name: string): ExtensionResult {
+  doAction(_name: string): ExtensionResult {
     // Store 扩展的 doAction 返回商店面板
     return <Store />
   }

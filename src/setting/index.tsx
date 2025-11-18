@@ -20,7 +20,7 @@ class SettingsExtension implements IExtension {
     }]
   }
 
-  doAction(name: string): ExtensionResult {
+  doAction(_name: string): ExtensionResult {
     // Settings 扩展的 doAction 返回设置面板
     return <Settings />
   }

@@ -175,7 +175,7 @@ export class ExtensionManager {
 
   // 注入全局 React 到 require 缓存
   // 让扩展的 require('react') 使用主应用的 React 实例
-  private injectGlobalReact(extDir: string): void {
+  private injectGlobalReact(_extDir: string): void {
     // 只安装一次 hook
     if (this.reactHookInstalled) {
       return
