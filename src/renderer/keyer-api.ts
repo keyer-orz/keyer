@@ -3,7 +3,7 @@
  * 注入到 window.__keyer__，供插件使用
  */
 
-import type { ClipboardImage } from 'keyerext'
+import type { ClipboardImage, ExecOptions } from 'keyerext'
 
 const { ipcRenderer, clipboard, nativeImage } = window.require('electron')
 
@@ -64,6 +64,11 @@ export function initKeyerAPI() {
     clipboardWriteImage: async (dataURL: string): Promise<void> => {
       const image = nativeImage.createFromDataURL(dataURL)
       clipboard.writeImage(image)
+    },
+
+    // ============ 命令执行 API ============
+    exec: async (command: string, options?: ExecOptions): Promise<void> => {
+      return ipcRenderer.invoke('exec-command', command, options)
     }
   }
 }
