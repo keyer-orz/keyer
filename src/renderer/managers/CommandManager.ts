@@ -4,6 +4,8 @@ import { ExtensionManager } from './ExtensionManager'
 import { MainExtensionInstance } from '@/main'
 import { SettingsExtensionInstance } from '@/setting'
 import { StoreExtensionInstance } from '@/store'
+import { UsageManager } from './UsageManager'
+import type { ListSection } from 'keyerext'
 
 interface CommandManagerConfig {
   devExtensionsDir?: string  // 开发环境的 extensions 目录
@@ -146,29 +148,71 @@ export class CommandManager {
     ]
   }
 
+  // 根据 ucid 获取单个命令
+  getCommand(ucid: string): ICommand | undefined {
+    const allCommands = this.getAllCommands()
+    return allCommands.find(cmd => cmd.ucid === ucid)
+  }
+
   // 搜索命令和扩展结果
-  async search(input: string): Promise<ICommand[]> {
+  // 返回 ListSection 数组，包含分组后的结果
+  async search(input: string): Promise<ListSection<ICommand>[]> {
+    const sections: ListSection<ICommand>[] = []
+
     // 获取所有可搜索的 commands
     const allCommands: ICommand[] = [
       ...this.extensionManager.getCommands(),
       ...this.scriptManager.getCommands()
     ]
 
-    // 如果输入为空，返回所有 commands
+    // 获取最近使用的命令（最多5个）
+    const usageManager = UsageManager.getInstance()
+    const recentUcids = usageManager.getRecentCommands(5)
+    const recentCommands = recentUcids
+      .map(ucid => this.getCommand(ucid))
+      .filter((cmd): cmd is ICommand => cmd !== undefined)
+
+    // 进行搜索
+    let searchResults: ICommand[] = []
     if (!input || input.trim() === '') {
-      return allCommands
+      // 输入为空，返回所有命令
+      searchResults = allCommands
+    } else {
+      // 搜索匹配
+      const lowerInput = input.toLowerCase()
+      
+      searchResults = allCommands.filter(command =>
+      (command.title.toLowerCase().includes(lowerInput) ||
+        command.desc.toLowerCase().includes(lowerInput) ||
+        command.name.toLowerCase().includes(lowerInput))
+      )
+      console.log('Searching commands for input:', searchResults)
+    }
+    searchResults = searchResults.filter(command => command.ucid !== "@system#main")
+
+    // 构建 sections
+    // 1. Suggestions Section（最近常用命令）
+    if (recentCommands.length > 0) {
+      sections.push({
+        header: 'Suggestions',
+        items: recentCommands.map(command => ({ id: command.ucid, data: command }))
+      })
     }
 
-    const lowerInput = input.toLowerCase()
+    // 2. Commands Section（所有命令，排除已在 Suggestions 中展示的）
+    if (searchResults.length > 0) {
+      const recentUcids = new Set(recentCommands.map(cmd => cmd.ucid))
+      const filteredResults = searchResults.filter(cmd => !recentUcids.has(cmd.ucid))
 
-    // 进行搜索：在所有 commands 中匹配
-    const results = allCommands.filter(command =>
-      command.title.toLowerCase().includes(lowerInput) ||
-      command.desc.toLowerCase().includes(lowerInput) ||
-      command.name.toLowerCase().includes(lowerInput)
-    )
+      if (filteredResults.length > 0) {
+        sections.push({
+          header: 'Commands',
+          items: filteredResults.map(command => ({ id: command.ucid, data: command }))
+        })
+      }
+    }
 
-    return results
+    return sections
   }
 
   // 执行命令

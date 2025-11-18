@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useImperativeHandle, forwardRef, useRef } from 'react'
+import { useState, useEffect, useCallback, useImperativeHandle, forwardRef, useRef } from 'react'
 import { ICommand } from '../renderer/types'
 import { CommandManager } from '../renderer/managers/CommandManager'
 import { Input, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
@@ -15,7 +15,7 @@ export interface MainPanelHandle {
 
 const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
   const [input, setInput] = useState('')
-  const [results, setResults] = useState<ICommand[]>([])
+  const [sections, setSections] = useState<ListSection<ICommand>[]>([])
   const [previewElements, setPreviewElements] = useState<Array<ExtensionResult>>([])
   const [selectedCommand, setSelectedCommand] = useState<ICommand | null>(null)
 
@@ -42,14 +42,14 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
       try {
         const commandManager = CommandManager.getInstance()
 
-        // 获取预览元素和搜索结果
-        const [previewElems, searchActions] = await Promise.all([
+        // 获取预览元素和搜索结果（sections）
+        const [previewElems, searchSections] = await Promise.all([
           commandManager.getPreview(input),
           commandManager.search(input)
         ])
 
         setPreviewElements(previewElems)
-        setResults(searchActions)
+        setSections(searchSections)
       } catch (error) {
         console.error('Search error:', error)
       }
@@ -83,38 +83,6 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
     }
     return '📦'
   }
-
-  // 获取系统命令（从 CommandManager 获取所有 @system# 开头的命令）
-  const systemCommands = useMemo(() => {
-    if (!CommandManager.isReady()) return []
-
-    const commandManager = CommandManager.getInstance()
-    const allCommands = commandManager.getAllCommands()
-    return allCommands.filter(cmd => cmd.ucid.startsWith('@system#'))
-  }, [])
-
-  // 构建 Section 列表
-  const sections = useMemo(() => {
-    const sections: ListSection<ICommand>[] = []
-
-    // 添加 Commands 部分
-    if (results.length > 0) {
-      sections.push({
-        header: 'Commands',
-        items: results.map(command => ({ id: command.ucid, data: command }))
-      })
-    }
-
-    // 添加 Suggestions 部分（系统命令）
-    if (systemCommands.length > 0) {
-      sections.push({
-        header: 'Suggestions',
-        items: systemCommands.map(command => ({ id: command.ucid, data: command }))
-      })
-    }
-
-    return sections
-  }, [results, systemCommands])
 
   return (
     <Panel>

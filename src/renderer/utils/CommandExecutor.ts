@@ -4,6 +4,7 @@
  */
 import React from 'react'
 import { CommandManager } from '../managers/CommandManager'
+import { UsageManager } from '../managers/UsageManager'
 import { NavigationContextType } from './NavigationContext'
 
 export interface CommandExecutorOptions {
@@ -24,6 +25,12 @@ export async function executeCommand(
 
     // 执行命令
     const result = await commandManager.execute(command)
+
+    // 记录命令使用（排除系统的 main 命令）
+    if (command !== '@system#main') {
+      const usageManager = UsageManager.getInstance()
+      usageManager.recordUsage(command)
+    }
 
     // 处理返回值 (ExtensionResult = null | React.ReactElement | boolean)
     if (result === null || result === false) {

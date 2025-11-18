@@ -68,8 +68,7 @@ function App() {
       }
 
       const commandManager = CommandManager.getInstance()
-      const allCommands = await commandManager.search('')
-      const command = allCommands.find(cmd => cmd.ucid === commandId)
+      const command =  commandManager.getCommand(commandId)
 
       if (command) {
         const navigateTo = (newViewState: ViewState) => {
