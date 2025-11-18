@@ -3,8 +3,7 @@
  * 注入到 window.__keyer__，供插件使用
  */
 
-import type { NetFetchRequest, NetFetchResponse } from '../shared/Net'
-import type { ClipboardImage } from '../../packages/keyerext/src/Keyer'
+import type { ClipboardImage } from 'keyerext'
 
 const { ipcRenderer, clipboard, nativeImage } = window.require('electron')
 
@@ -39,9 +38,6 @@ export function initKeyerAPI() {
       }
       return Promise.resolve()
     },
-
-    fetch: (request: NetFetchRequest): Promise<NetFetchResponse> =>
-      ipcRenderer.invoke('net:fetch', request),
 
     // ============ 剪切板 API ============
     clipboardReadText: async (): Promise<string> => {

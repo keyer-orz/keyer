@@ -4,7 +4,6 @@
 import { setupWindowIPCHandlers } from './ipc-window'
 import { setupPasteIPCHandlers } from './ipc-paste'
 import { setupPathsIPCHandlers } from './ipc-paths'
-import { setupNetIPCHandlers } from './ipc-net'
 import { setupStoreIPCHandlers } from './ipc-store'
 
 /**
@@ -14,6 +13,5 @@ export function setupIPCHandlers() {
   setupWindowIPCHandlers()
   setupPasteIPCHandlers()
   setupPathsIPCHandlers()
-  setupNetIPCHandlers()
   setupStoreIPCHandlers()
 }

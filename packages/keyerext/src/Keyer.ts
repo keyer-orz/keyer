@@ -47,8 +47,6 @@ interface IKeyerAPI {
   copyAndPaste(copyAction: () => void): Promise<void>
   /** 显示提示消息 */
   showToast(message: string, duration?: number): Promise<void>
-  /** 发起网络请求 */
-  fetch(request: NetFetchRequest): Promise<NetFetchResponse>
 
   // ============ 剪切板 API ============
   /** 读取剪切板文本 */
