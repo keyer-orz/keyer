@@ -25,27 +25,37 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
           if (req.url?.startsWith('/extensions/')) {
-            const filePath = path.join(__dirname, req.url.split('?')[0])
+            // 去除 ?import 或其他查询参数，只保留路径部分
+            const urlPath = req.url.split('?')[0]
+            const filePath = path.join(__dirname, urlPath)
             if (fs.existsSync(filePath)) {
               const ext = path.extname(filePath)
 
-              // 对 JS 文件进行 Vite 转换以解析 bare imports
-              if (ext === '.js') {
-                try {
-                  const result = await server.transformRequest(req.url)
-                  if (result) {
-                    res.setHeader('Content-Type', 'application/javascript')
-                    res.end(result.code)
-                    return
+              // 对 JS 和 MJS 文件进行 Vite 转换以解析 bare imports
+              if (ext === '.js' || ext === '.mjs') {
+                if (ext === '.js') {
+                  try {
+                    const result = await server.transformRequest(urlPath)
+                    if (result) {
+                      res.setHeader('Content-Type', 'application/javascript')
+                      res.end(result.code)
+                      return
+                    }
+                  } catch (error) {
+                    console.error('Error transforming extension file:', error)
                   }
-                } catch (error) {
-                  console.error('Error transforming extension file:', error)
+                } else if (ext === '.mjs') {
+                  // 直接静态返回 .mjs 文件
+                  res.setHeader('Content-Type', 'application/javascript')
+                  fs.createReadStream(filePath).pipe(res)
+                  return
                 }
               }
 
               // 其他文件直接返回
               const contentTypes: Record<string, string> = {
                 '.js': 'application/javascript',
+                '.mjs': 'application/javascript',
                 '.json': 'application/json',
                 '.css': 'text/css'
               }

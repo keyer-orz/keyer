@@ -10,7 +10,7 @@ import * as path from 'path'
 export function setupPathsIPCHandlers() {
   // 获取沙箱目录路径
   ipcMain.handle('get-sandbox-dir', () => {
-    return app.getPath('userData')
+    return path.join(app.getPath('userData'), 'extensions')
   })
 
   // 获取开发环境目录路径
@@ -26,5 +26,11 @@ export function setupPathsIPCHandlers() {
       extensionsDir: path.join(projectRoot, 'extensions'),
       scriptsDir: path.join(projectRoot, 'scripts')
     }
+  })
+
+  // 检查路径是否存在
+  ipcMain.handle('check-paths-exist', (_, paths: string[]) => {
+    const fs = require('fs')
+    return paths.map(p => ({ path: p, exists: p ? fs.existsSync(p) : false }))
   })
 }

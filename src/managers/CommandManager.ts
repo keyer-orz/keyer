@@ -108,6 +108,11 @@ export class CommandManager {
       console.log('Sandbox dir:', sandboxDir)
       console.log('Dev paths:', devPaths)
 
+      // 检查目录是否存在
+      const { ipcRenderer: ipc } = window.require('electron')
+      const checkPaths = await ipc.invoke('check-paths-exist', [sandboxDir, devPaths?.extensionsDir])
+      console.log('Path existence check:', checkPaths)
+
       // 创建实例
       return await CommandManager.createInstance({
         devExtensionsDir: devPaths?.extensionsDir || undefined,
@@ -180,7 +185,7 @@ export class CommandManager {
     } else {
       // 搜索匹配
       const lowerInput = input.toLowerCase()
-      
+
       searchResults = allCommands.filter(command =>
       (command.title.toLowerCase().includes(lowerInput) ||
         command.desc.toLowerCase().includes(lowerInput) ||

@@ -1,8 +1,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import Module from 'module'
 import { ICommand, IExtension, ExtensionPackage, ExtensionResult } from 'keyerext'
 import { ExtensionStorage } from '../utils/ExtensionStorage'
 import React from 'react'
+import * as Keyerext from 'keyerext'
 
 // 扩展来源类型
 type ExtensionSource = 'dev' | 'mine' | 'sandbox'
@@ -24,7 +26,7 @@ export class ExtensionManager {
   private mineDirs: string[] = []  // 本地路径目录列表
   private sandboxDir?: string  // 沙箱目录
 
-  private reactHookInstalled = false  // 标记是否已安装 React hook
+
 
   constructor(config: {
     devDir?: string
@@ -173,35 +175,7 @@ export class ExtensionManager {
     return result
   }
 
-  // 注入全局 React 到 require 缓存
-  // 让扩展的 require('react') 使用主应用的 React 实例
-  private injectGlobalReact(_extDir: string): void {
-    // 只安装一次 hook
-    if (this.reactHookInstalled) {
-      return
-    }
 
-    try {
-      const Module = require('module')
-      const originalRequire = Module.prototype.require
-
-      // Hook require 函数
-      Module.prototype.require = function(this: any, id: string) {
-        // 如果是 require('react')，返回主应用的 React
-        if (id === 'react') {
-          console.log('[ExtensionManager] Intercepted require("react"), returning global React')
-          return React
-        }
-        // 其他模块正常加载
-        return originalRequire.apply(this, arguments)
-      }
-
-      this.reactHookInstalled = true
-      console.log(`[ExtensionManager] Installed require hook for React injection`)
-    } catch (error) {
-      console.warn(`[ExtensionManager] Failed to inject global React:`, error)
-    }
-  }
 
   // 加载单个 extension
   private async loadExtension(extDir: string, source: ExtensionSource): Promise<void> {
@@ -221,7 +195,7 @@ export class ExtensionManager {
         return
       }
 
-      // 加载扩展的主文件
+      // 构建扩展入口路径
       const mainPath = path.join(extDir, pkg.main)
 
       if (!fs.existsSync(mainPath)) {
@@ -229,14 +203,39 @@ export class ExtensionManager {
         return
       }
 
-      // 注入全局 React 到 require 缓存中
-      // 这样扩展的 require('react') 会使用主应用的 React 实例
-      this.injectGlobalReact(extDir)
+      // 加载 CommonJS 格式的插件
+      // 使用自定义 Module 加载器来拦截依赖，确保插件使用宿主的 React 实例
+      console.log(`[ExtensionManager] Loading CommonJS extension from: ${mainPath}`)
 
-      // 清除 require 缓存
-      delete require.cache[require.resolve(mainPath)]
-      const extensionModule = require(mainPath)
-      const extension: IExtension = extensionModule.default || extensionModule
+      // 读取插件代码
+      const pluginCode = fs.readFileSync(mainPath, 'utf-8')
+
+      // 创建一个新的 Module 实例
+      const pluginModule = new Module(mainPath, module)
+
+      // 设置路径以便插件能找到自己的 node_modules（如果有的话）
+      pluginModule.paths = (Module as any)._nodeModulePaths(path.dirname(mainPath))
+      pluginModule.filename = mainPath
+
+      // 覆盖 require 方法来拦截特定模块
+      pluginModule.require = function (id: string) {
+        if (id === 'react') return React
+        if (id === 'react/jsx-runtime') return (global as any).ReactJSXRuntime || require('react/jsx-runtime')
+        if (id === 'keyerext') return Keyerext
+
+        // 其他模块使用默认加载方式
+        return (Module as any)._load(id, pluginModule, false)
+      } as any
+
+      // 编译并执行插件代码
+      // @ts-ignore - _compile 是内部 API
+      pluginModule._compile(pluginCode, mainPath)
+
+      // 获取导出的扩展类
+      const ExtensionClass = pluginModule.exports
+
+      // 实例化扩展类
+      const extension: IExtension = new ExtensionClass()
 
       // 为扩展创建并注入 Store（使用 name 作为标识）
       extension.store = new ExtensionStorage(pkg.name)
