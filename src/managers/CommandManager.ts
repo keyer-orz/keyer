@@ -4,6 +4,7 @@ import { ExtensionManager } from './ExtensionManager'
 import { MainExtensionInstance } from '@/main'
 import { SettingsExtensionInstance } from '@/setting'
 import { StoreExtensionInstance } from '@/store'
+import { CreateExtensionInstance } from '@/create'
 import { UsageManager } from './UsageManager'
 import type { ListSection } from 'keyerext'
 
@@ -141,6 +142,7 @@ export class CommandManager {
     this.extensionManager.registerSystemExtension('main', MainExtensionInstance)
     this.extensionManager.registerSystemExtension('settings', SettingsExtensionInstance)
     this.extensionManager.registerSystemExtension('store', StoreExtensionInstance)
+    this.extensionManager.registerSystemExtension('create', CreateExtensionInstance)
 
     console.log('System extensions registered')
   }

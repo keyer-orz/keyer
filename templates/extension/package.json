@@ -1,5 +1,5 @@
 {
-  "icon": "😄",
+  "icon": "${icon}",
   "name": "${name}",
   "title": "${title}",
   "desc": "${desc}",
@@ -8,14 +8,7 @@
   "scripts": {
     "build": "tsc --watch"
   },
-  "commands": [
-    {
-      "icon": "📋",
-      "name": "show-panel",
-      "title": "Clipboard History Panel",
-      "desc": "Open clipboard history panel with filtering"
-    }
-  ],
+  "commands": [],
   "dependencies": {
     "keyerext": "github:keyer-orz/keyerext"
   },

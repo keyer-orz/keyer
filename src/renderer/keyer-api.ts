@@ -15,7 +15,7 @@ export function setToastCallback(callback: (message: string, duration: number) =
 }
 
 export function initKeyerAPI() {
-  ;(window as any).__keyer__ = {
+  ; (window as any).__keyer__ = {
     hideWindow: () => ipcRenderer.invoke('hide-window'),
 
     showWindow: () => ipcRenderer.invoke('show-window'),
@@ -69,6 +69,23 @@ export function initKeyerAPI() {
     // ============ 命令执行 API ============
     exec: async (command: string, options?: ExecOptions): Promise<void> => {
       return ipcRenderer.invoke('exec-command', command, options)
+    },
+
+    // ============ 创建插件 API ============
+    selectDirectory: async (): Promise<string | null> => {
+      return ipcRenderer.invoke('create:select-directory')
+    },
+
+    generatePlugin: async (
+      type: 'script' | 'extension',
+      metadata: { icon: string; name: string; title: string; desc: string },
+      targetDir: string
+    ): Promise<{ success: boolean; path?: string }> => {
+      return ipcRenderer.invoke('create:generate-plugin', type, metadata, targetDir)
+    },
+
+    openFinder: async (path: string): Promise<void> => {
+      return ipcRenderer.invoke('create:open-finder', path)
     }
   }
 }

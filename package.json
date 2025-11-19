@@ -58,6 +58,19 @@
       "dist/**/*",
       "dist-electron/**/*"
     ],
+    "extraResources": [
+      {
+        "from": "templates",
+        "to": "templates",
+        "filter": [
+          "**/*",
+          "!**/dist",
+          "!**/dist/**",
+          "!**/node_modules",
+          "!**/node_modules/**"
+        ]
+      }
+    ],
     "directories": {
       "output": "release"
     }

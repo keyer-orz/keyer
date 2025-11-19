@@ -7,6 +7,7 @@ import { setupPathsIPCHandlers } from './ipc-paths'
 import { setupStoreIPCHandlers } from './ipc-store'
 import { setupExecIPCHandlers } from './ipc-exec'
 import { setupExecWindowHandlers } from './exec-window'
+import { setupCreateIPCHandlers } from './ipc-create'
 
 /**
  * 注册所有 IPC 处理器
@@ -18,4 +19,5 @@ export function setupIPCHandlers() {
   setupStoreIPCHandlers()
   setupExecIPCHandlers()
   setupExecWindowHandlers()
+  setupCreateIPCHandlers()
 }
