@@ -86,6 +86,24 @@ export function initKeyerAPI() {
 
     openFinder: async (path: string): Promise<void> => {
       return ipcRenderer.invoke('create:open-finder', path)
+    },
+
+    // ============ 安装插件 API ============
+    selectPluginDirectory: async (): Promise<string | null> => {
+      return ipcRenderer.invoke('install:select-plugin-directory')
+    },
+
+    detectPlugin: async (
+      pluginPath: string
+    ): Promise<{ type: 'extension' | 'script'; icon: string; name: string; title: string; desc: string; path: string } | null> => {
+      return ipcRenderer.invoke('install:detect-plugin', pluginPath)
+    },
+
+    installPlugin: async (
+      pluginPath: string,
+      pluginType: 'extension' | 'script'
+    ): Promise<{ success: boolean; path?: string }> => {
+      return ipcRenderer.invoke('install:install-plugin', pluginPath, pluginType)
     }
   }
 }

@@ -1478,3 +1478,65 @@ body {
   justify-content: flex-end;
   margin-top: 24px;
 }
+
+/* Plugin Info Card (for Install Panel) */
+.plugin-info-card {
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.plugin-info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.plugin-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.plugin-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.plugin-details h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.plugin-name {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin: 0;
+  font-family: monospace;
+}
+
+.plugin-type-badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  background-color: var(--bg-highlight);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.plugin-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.message-info {
+  background-color: var(--bg-highlight);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}

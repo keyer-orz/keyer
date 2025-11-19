@@ -83,6 +83,165 @@ export function setupCreateIPCHandlers() {
             throw new Error('Failed to open Finder')
         }
     })
+
+    // ============ 安装插件相关 IPC 处理器 ============
+
+    // 选择插件目录
+    ipcMain.handle('install:select-plugin-directory', async () => {
+        const mainWindow = getMainWindow()
+        if (!mainWindow) {
+            return null
+        }
+
+        const result = await dialog.showOpenDialog(mainWindow, {
+            properties: ['openDirectory'],
+            title: 'Select Plugin Folder',
+            buttonLabel: 'Select'
+        })
+
+        if (result.canceled || result.filePaths.length === 0) {
+            return null
+        }
+
+        return result.filePaths[0]
+    })
+
+    // 检测插件类型和元数据
+    ipcMain.handle('install:detect-plugin', async (_event, pluginPath: string) => {
+        try {
+            // 检查是否是扩展（有 package.json）
+            const packagePath = path.join(pluginPath, 'package.json')
+            if (fs.existsSync(packagePath)) {
+                const packageContent = fs.readFileSync(packagePath, 'utf-8')
+                const pkg = JSON.parse(packageContent)
+
+                if (pkg.name && pkg.title) {
+                    return {
+                        type: 'extension',
+                        icon: pkg.icon || '🧩',
+                        name: pkg.name,
+                        title: pkg.title,
+                        desc: pkg.desc || 'No description',
+                        path: pluginPath
+                    }
+                }
+            }
+
+            // 检查是否是脚本（有 .sh 文件）
+            const entries = fs.readdirSync(pluginPath)
+            const scriptFiles = entries.filter(file => file.endsWith('.sh'))
+
+            if (scriptFiles.length > 0) {
+                // 读取第一个脚本文件的元数据
+                const scriptPath = path.join(pluginPath, scriptFiles[0])
+                const scriptContent = fs.readFileSync(scriptPath, 'utf-8')
+
+                // 解析脚本元数据
+                const iconMatch = scriptContent.match(/#\s*@keyer\.icon\s+(.+)/)
+                const nameMatch = scriptContent.match(/#\s*@keyer\.name\s+(.+)/)
+                const titleMatch = scriptContent.match(/#\s*@keyer\.title\s+(.+)/)
+                const descMatch = scriptContent.match(/#\s*@keyer\.desc\s+(.+)/)
+
+                return {
+                    type: 'script',
+                    icon: iconMatch ? iconMatch[1].trim() : '📜',
+                    name: nameMatch ? nameMatch[1].trim() : scriptFiles[0].replace('.sh', ''),
+                    title: titleMatch ? titleMatch[1].trim() : scriptFiles[0].replace('.sh', ''),
+                    desc: descMatch ? descMatch[1].trim() : 'No description',
+                    path: pluginPath
+                }
+            }
+
+            // 没有找到有效的插件
+            return null
+        } catch (error: any) {
+            console.error('Failed to detect plugin:', error)
+            throw new Error(`Failed to detect plugin: ${error.message}`)
+        }
+    })
+
+    // 安装插件
+    ipcMain.handle('install:install-plugin', async (_event, pluginPath: string, pluginType: 'extension' | 'script') => {
+        try {
+            // 动态导入 ConfigManager
+            const { ConfigManager } = await import('../shared/Config')
+            const configManager = ConfigManager.getInstance()
+
+            // 获取插件名称
+            const pluginName = path.basename(pluginPath)
+
+            // 确定目标目录
+            let targetBaseDir: string
+            const appSupportDir = path.join(app.getPath('appData'), 'keyer', 'plugins')
+
+            if (pluginType === 'extension') {
+                targetBaseDir = path.join(appSupportDir, 'extensions')
+            } else {
+                targetBaseDir = path.join(appSupportDir, 'scripts')
+            }
+
+            // 确保目标目录存在
+            if (!fs.existsSync(targetBaseDir)) {
+                fs.mkdirSync(targetBaseDir, { recursive: true })
+            }
+
+            // 目标插件路径
+            const targetPluginPath = path.join(targetBaseDir, pluginName)
+
+            // 检查是否已存在
+            if (fs.existsSync(targetPluginPath)) {
+                throw new Error(`Plugin "${pluginName}" already exists in the installation directory`)
+            }
+
+            // 复制插件文件夹
+            await copyDirectory(pluginPath, targetPluginPath)
+
+            // 更新配置
+            if (pluginType === 'extension') {
+                configManager.addExtensionPath(targetBaseDir)
+            } else {
+                configManager.addScriptPath(targetBaseDir)
+            }
+
+            console.log(`Plugin installed successfully at: ${targetPluginPath}`)
+
+            return {
+                success: true,
+                path: targetPluginPath
+            }
+        } catch (error: any) {
+            console.error('Failed to install plugin:', error)
+            throw new Error(`Failed to install plugin: ${error.message}`)
+        }
+    })
+}
+
+/**
+ * 递归复制目录
+ */
+async function copyDirectory(source: string, destination: string): Promise<void> {
+    // 创建目标目录
+    if (!fs.existsSync(destination)) {
+        fs.mkdirSync(destination, { recursive: true })
+    }
+
+    const entries = fs.readdirSync(source, { withFileTypes: true })
+
+    for (const entry of entries) {
+        const sourcePath = path.join(source, entry.name)
+        const destPath = path.join(destination, entry.name)
+
+        // 跳过 node_modules 和 dist
+        if (entry.name === 'node_modules' || entry.name === 'dist') {
+            continue
+        }
+
+        if (entry.isDirectory()) {
+            await copyDirectory(sourcePath, destPath)
+        } else {
+            fs.copyFileSync(sourcePath, destPath)
+        }
+    }
 }
 
 /**
