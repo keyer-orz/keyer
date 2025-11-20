@@ -9,9 +9,7 @@
     "build:extensions": "node tools/build-extensions.js",
     "preview": "vite preview",
     "electron:dev": "concurrently -n keyerext,vite -c cyan,green,yellow \"npm run watch:keyerext\" \"vite\"",
-    "pkg": "vite build && electron-builder --mac --dir",
-    "link:local": "npm uninstall keyerext && cd ../keyerext && npm link && cd ../keyer && npm link keyerext && echo '✓ 已切换到本地 keyerext'",
-    "link:github": "npm uninstall keyerext && npm install keyerext@github:keyer-orz/keyerext && echo '✓ 已切换到 GitHub keyerext'"
+    "pkg": "vite build && electron-builder --mac --dir"
   },
   "keywords": [
     "electron",
@@ -41,7 +39,8 @@
     "electron-store": "^11.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "keyerext": "file:./packages/keyerext"
   },
   "build": {
     "appId": "com.keyer.app",
