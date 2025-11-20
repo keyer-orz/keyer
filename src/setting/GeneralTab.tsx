@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { ConfigManager } from '@/shared/Config'
+import { useColorMode } from 'keyerext'
 
 function GeneralTab() {
   const [config, setConfig] = useState<any>(null)
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const { setColorMode } = useColorMode()
 
   // 加载数据
   useEffect(() => {
@@ -16,6 +18,7 @@ function GeneralTab() {
 
         if (cfg && cfg.theme) {
           setTheme(cfg.theme)
+          setColorMode(cfg.theme)
         }
       } catch (error) {
         console.error('Failed to load config:', error)
@@ -26,6 +29,7 @@ function GeneralTab() {
 
   const handleThemeChange = async (newTheme: 'dark' | 'light') => {
     setTheme(newTheme)
+    setColorMode(newTheme)
     // 使用 ConfigManager 单例更新配置
     const configManager = ConfigManager.getInstance()
     configManager.updateConfig({ theme: newTheme })

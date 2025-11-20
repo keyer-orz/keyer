@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import { ChakraProvider } from 'keyerext'
+import { ChakraProvider, ColorModeProvider } from 'keyerext'
 import system from './theme'
 import '@/styles/index.css'
 import { initKeyerAPI } from './keyer-api'
@@ -12,7 +12,9 @@ initKeyerAPI()
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ChakraProvider value={system}>
-      <App />
+      <ColorModeProvider>
+        <App />
+      </ColorModeProvider>
     </ChakraProvider>
   </React.StrictMode>,
 )

@@ -6,6 +6,7 @@ import { NavigationContext, ViewState, NavigationContextType } from '@/utils/Nav
 import { executeCommand } from '@/utils/CommandExecutor'
 import { setToastCallback } from './keyer-api'
 import { MainExtensionInstance } from '../main'
+import { useColorMode } from 'keyerext'
 
 // 扩展 Window 类型以支持 ipcRenderer
 declare global {
@@ -15,7 +16,7 @@ declare global {
 }
 
 function App() {
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+  const { setColorMode } = useColorMode()
 
   // 使用栈管理视图：存储 ViewState
   const [viewStack, setViewStack] = useState<ViewState[]>(() => {
@@ -89,7 +90,7 @@ function App() {
     const config = configManager.getConfig()
     if (config && config.theme) {
       const nextTheme = config.theme === 'light' ? 'light' : 'dark'
-      setTheme(nextTheme)
+      setColorMode(nextTheme)
     }
 
     // 设置 toast 回调
