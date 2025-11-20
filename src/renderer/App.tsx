@@ -20,11 +20,11 @@ function App() {
   // 使用栈管理视图：存储 ViewState
   const [viewStack, setViewStack] = useState<ViewState[]>(() => {
     return [
-    {
-      commandId: '@system#main',
-      element: MainExtensionInstance.doAction('main') as React.ReactElement,
-      windowSize: 'normal'
-    }
+      {
+        commandId: '@system#main',
+        element: MainExtensionInstance.doAction('main') as React.ReactElement,
+        windowSize: 'normal'
+      }
     ]
   })
 
@@ -68,7 +68,7 @@ function App() {
       }
 
       const commandManager = CommandManager.getInstance()
-      const command =  commandManager.getCommand(commandId)
+      const command = commandManager.getCommand(commandId)
 
       if (command) {
         const navigateTo = (newViewState: ViewState) => {
@@ -88,7 +88,8 @@ function App() {
     const configManager = ConfigManager.getInstance()
     const config = configManager.getConfig()
     if (config && config.theme) {
-      setTheme(config.theme)
+      const nextTheme = config.theme === 'light' ? 'light' : 'dark'
+      setTheme(nextTheme)
     }
 
     // 设置 toast 回调
@@ -171,15 +172,7 @@ function App() {
 
   return (
     <NavigationContext.Provider value={navigationValue}>
-      <div className={`app theme-${theme}`}>
-        {renderView()}
-        {/* Toast 提示 */}
-        {toast.visible && (
-          <div className="toast">
-            {toast.message}
-          </div>
-        )}
-      </div>
+      {renderView()}
     </NavigationContext.Provider>
   )
 }

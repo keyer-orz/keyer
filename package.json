@@ -39,9 +39,9 @@
   "dependencies": {
     "adm-zip": "^0.5.16",
     "electron-store": "^11.0.2",
-    "keyerext": "github:keyer-orz/keyerext",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0"
   },
   "build": {
     "appId": "com.keyer.app",

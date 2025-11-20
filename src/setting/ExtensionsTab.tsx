@@ -154,7 +154,7 @@ function ExtensionsTab() {
         <div className="extensions-search-box">
           <Input
             value={searchQuery}
-            onChange={setSearchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search..."
             autoFocus={false}
           />

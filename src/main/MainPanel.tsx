@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useImperativeHandle, forwardRef, useRef } from 'react'
 import { ICommand } from 'keyerext'
 import { CommandManager } from '@/managers/CommandManager'
-import { Input, List, Item, Panel, Text, ExtensionResult } from 'keyerext'
-import type { ListItem, ListSection, InputHandle } from 'keyerext'
+import { Panel, ExtensionResult, ViewList } from 'keyerext'
+import type { ListSection } from 'keyerext'
 import { useNavigation } from '@/utils/NavigationContext'
 import { executeCommand } from '@/utils/CommandExecutor'
-import React from 'react'
+import { Input, VStack, Box, Text, HStack } from 'keyerext'
+
 export interface MainPanelHandle {
   isEmpty: () => boolean
   isFocused: () => boolean
@@ -17,22 +18,25 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
   const [input, setInput] = useState('')
   const [sections, setSections] = useState<ListSection<ICommand>[]>([])
   const [previewElements, setPreviewElements] = useState<Array<ExtensionResult>>([])
-  const [selectedCommand, setSelectedCommand] = useState<ICommand | null>(null)
 
-  const inputRef = useRef<InputHandle>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const { navigateTo } = useNavigation()
+
+  // 扁平化所有命令用于键盘导航
+  const allCommands = sections.flatMap(section => section.items.map(item => item.data))
 
   // 暴露给父组件的方法
   useImperativeHandle(ref, () => ({
-    isEmpty: () => inputRef.current?.isEmpty() ?? true,
-    isFocused: () => inputRef.current?.isFocused() ?? false,
+    isEmpty: () => !input || input.trim() === '',
+    isFocused: () => document.activeElement === inputRef.current,
     focus: () => {
       inputRef.current?.focus()
     },
     clear: () => {
-      inputRef.current?.clear()
+      setInput('')
+      inputRef.current?.focus()
     }
-  }), [])
+  }), [input])
 
   // 搜索
   useEffect(() => {
@@ -50,6 +54,7 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
 
         setPreviewElements(previewElems)
         setSections(searchSections)
+        setSections(searchSections)
       } catch (error) {
         console.error('Search error:', error)
       }
@@ -64,82 +69,75 @@ const MainPanel = forwardRef<MainPanelHandle>((_props, ref) => {
     await executeCommand(command.ucid, { navigateTo })
   }, [navigateTo])
 
-  // List 选中回调
-  const handleSelect = useCallback((item: ListItem<ICommand>, _index: number) => {
-    setSelectedCommand(item.data)
-  }, [])
+  // 键盘导航
 
-  // List Enter 回调
-  const handleEnter = useCallback((item: ListItem<ICommand>) => {
-    handleExecute(item.data)
-  }, [handleExecute])
 
   // 获取图标
   const getIcon = (command: ICommand) => {
-    if (command.type === 'System') {
-      return '⚙️'
-    } else if (command.type === 'Command') {
-      return '⚡'
-    }
+    if (command.icon) return command.icon
+    if (command.type === 'System') return '⚙️'
+    if (command.type === 'Command') return '⚡'
     return '📦'
   }
 
   return (
     <Panel>
-      <div className="search-container">
+      <VStack align="stretch" gap={4} p={4}>
+        {/* 输入框 */}
         <Input
           ref={inputRef}
+          placeholder="Search commands..."
+          variant="flushed"
+          size="lg"
           value={input}
-          onChange={setInput}
-          placeholder="Search for apps and commands..."
-          autoFocus={true}
+          onChange={(e) => setInput(e.target.value)}
+          autoFocus
         />
-      </div>
 
-      <div className="results-container">
-        {/* Render preview elements at the top */}
-        {previewElements.map((element, index) => (
-          <React.Fragment key={`preview-${index}`}>{element}</React.Fragment>
-        ))}
+        {/* 预览元素 */}
+        {previewElements.length > 0 && (
+          <VStack align="stretch" gap={2}>
+            {previewElements.map((element, index) => (
+              <Box key={`preview-${index}`}>
+                {element}
+              </Box>
+            ))}
+          </VStack>
+        )}
 
-        {/* 统一的列表 */}
-        <List
+        {/* 命令列表 */}
+        {/* 命令列表 */}
+        <ViewList
           sections={sections}
-          onSelect={handleSelect}
-          onEnter={handleEnter}
-          initialSelectedIndex={0}
-          renderItem={(item) => {
-            const command = item.data
-            return (
-              <Item>
-                <div className="result-icon">
-                  {getIcon(command)}
-                </div>
-                <div className="result-content">
-                  <div className="result-info">
-                    <Text variant="title" ellipsis>{command.title}</Text>
-                  </div>
-                  <Text variant="label">{command.type || 'Extension'}</Text>
-                </div>
-              </Item>
-            )
-          }}
-        />
-      </div>
+          onExecute={handleExecute}
+          renderItem={(command: ICommand, isSelected: boolean) => (
+            <HStack gap={3}>
+              {/* Icon */}
+              <Text fontSize="xl">{getIcon(command)}</Text>
 
-      <div className="footer">
-        <div className="footer-desc">
-          {selectedCommand?.desc || ''}
-        </div>
-        <div
-          className="footer-settings"
-          onClick={() => {
-            executeCommand('@system#settings', { navigateTo })
-          }}
-        >
-          ⚙️
-        </div>
-      </div>
+              {/* Content */}
+              <VStack align="start" gap={0} flex={1}>
+                <Text fontWeight="medium" fontSize="sm">
+                  {command.title}
+                </Text>
+                <Text
+                  fontSize="xs"
+                  color={isSelected ? 'whiteAlpha.800' : 'gray.500'}
+                >
+                  {command.desc || command.type || 'Command'}
+                </Text>
+              </VStack>
+            </HStack>
+          )}
+        />
+
+        {/* 空状态 */}
+        {allCommands.length === 0 && input && (
+          <Box textAlign="center" py={8}>
+            <Text color="gray.500">No commands found</Text>
+          </Box>
+        )}
+      </VStack>
     </Panel>
   )
 })
