@@ -17,7 +17,17 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [stack, setStack] = useState<PageStackItem[]>(() => {
-    console.log('🚀 Navigation initialized (hidden by default)')
+    console.log('🚀 Navigation initialized')
+
+    // 开发模式下默认显示 Main 页面
+    if (import.meta.env.DEV) {
+      const mainElement = commandManager.execute('@sysetem#main')
+      if (mainElement) {
+        console.log('🔧 DEV mode: Auto-show Main page')
+        return [{ pageName: '@sysetem#main', element: mainElement }]
+      }
+    }
+
     return []
   })
 

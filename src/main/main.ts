@@ -23,10 +23,12 @@ const shortcutConfig: Record<string, string> = {
 }
 
 function createWindow() {
+  const isDev = !!VITE_DEV_SERVER_URL
+
   win = new BrowserWindow({
     width: 1200,
     height: 800,
-    show: false, // 启动时隐藏窗口
+    show: isDev, // 开发模式下默认显示，生产模式隐藏
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -37,6 +39,11 @@ function createWindow() {
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
+
+    // 开发模式下，页面加载完成后显示窗口
+    if (isDev && win) {
+      win.show()
+    }
   })
 
   // 监听栈变化事件
