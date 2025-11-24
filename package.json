@@ -3,14 +3,11 @@
   "version": "1.0.0",
   "description": "Electron + React + Vite + TypeScript application",
   "main": "dist-electron/main.js",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "preview": "vite preview",
-    "electron:dev": "npm run build:electron && electron .",
-    "build:electron": "tsc -p tsconfig.electron.json",
-    "start": "concurrently \"vite\" \"wait-on tcp:5173 && npm run build:electron && electron .\""
+    "start": "vite"
   },
   "keywords": [
     "electron",
