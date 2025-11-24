@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button } from 'keyerext'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
@@ -213,6 +213,45 @@ export default function UIDemo() {
                                 onChange={handleThemeChange}
                             />
                         </div>
+                    </VStack>
+                </VStack>
+
+                <Divider />
+
+                {/* Button 组件演示 */}
+                <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="medium">Button 组件</Text>
+
+                    <VStack spacing={16} style={{ alignItems: 'flex-start' }}>
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">实心按钮 (Solid):</Text>
+                            <HStack spacing={12}>
+                                <Button variant="solid" size="normal" onClick={() => alert('正常尺寸按钮')}>
+                                    正常按钮
+                                </Button>
+                                <Button variant="solid" size="small" onClick={() => alert('小号尺寸按钮')}>
+                                    小号按钮
+                                </Button>
+                                <Button variant="solid" size="normal" disabled>
+                                    禁用状态
+                                </Button>
+                            </HStack>
+                        </VStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">描边按钮 (Outline):</Text>
+                            <HStack spacing={12}>
+                                <Button variant="outline" size="normal" onClick={() => alert('正常尺寸按钮')}>
+                                    正常按钮
+                                </Button>
+                                <Button variant="outline" size="small" onClick={() => alert('小号尺寸按钮')}>
+                                    小号按钮
+                                </Button>
+                                <Button variant="outline" size="normal" disabled>
+                                    禁用状态
+                                </Button>
+                            </HStack>
+                        </VStack>
                     </VStack>
                 </VStack>
 

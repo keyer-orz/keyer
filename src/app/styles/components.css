@@ -304,3 +304,66 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Button Component */
+.keyer-button {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+  transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  font-weight: 500;
+  user-select: none;
+}
+
+.keyer-button:focus {
+  outline: none;
+}
+
+.keyer-button:focus-visible {
+  outline: none;
+}
+
+.keyer-button-normal {
+  padding: 10px 16px;
+}
+
+.keyer-button-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.keyer-button-solid {
+  background-color: var(--color-title);
+  color: var(--color-bg);
+  border: 1px solid var(--color-title);
+}
+
+.keyer-button-solid:hover:not(.keyer-button-disabled) {
+  opacity: 0.85;
+}
+
+.keyer-button-solid:active:not(.keyer-button-disabled) {
+  opacity: 0.7;
+}
+
+.keyer-button-outline {
+  background-color: transparent;
+  color: var(--color-title);
+  border: 1px solid var(--color-border);
+}
+
+.keyer-button-outline:hover:not(.keyer-button-disabled) {
+  background-color: var(--color-hover);
+  border-color: var(--color-title);
+}
+
+.keyer-button-outline:active:not(.keyer-button-disabled) {
+  background-color: var(--color-selected);
+}
+
+.keyer-button-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
