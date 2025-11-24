@@ -6,6 +6,7 @@
 @import './divider.css';
 @import './dropdown.css';
 @import './button.css';
+@import './switch.css';
 
 .main {
   width: 100%;

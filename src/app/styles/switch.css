@@ -1,0 +1,40 @@
+/* Switch Component */
+.keyer-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--color-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  outline: none;
+}
+
+.keyer-switch:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-selected);
+}
+
+.keyer-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-bg);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.keyer-switch-checked {
+  background-color: var(--color-title);
+}
+
+.keyer-switch-checked .keyer-switch-thumb {
+  transform: translateX(20px);
+}
+
+.keyer-switch-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

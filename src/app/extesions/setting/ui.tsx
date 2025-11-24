@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { Text, VStack, Input, Divider, Button } from 'keyerext'
+import { Text, VStack, HStack, Input, Divider, Button, Switch } from 'keyerext'
 
 export default function Setting() {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
+    const [darkMode, setDarkMode] = useState(false)
+    const [notifications, setNotifications] = useState(true)
 
     const handleSave = () => {
         alert(`已保存设置:\n用户名: ${username}\n邮箱: ${email}`)
@@ -47,6 +49,35 @@ export default function Setting() {
                             onEnter={handleSave}
                         />
                     </VStack>
+                </VStack>
+
+                <Divider />
+
+                {/* Preferences */}
+                <VStack spacing={16} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="medium">偏好设置</Text>
+
+                    <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                        <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                            <Text color="title" size="medium">深色模式</Text>
+                            <Text color="subtitle" size="small">使用深色主题</Text>
+                        </VStack>
+                        <Switch
+                            checked={darkMode}
+                            onChange={setDarkMode}
+                        />
+                    </HStack>
+
+                    <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                        <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                            <Text color="title" size="medium">推送通知</Text>
+                            <Text color="subtitle" size="small">接收应用通知</Text>
+                        </VStack>
+                        <Switch
+                            checked={notifications}
+                            onChange={setNotifications}
+                        />
+                    </HStack>
                 </VStack>
 
                 <Divider />

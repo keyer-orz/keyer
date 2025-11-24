@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch } from 'keyerext'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
     const [selectedId, setSelectedId] = useState('item-1')
     const [theme, setTheme] = useState<'light' | 'dark' | 'pink' | 'github' | 'github-dark'>('light')
+    const [notificationsEnabled, setNotificationsEnabled] = useState(true)
+    const [autoSave, setAutoSave] = useState(false)
 
     interface ProjectData {
         name: string
@@ -252,6 +254,47 @@ export default function UIDemo() {
                                 </Button>
                             </HStack>
                         </VStack>
+                    </VStack>
+                </VStack>
+
+                <Divider />
+
+                {/* Switch 组件演示 */}
+                <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="medium">Switch 组件</Text>
+                    <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                        <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                            <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                                <Text color="title" size="medium">启用通知</Text>
+                                <Text color="subtitle" size="small">接收应用通知消息</Text>
+                            </VStack>
+                            <Switch
+                                checked={notificationsEnabled}
+                                onChange={setNotificationsEnabled}
+                            />
+                        </HStack>
+
+                        <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                            <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                                <Text color="title" size="medium">自动保存</Text>
+                                <Text color="subtitle" size="small">自动保存编辑内容</Text>
+                            </VStack>
+                            <Switch
+                                checked={autoSave}
+                                onChange={setAutoSave}
+                            />
+                        </HStack>
+
+                        <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                            <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                                <Text color="title" size="medium">禁用状态</Text>
+                                <Text color="subtitle" size="small">此开关不可用</Text>
+                            </VStack>
+                            <Switch
+                                checked={false}
+                                disabled
+                            />
+                        </HStack>
                     </VStack>
                 </VStack>
 
