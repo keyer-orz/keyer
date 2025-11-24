@@ -6,28 +6,33 @@ export default function UIDemo() {
     const [selectedId, setSelectedId] = useState('item-1')
     const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
-    const groups: ListGroup[] = [
+    interface ProjectData {
+        name: string
+        type: string
+    }
+
+    const groups: ListGroup<ProjectData>[] = [
         {
             title: "工作项目",
             items: [
-                { id: "item-1", content: <Text>项目 A - 电商平台</Text> },
-                { id: "item-2", content: <Text>项目 B - 后台管理系统</Text> },
-                { id: "item-3", content: <Text>项目 C - 移动应用</Text> }
+                { id: "item-1", data: { name: "项目 A", type: "电商平台" } },
+                { id: "item-2", data: { name: "项目 B", type: "后台管理系统" } },
+                { id: "item-3", data: { name: "项目 C", type: "移动应用" } }
             ]
         },
         {
             title: "个人项目",
             items: [
-                { id: "item-4", content: <Text>博客网站</Text> },
-                { id: "item-5", content: <Text>工具集合</Text> }
+                { id: "item-4", data: { name: "博客网站", type: "个人" } },
+                { id: "item-5", data: { name: "工具集合", type: "开源" } }
             ]
         },
         {
             title: "学习资源",
             items: [
-                { id: "item-6", content: <Text>React 文档</Text> },
-                { id: "item-7", content: <Text>TypeScript 教程</Text> },
-                { id: "item-8", content: <Text>设计模式</Text> }
+                { id: "item-6", data: { name: "React 文档", type: "文档" } },
+                { id: "item-7", data: { name: "TypeScript 教程", type: "教程" } },
+                { id: "item-8", data: { name: "设计模式", type: "书籍" } }
             ]
         }
     ]
@@ -103,17 +108,18 @@ export default function UIDemo() {
                     <List
                         groups={groups}
                         selectedId={selectedId}
-                        onSelect={(id) => {
+                        renderItem={(item, _isSelected, _isHovered) => (
+                            <VStack spacing={2} style={{ alignItems: 'flex-start' }}>
+                                <Text color="title" size="medium">{item.data.name}</Text>
+                                <Text color="subtitle" size="small">{item.data.type}</Text>
+                            </VStack>
+                        )}
+                        onSelect={(id, data) => {
                             setSelectedId(id)
-                            console.log('选中:', id)
+                            console.log('选中:', id, data)
                         }}
-                        onDoubleClick={(id) => {
-                            const item = groups
-                                .flatMap(g => g.items)
-                                .find(i => i.id === id)
-                            if (item) {
-                                alert(`打开: ${item.id}`)
-                            }
+                        onDoubleClick={(_id, data) => {
+                            alert(`打开: ${data.name} (${data.type})`)
                         }}
                     />
 

@@ -1,24 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react'
 
-export interface ListItem {
+export interface ListItem<T = any> {
   id: string
-  content: React.ReactNode
+  data: T
 }
 
-export interface ListGroup {
+export interface ListGroup<T = any> {
   title?: string
-  items: ListItem[]
+  items: ListItem<T>[]
 }
 
-export interface ListProps {
-  groups: ListGroup[]
+export interface ListProps<T = any> {
+  groups: ListGroup<T>[]
   selectedId?: string
-  onSelect?: (id: string) => void
-  onDoubleClick?: (id: string) => void
+  onSelect?: (id: string, data: T) => void
+  onDoubleClick?: (id: string, data: T) => void
+  renderItem: (item: ListItem<T>, isSelected: boolean, isHovered: boolean) => React.ReactNode
   className?: string
 }
 
-export function List({ groups, selectedId, onSelect, onDoubleClick, className = '' }: ListProps) {
+export function List<T = any>({ groups, selectedId, onSelect, onDoubleClick, renderItem, className = '' }: ListProps<T>) {
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [internalSelectedId, setInternalSelectedId] = useState<string | undefined>(selectedId)
 
@@ -32,13 +33,13 @@ export function List({ groups, selectedId, onSelect, onDoubleClick, className = 
     }
   }, [selectedId])
 
-  const handleSelect = useCallback((id: string) => {
+  const handleSelect = useCallback((id: string, data: T) => {
     setInternalSelectedId(id)
-    onSelect?.(id)
+    onSelect?.(id, data)
   }, [onSelect])
 
-  const handleDoubleClick = useCallback((id: string) => {
-    onDoubleClick?.(id)
+  const handleDoubleClick = useCallback((id: string, data: T) => {
+    onDoubleClick?.(id, data)
   }, [onDoubleClick])
 
   // 键盘导航
@@ -58,10 +59,13 @@ export function List({ groups, selectedId, onSelect, onDoubleClick, className = 
 
         const nextItem = allItems[nextIndex]
         if (nextItem) {
-          handleSelect(nextItem.id)
+          handleSelect(nextItem.id, nextItem.data)
         }
       } else if (e.key === 'Enter' && currentSelectedId) {
-        handleDoubleClick(currentSelectedId)
+        const currentItem = allItems.find(item => item.id === currentSelectedId)
+        if (currentItem) {
+          handleDoubleClick(currentSelectedId, currentItem.data)
+        }
       }
     }
 
@@ -84,12 +88,12 @@ export function List({ groups, selectedId, onSelect, onDoubleClick, className = 
               <div
                 key={item.id}
                 className={`keyer-list-item ${isSelected ? 'keyer-list-item-selected' : ''}`}
-                onClick={() => handleSelect(item.id)}
-                onDoubleClick={() => handleDoubleClick(item.id)}
+                onClick={() => handleSelect(item.id, item.data)}
+                onDoubleClick={() => handleDoubleClick(item.id, item.data)}
                 onMouseEnter={() => setHoverId(item.id)}
                 onMouseLeave={() => setHoverId(null)}
               >
-                {item.content}
+                {renderItem(item, isSelected, isHovered)}
               </div>
             )
           })}
