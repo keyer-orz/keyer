@@ -8,6 +8,8 @@
 @import './button.css';
 @import './switch.css';
 @import './radio.css';
+@import './loading.css';
+@import './checkbox.css';
 
 .main {
   width: 100%;

@@ -1,0 +1,77 @@
+/* Loading Component */
+.keyer-loading {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.keyer-loading-spinner {
+  border-radius: 50%;
+  border-style: solid;
+  border-color: var(--color-border);
+  border-top-color: var(--color-title);
+  animation: keyer-loading-spin 0.8s linear infinite;
+}
+
+.keyer-loading-small .keyer-loading-spinner {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.keyer-loading-medium .keyer-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+}
+
+.keyer-loading-large .keyer-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border-width: 4px;
+}
+
+.keyer-loading-text {
+  color: var(--color-text);
+  font-size: 14px;
+  user-select: none;
+}
+
+.keyer-loading-small .keyer-loading-text {
+  font-size: 12px;
+}
+
+.keyer-loading-large .keyer-loading-text {
+  font-size: 16px;
+}
+
+.keyer-loading-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.keyer-loading-fullscreen {
+  background-color: var(--color-bg);
+}
+
+.keyer-loading-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+@keyframes keyer-loading-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup } from 'keyerext'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
@@ -9,6 +9,11 @@ export default function UIDemo() {
     const [autoSave, setAutoSave] = useState(false)
     const [language, setLanguage] = useState('zh-CN')
     const [updateChannel, setUpdateChannel] = useState('stable')
+    const [showFullscreenLoading, setShowFullscreenLoading] = useState(false)
+    const [showOverlayLoading, setShowOverlayLoading] = useState(false)
+    const [agreeTerms, setAgreeTerms] = useState(false)
+    const [receiveNewsletter, setReceiveNewsletter] = useState(true)
+    const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['feature1'])
 
     interface ProjectData {
         name: string
@@ -338,12 +343,188 @@ export default function UIDemo() {
 
                 <Divider />
 
+                {/* Checkbox 组件演示 */}
+                <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="medium">Checkbox 组件</Text>
+
+                    <VStack spacing={16} style={{ alignItems: 'stretch' }}>
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">单个复选框:</Text>
+                            <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                                <Checkbox
+                                    checked={agreeTerms}
+                                    onChange={setAgreeTerms}
+                                    label="我同意服务条款和隐私政策"
+                                />
+                                <Checkbox
+                                    checked={receiveNewsletter}
+                                    onChange={setReceiveNewsletter}
+                                    label="订阅新闻邮件"
+                                />
+                                <Checkbox
+                                    checked={false}
+                                    disabled
+                                    label="禁用状态"
+                                />
+                                <Checkbox
+                                    checked={true}
+                                    disabled
+                                    label="禁用且选中"
+                                />
+                            </VStack>
+                        </VStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">不确定状态 (Indeterminate):</Text>
+                            <Checkbox
+                                checked={false}
+                                indeterminate={true}
+                                label="部分选中状态"
+                            />
+                        </VStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">复选框组:</Text>
+                            <CheckboxGroup
+                                options={[
+                                    { label: '暗黑模式', value: 'feature1' },
+                                    { label: '自动更新', value: 'feature2' },
+                                    { label: '性能监控', value: 'feature3' },
+                                    { label: '实验性功能 (不可用)', value: 'feature4', disabled: true }
+                                ]}
+                                value={selectedFeatures}
+                                onChange={setSelectedFeatures}
+                            />
+                            <Text color="subtitle" size="small">
+                                已选择: {selectedFeatures.length > 0 ? selectedFeatures.join(', ') : '无'}
+                            </Text>
+                        </VStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">全选示例:</Text>
+                            <div style={{
+                                padding: '16px',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: '8px'
+                            }}>
+                                <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                                    <Checkbox
+                                        checked={selectedFeatures.length === 3}
+                                        indeterminate={selectedFeatures.length > 0 && selectedFeatures.length < 3}
+                                        onChange={(checked: any) => {
+                                            setSelectedFeatures(checked ? ['feature1', 'feature2', 'feature3'] : [])
+                                        }}
+                                        label="全选功能"
+                                    />
+                                    <Divider />
+                                    <CheckboxGroup
+                                        options={[
+                                            { label: '暗黑模式', value: 'feature1' },
+                                            { label: '自动更新', value: 'feature2' },
+                                            { label: '性能监控', value: 'feature3' }
+                                        ]}
+                                        value={selectedFeatures}
+                                        onChange={setSelectedFeatures}
+                                    />
+                                </VStack>
+                            </div>
+                        </VStack>
+                    </VStack>
+                </VStack>
+
+                <Divider />
+
+                {/* Loading 组件演示 */}
+                <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="medium">Loading 组件</Text>
+
+                    <VStack spacing={16} style={{ alignItems: 'stretch' }}>
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">不同尺寸:</Text>
+                            <HStack spacing={24} style={{ alignItems: 'center' }}>
+                                <VStack spacing={8} style={{ alignItems: 'center' }}>
+                                    <Loading size="small" />
+                                    <Text color="subtitle" size="small">小号</Text>
+                                </VStack>
+                                <VStack spacing={8} style={{ alignItems: 'center' }}>
+                                    <Loading size="medium" />
+                                    <Text color="subtitle" size="small">中号</Text>
+                                </VStack>
+                                <VStack spacing={8} style={{ alignItems: 'center' }}>
+                                    <Loading size="large" />
+                                    <Text color="subtitle" size="small">大号</Text>
+                                </VStack>
+                            </HStack>
+                        </VStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">带文字提示:</Text>
+                            <HStack spacing={24} style={{ alignItems: 'center' }}>
+                                <Loading size="small" text="加载中" />
+                                <Loading size="medium" text="请稍候..." />
+                                <Loading size="large" text="正在处理" />
+                            </HStack>
+                        </VStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">全屏模式 (点击按钮体验):</Text>
+                            <HStack spacing={12}>
+                                <Button
+                                    variant="outline"
+                                    size="normal"
+                                    onClick={() => {
+                                        setShowFullscreenLoading(true)
+                                        setTimeout(() => setShowFullscreenLoading(false), 2000)
+                                    }}
+                                >
+                                    显示全屏加载
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="normal"
+                                    onClick={() => {
+                                        setShowOverlayLoading(true)
+                                        setTimeout(() => setShowOverlayLoading(false), 2000)
+                                    }}
+                                >
+                                    显示遮罩加载
+                                </Button>
+                            </HStack>
+                        </VStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">内联使用示例:</Text>
+                            <div style={{
+                                padding: '16px',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: '8px',
+                                minHeight: '120px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                <Loading size="medium" text="正在加载数据..." />
+                            </div>
+                        </VStack>
+                    </VStack>
+                </VStack>
+
+                <Divider />
+
                 {/* 底部提示 */}
                 <VStack spacing={4} style={{ alignItems: 'center' }}>
                     <Text color="subtitle" size="small">按 ESC 返回主页</Text>
                     <Text color="subtitle" size="small">所有组件支持日夜间主题切换</Text>
                 </VStack>
             </VStack>
+
+            {/* 全屏/遮罩 Loading 演示 */}
+            {showFullscreenLoading && (
+                <Loading fullscreen size="large" text="全屏加载中..." />
+            )}
+            {showOverlayLoading && (
+                <Loading overlay size="large" text="处理中，请稍候..." />
+            )}
         </div>
     )
 }
