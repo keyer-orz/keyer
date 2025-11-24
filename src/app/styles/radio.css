@@ -1,0 +1,64 @@
+/* Radio Component */
+.keyer-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.keyer-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  padding: 4px 0;
+}
+
+.keyer-radio:focus-visible .keyer-radio-circle {
+  box-shadow: 0 0 0 2px var(--color-selected);
+}
+
+.keyer-radio-circle {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  transition: border-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.keyer-radio:hover:not(.keyer-radio-disabled) .keyer-radio-circle {
+  border-color: var(--color-title);
+}
+
+.keyer-radio-checked .keyer-radio-circle {
+  border-color: var(--color-title);
+}
+
+.keyer-radio-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-title);
+  border-radius: 50%;
+}
+
+.keyer-radio-label {
+  color: var(--color-title);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.keyer-radio-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.keyer-radio-disabled .keyer-radio-circle {
+  border-color: var(--color-border);
+}

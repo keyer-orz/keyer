@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption } from 'keyerext'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
@@ -7,6 +7,8 @@ export default function UIDemo() {
     const [theme, setTheme] = useState<'light' | 'dark' | 'pink' | 'github' | 'github-dark'>('light')
     const [notificationsEnabled, setNotificationsEnabled] = useState(true)
     const [autoSave, setAutoSave] = useState(false)
+    const [language, setLanguage] = useState('zh-CN')
+    const [updateChannel, setUpdateChannel] = useState('stable')
 
     interface ProjectData {
         name: string
@@ -295,6 +297,42 @@ export default function UIDemo() {
                                 disabled
                             />
                         </HStack>
+                    </VStack>
+                </VStack>
+
+                <Divider />
+
+                {/* Radio 组件演示 */}
+                <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="medium">Radio 组件</Text>
+
+                    <VStack spacing={16} style={{ alignItems: 'stretch' }}>
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">选择语言</Text>
+                            <RadioGroup
+                                options={[
+                                    { label: '简体中文', value: 'zh-CN' },
+                                    { label: 'English', value: 'en-US' },
+                                    { label: '日本語', value: 'ja-JP' },
+                                    { label: 'Français', value: 'fr-FR' }
+                                ] as RadioOption<string>[]}
+                                value={language}
+                                onChange={setLanguage}
+                            />
+                        </VStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">更新通道</Text>
+                            <RadioGroup
+                                options={[
+                                    { label: '稳定版 (推荐)', value: 'stable' },
+                                    { label: '测试版', value: 'beta' },
+                                    { label: '开发版', value: 'dev', disabled: true }
+                                ] as RadioOption<string>[]}
+                                value={updateChannel}
+                                onChange={setUpdateChannel}
+                            />
+                        </VStack>
                     </VStack>
                 </VStack>
 
