@@ -113,6 +113,7 @@
   text-transform: uppercase;
   padding: 8px 12px;
   margin: 0;
+  text-align: start;
 }
 
 .keyer-list-item {
