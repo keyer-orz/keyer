@@ -6,5 +6,5 @@ export interface IExtension {
 export { Text, type TextProps } from './components/Text'
 export { List, type ListProps, type ListItem, type ListGroup } from './components/List'
 export { HStack, VStack, type StackProps } from './components/Stack'
-export { Input, type InputProps } from './components/Input'
+export { Input, type InputProps, type InputRef } from './components/Input'
 export { Divider, type DividerProps } from './components/Divider'

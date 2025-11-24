@@ -139,8 +139,8 @@
 /* Input Component */
 .keyer-input {
   width: 100%;
-  padding: 8px 0;
-  font-size: 14px;
+  padding: 12px 0;
+  font-size: 18px;
   color: var(--color-title);
   background-color: var(--color-input-bg);
   border: none;

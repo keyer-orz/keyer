@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef, useImperativeHandle, forwardRef } from 'react'
 
 export interface InputProps {
   value?: string
@@ -9,14 +9,45 @@ export interface InputProps {
   className?: string
 }
 
-export function Input({
+export interface InputRef {
+  focus: () => void
+  blur: () => void
+  clear: () => void
+  isEmpty: () => boolean
+  isFocused: () => boolean
+}
+
+export const Input = forwardRef<InputRef, InputProps>(({
   value,
   placeholder,
   onChange,
   onEnter,
   autoFocus = false,
   className = ''
-}: InputProps) {
+}, ref) => {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus()
+    },
+    blur: () => {
+      inputRef.current?.blur()
+    },
+    clear: () => {
+      if (inputRef.current) {
+        inputRef.current.value = ''
+        onChange?.('')
+      }
+    },
+    isEmpty: () => {
+      return !value || value.trim().length === 0
+    },
+    isFocused: () => {
+      return document.activeElement === inputRef.current
+    }
+  }))
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && onEnter) {
       onEnter(e.currentTarget.value)
@@ -25,6 +56,7 @@ export function Input({
 
   return (
     <input
+      ref={inputRef}
       type="text"
       className={`keyer-input ${className}`}
       value={value}
@@ -34,4 +66,4 @@ export function Input({
       autoFocus={autoFocus}
     />
   )
-}
+})
