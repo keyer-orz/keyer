@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption } from 'keyerext'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
     const [selectedId, setSelectedId] = useState('item-1')
-    const [theme, setTheme] = useState<'light' | 'dark'>('light')
+    const [theme, setTheme] = useState<'light' | 'dark' | 'pink' | 'github' | 'github-dark'>('light')
 
     interface ProjectData {
         name: string
@@ -37,8 +37,17 @@ export default function UIDemo() {
         }
     ]
 
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light'
+    type ThemeType = 'light' | 'dark' | 'pink' | 'github' | 'github-dark'
+
+    const themeOptions: DropdownOption<ThemeType>[] = [
+        { label: '☀️ 亮色', value: 'light' },
+        { label: '🌙 暗色', value: 'dark' },
+        { label: '💗 粉色', value: 'pink' },
+        { label: '🐙 GitHub', value: 'github' },
+        { label: '🌃 GitHub 暗色', value: 'github-dark' }
+    ]
+
+    const handleThemeChange = (newTheme: ThemeType) => {
         setTheme(newTheme)
         document.documentElement.setAttribute('data-theme', newTheme)
     }
@@ -52,16 +61,13 @@ export default function UIDemo() {
                         <Text color="title" size="large">UI 组件演示</Text>
                         <Text color="subtitle" size="small">展示 Keyer 所有 UI 组件</Text>
                     </VStack>
-                    <button onClick={toggleTheme} style={{
-                        padding: '8px 16px',
-                        borderRadius: '4px',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg)',
-                        color: 'var(--color-title)',
-                        cursor: 'pointer'
-                    }}>
-                        {theme === 'light' ? '🌙 暗色' : '☀️ 亮色'}
-                    </button>
+                    <div style={{ width: '180px' }}>
+                        <Dropdown
+                            options={themeOptions}
+                            value={theme}
+                            onChange={handleThemeChange}
+                        />
+                    </div>
                 </HStack>
 
                 <Divider />
@@ -189,6 +195,24 @@ export default function UIDemo() {
                                 <Text>Item 3</Text>
                             </div>
                         </VStack>
+                    </VStack>
+                </VStack>
+
+                <Divider />
+
+                {/* Dropdown 组件演示 */}
+                <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="medium">Dropdown 组件</Text>
+                    <VStack spacing={8} style={{ alignItems: 'flex-start', width: '100%' }}>
+                        <Text color="subtitle" size="small">主题选择 (见右上角):</Text>
+                        <div style={{ width: '100%', maxWidth: '300px' }}>
+                            <Dropdown
+                                options={themeOptions}
+                                value={theme}
+                                placeholder="选择主题..."
+                                onChange={handleThemeChange}
+                            />
+                        </div>
                     </VStack>
                 </VStack>
 

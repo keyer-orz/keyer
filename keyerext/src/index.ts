@@ -8,3 +8,4 @@ export { List, type ListProps, type ListItem, type ListGroup } from './component
 export { HStack, VStack, type StackProps } from './components/Stack'
 export { Input, type InputProps, type InputRef } from './components/Input'
 export { Divider, type DividerProps } from './components/Divider'
+export { Dropdown, type DropdownProps, type DropdownOption } from './components/Dropdown'
