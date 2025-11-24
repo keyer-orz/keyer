@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -30,6 +30,15 @@ function createWindow() {
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
+  })
+
+  // 监听栈变化事件
+  ipcMain.on('stack-change', (_event, stackLength: number) => {
+    if (stackLength === 0) {
+      win?.hide()
+    } else if (win && !win.isVisible()) {
+      win.show()
+    }
   })
 
   if (VITE_DEV_SERVER_URL) {

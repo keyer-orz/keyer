@@ -1,38 +1,37 @@
-import { useState, useEffect } from 'react'
 import './App.css'
+import { NavigationProvider, useNavigation } from './contexts/NavigationContext'
+import { registerExtensions } from './extensions'
 
-function App() {
-  const [count, setCount] = useState(0)
-  const [message, setMessage] = useState('')
+registerExtensions()
 
-  useEffect(() => {
-    if (window.electronAPI) {
-      window.electronAPI.onMessage((msg: string) => {
-        setMessage(msg)
-      })
-    }
-  }, [])
+function AppContent() {
+  const { currentPage, stack } = useNavigation()
+
+  if (!currentPage) {
+    console.log('🚫 App hidden')
+    return null
+  }
+
+  console.log('🎨 Render:', currentPage.pageName)
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>Electron + React + Vite + TypeScript</h1>
-        <div className="card">
-          <button onClick={() => setCount((count) => count + 1)}>
-            count is {count}
-          </button>
+      {stack.map(item => (
+        <div
+          key={item.pageName}
+          style={{ display: item === currentPage ? 'block' : 'none' }}
+        > 
+          {item.element}
         </div>
-        {message && (
-          <p className="message">
-            Message from main process: {message}
-          </p>
-        )}
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </header>
+      ))}
     </div>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <NavigationProvider>
+      <AppContent />
+    </NavigationProvider>
+  )
+}
