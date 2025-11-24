@@ -17,13 +17,8 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [stack, setStack] = useState<PageStackItem[]>(() => {
-    console.log('🚀 Navigation initialized')
-    const mainElement = commandManager.execute('@sysetem#main')
-    if (!mainElement) {
-      console.error('❌ Failed to create Main page')
-      return []
-    }
-    return [{ pageName: '@sysetem#main', element: mainElement }]
+    console.log('🚀 Navigation initialized (hidden by default)')
+    return []
   })
 
   const pop = useCallback(() => {
@@ -52,26 +47,45 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', handleEscape)
   }, [pop])
 
+  useEffect(() => {
+    if (window.electronAPI?.onNavigateToPage) {
+      window.electronAPI.onNavigateToPage((pageName: string) => {
+        console.log('📨 Shortcut triggered:', pageName)
+
+        setStack(() => {
+          console.log('🆕 Create:', pageName)
+          const element = commandManager.execute(pageName)
+          if (!element) {
+            console.error('❌ Failed to create:', pageName)
+            return []
+          }
+
+          if (window.electronAPI?.onStackChange) {
+            window.electronAPI.onStackChange(1)
+          }
+          return [{ pageName, element }]
+        })
+      })
+    }
+  }, [])
+
   const push = useCallback((page: string) => {
     setStack(prev => {
-      console.log('📥 Push request:', page, 'Current stack:', prev.map(p => p.pageName))
+      console.log('📥 Push:', page)
 
-      // 从栈中查找是否已存在该页面实例
-      const existing = prev.find(item => item.pageName === page)
-
-      if (existing) {
-        console.log('♻️  Reuse:', page, '(same object:', existing === prev.find(p => p === existing), ')')
-        return [...prev, existing]
-      }
-
-      console.log('🆕 Create:', page)
       const element = commandManager.execute(page)
       if (!element) {
         console.error('❌ Failed to create:', page)
         return prev
       }
 
-      return [...prev, { pageName: page, element }]
+      const newStack = [...prev, { pageName: page, element }]
+
+      if (window.electronAPI?.onStackChange) {
+        window.electronAPI.onStackChange(newStack.length)
+      }
+
+      return newStack
     })
   }, [])
 

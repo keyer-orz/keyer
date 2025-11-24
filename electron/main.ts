@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -16,10 +16,17 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
 
 let win: BrowserWindow | null
 
+// 快捷键配置
+const shortcutConfig: Record<string, string> = {
+  '@sysetem#main': 'Shift+Space',
+  '@sysetem#setting': 'Shift+P',
+}
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1200,
     height: 800,
+    show: false, // 启动时隐藏窗口
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -49,6 +56,28 @@ function createWindow() {
   }
 }
 
+// 注册全局快捷键
+function registerShortcuts() {
+  Object.entries(shortcutConfig).forEach(([pageName, shortcut]) => {
+    const success = globalShortcut.register(shortcut, () => {
+      console.log(`🔥 Shortcut triggered: ${shortcut} -> ${pageName}`)
+      if (win) {
+        win.webContents.send('navigate-to-page', pageName)
+        if (!win.isVisible()) {
+          win.show()
+        }
+        win.focus()
+      }
+    })
+
+    if (!success) {
+      console.error(`❌ Failed to register shortcut: ${shortcut}`)
+    } else {
+      console.log(`✅ Registered shortcut: ${shortcut} -> ${pageName}`)
+    }
+  })
+}
+
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
@@ -62,4 +91,12 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  createWindow()
+  registerShortcuts()
+})
+
+app.on('will-quit', () => {
+  // 注销所有快捷键
+  globalShortcut.unregisterAll()
+})
