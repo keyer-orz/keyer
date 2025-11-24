@@ -1,6 +1,6 @@
 import { commandManager } from './managers/CommandManager'
-import mainExt from './app/extesions/main'
-import settingExt from './app/extesions/setting'
+import mainExt from '@/app/extesions/main'
+import settingExt from '@/app/extesions/setting'
 
 // 注册所有扩展
 export function registerExtensions() {

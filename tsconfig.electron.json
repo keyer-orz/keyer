@@ -12,6 +12,6 @@
     "lib": ["ES2020"],
     "types": ["node"]
   },
-  "include": ["electron/**/*"],
+  "include": ["src/main/**/*"],
   "exclude": ["node_modules", "dist", "dist-electron"]
 }

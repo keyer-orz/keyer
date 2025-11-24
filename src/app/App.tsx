@@ -1,4 +1,4 @@
-import './App.css'
+import './styles/App.css'
 import { NavigationProvider, useNavigation } from './contexts/NavigationContext'
 import { registerExtensions } from './extensions'
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigation } from '../../../contexts/NavigationContext'
+import { useNavigation } from '../../contexts/NavigationContext'
 
 export default function Main() {
     const { push } = useNavigation()
