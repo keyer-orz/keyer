@@ -15,7 +15,7 @@ function AppContent() {
   console.log('🎨 Render:', currentPage.pageName)
 
   return (
-    <div className="App">
+    <div className="main">
       {stack.map(item => (
         <div
           key={item.pageName}

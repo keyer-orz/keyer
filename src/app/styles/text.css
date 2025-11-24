@@ -1,0 +1,28 @@
+/* Text Component */
+.keyer-text {
+  margin: 0;
+  padding: 0;
+}
+
+.keyer-text-title {
+  color: var(--color-title);
+}
+
+.keyer-text-subtitle {
+  color: var(--color-subtitle);
+}
+
+.keyer-text-large {
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.keyer-text-medium {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.keyer-text-small {
+  font-size: 12px;
+  line-height: 1.3;
+}

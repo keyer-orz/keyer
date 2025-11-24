@@ -1,57 +1,44 @@
-.App {
-  text-align: center;
-}
+@import './theme.css';
+@import './text.css';
+@import './stack.css';
+@import './list.css';
+@import './input.css';
+@import './divider.css';
+@import './dropdown.css';
+@import './button.css';
 
-body {
+.main {
+  width: 100%;
+  height: 100vh;
   background-color: var(--color-bg);
 }
 
-.App-header {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+
+
+/* Scrollbar Styles */
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.card {
-  padding: 2em;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  color: white;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-
-button:hover {
-  border-color: #646cff;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.message {
-  margin-top: 1em;
-  padding: 1em;
-  background-color: #1a1a1a;
-  border-radius: 8px;
-  font-size: 0.9em;
-}
-
-code {
-  background-color: #1a1a1a;
-  padding: 0.2em 0.4em;
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
   border-radius: 4px;
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
 }

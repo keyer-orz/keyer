@@ -7,6 +7,6 @@ export interface DividerProps {
 
 export function Divider({ vertical = false, className = '' }: DividerProps) {
   return (
-    <hr className={`${vertical ? 'keyer-divider-vertical' : 'keyer-divider'} ${className}`} />
+    <div className={`${vertical ? 'keyer-divider-vertical' : 'keyer-divider'} ${className}`} />
   )
 }
