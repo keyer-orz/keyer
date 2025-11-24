@@ -17,6 +17,11 @@ export default function Main() {
             <button onClick={() => push('@sysetem#setting')}>
                 Go to Settings
             </button>
+            <br />
+            <br />
+            <button onClick={() => push('@sysetem#ui')}>
+                Go to UI Demo
+            </button>
             <p style={{ fontSize: '12px', color: '#666' }}>
                 Tip: Increment the counter, go to settings, then press ESC to come back.
                 The counter should keep its value!

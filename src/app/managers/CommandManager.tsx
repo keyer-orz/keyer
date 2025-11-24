@@ -1,5 +1,5 @@
 import { ReactElement } from 'react'
-import { IExtension } from 'keyerext/dist'
+import { IExtension } from 'keyerext'
 
 export interface ExtensionConfig {
   name: string
