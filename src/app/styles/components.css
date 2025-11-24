@@ -8,6 +8,8 @@
   --color-bg: #ffffff;
   --color-input-bg: transparent;
   --color-divider: #e0e0e0;
+  --color-scrollbar-thumb: #c1c1c1;
+  --color-scrollbar-thumb-hover: #a8a8a8;
 }
 
 [data-theme="dark"] {
@@ -19,6 +21,36 @@
   --color-bg: #1a1a1a;
   --color-input-bg: transparent;
   --color-divider: #333333;
+  --color-scrollbar-thumb: #555555;
+  --color-scrollbar-thumb-hover: #666666;
+}
+
+/* Scrollbar Styles */
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
 }
 
 /* Text Component */
@@ -89,6 +121,7 @@
   transition: background-color 0.15s ease;
   user-select: none;
   border-radius: 4px;
+  margin-top: 4px;
 }
 
 .keyer-list-item:hover {
