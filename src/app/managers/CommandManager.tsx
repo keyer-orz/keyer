@@ -24,7 +24,7 @@ class CommandManager {
 
   search(query: string): ICommand[] {
     if (!query || query.trim() === '') {
-      return this.commands
+      return this.commands.filter(cmd => cmd.id != "@system#main")
     }
 
     const lowerQuery = query.toLowerCase()
@@ -35,7 +35,7 @@ class CommandManager {
       const extTitleMatch = cmd.extTitle?.toLowerCase().includes(lowerQuery)
 
       return titleMatch || nameMatch || descMatch || extTitleMatch
-    })
+    }).filter(cmd => cmd.id != "@system#main")
   }
 
   execute(commandName: string): ReactElement | null {

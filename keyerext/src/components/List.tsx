@@ -89,6 +89,7 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
                 key={item.id}
                 className={`keyer-list-item ${isSelected ? 'keyer-list-item-selected' : ''}`}
                 onClick={() => handleSelect(item.id, item.data)}
+                onDoubleClick={() => handleEnter(item.id, item.data)}
                 onMouseEnter={() => setHoverId(item.id)}
                 onMouseLeave={() => setHoverId(null)}
               >
