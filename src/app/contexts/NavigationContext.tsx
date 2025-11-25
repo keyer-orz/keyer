@@ -8,10 +8,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
     // 开发模式下默认显示 Main 页面
     if (import.meta.env.DEV) {
-      const mainElement = commandManager.execute('@sysetem#main')
+      const mainElement = commandManager.execute('@system#main')
       if (mainElement) {
         console.log('🔧 DEV mode: Auto-show Main page')
-        return [{ pageName: '@sysetem#main', element: mainElement }]
+        return [{ pageName: '@system#main', element: mainElement }]
       }
     }
 

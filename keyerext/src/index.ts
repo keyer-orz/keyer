@@ -7,6 +7,24 @@ export type ICommand = {
     desc: string
 }
 
+export type ExtensionMeta = {
+    icon?: string                   // 展示图标（emoji 或图标路径）
+    name: string                    // 存储名称，建议 xxx-xxx-xx 格式，如 "app-launcher"
+    title: string                   // 展示名称，如 "App Launcher"
+    desc?: string                   // 展示描述
+    version?: string                // 版本号
+    commands?: Partial<ICommand>[]  // 静态命令列表（可选，只需提供 name, title, desc, icon, type）
+
+    type: 'store' | 'local' | 'app' // 插件类型
+
+    // 本地磁盘上的插件
+    pkgPath?: string                // 插件包路径
+    main: string                    // 主入口文件
+
+    // App包内插件
+    ext: IExtension                 // 插件实例
+}
+
 export interface IExtension {
     run(name: string): React.ReactElement | null;
 }

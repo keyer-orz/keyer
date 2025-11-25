@@ -1,45 +1,38 @@
 import { ReactElement } from 'react'
-import { IExtension } from 'keyerext'
-
-export interface ExtensionConfig {
-  name: string
-  ext: new () => IExtension
-}
+import { ExtensionMeta, ICommand } from 'keyerext'
 
 class CommandManager {
-  private extensions: Map<string, ExtensionConfig> = new Map()
+  private extensions: Map<string, ExtensionMeta> = new Map()
+  private commands: ICommand[] = []
 
-  register(config: ExtensionConfig) {
-    this.extensions.set(config.name, config)
+  register(meta: ExtensionMeta) {
+    this.extensions.set(meta.name, meta)
+
+    // 注册所有命令
+    if (meta.commands) {
+      meta.commands.map(item => {
+        item.id = `${meta.name}#${item.name}`
+        return item
+      })
+      .forEach(item => this.commands.push(item))
+    }
   }
 
-  unregister(name: string) {
-    this.extensions.delete(name)
-  }
-
-  has(name: string): boolean {
-    return this.extensions.has(name)
-  }
-
-  execute(name: string, input: string = ''): ReactElement | null {
-    const config = this.extensions.get(name)
-    if (!config) {
-      console.warn(`Extension "${name}" not found`)
+  execute(commandName: string): ReactElement | null {
+    const [extId, cmdName] = commandName.split('#')
+    const commandInfo = this.commands.find(it => it.id === commandName)
+    if (!commandInfo) {
+      console.warn(`Command "${commandName}" not found`)
       return null
     }
 
     try {
-      const ExtClass = config.ext
-      const instance = new ExtClass()
-      return instance.run(input)
+      const ext = this.extensions.get(extId)
+      return ext?.ext.run(cmdName) || null
     } catch (error) {
-      console.error(`Error executing extension "${name}":`, error)
+      console.error(`Error executing command "${commandName}":`, error)
       return null
     }
-  }
-
-  getAllExtensions(): string[] {
-    return Array.from(this.extensions.keys())
   }
 }
 

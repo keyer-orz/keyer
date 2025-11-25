@@ -62,14 +62,14 @@ export default function Main() {
                         <Button
                             variant="solid"
                             size="normal"
-                            onClick={() => push('@sysetem#setting')}
+                            onClick={() => push('@system#setting')}
                         >
                             打开设置
                         </Button>
                         <Button
                             variant="outline"
                             size="normal"
-                            onClick={() => push('@sysetem#ui')}
+                            onClick={() => push('@system#ui')}
                         >
                             UI 组件演示
                         </Button>

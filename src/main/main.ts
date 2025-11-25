@@ -18,8 +18,8 @@ let win: BrowserWindow | null
 
 // 快捷键配置
 const shortcutConfig: Record<string, string> = {
-  '@sysetem#main': 'Shift+Space',
-  '@sysetem#setting': 'Shift+P',
+  '@system#main': 'Shift+Space',
+  '@system#setting': 'Shift+P',
 }
 
 function createWindow() {
