@@ -35,8 +35,8 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       sandbox: false,
-      webSecurity: false,
-      allowRunningInsecureContent: true
+      // webSecurity: false, // 移除以提升安全性
+      allowRunningInsecureContent: false
     },
   })
 

@@ -5,23 +5,6 @@ import { electronApi } from '../electronApi'
 import Module from 'module'
 import React from 'react'
 import * as Keyerext from 'keyerext'
-
-export interface ExtensionPackageJson {
-  name: string
-  version?: string
-  title?: string
-  description?: string
-  icon?: string
-  main: string
-  commands?: Array<{
-    name: string
-    title: string
-    desc?: string
-    icon?: string
-    type?: string
-  }>
-}
-
 export class ExtensionLoader {
   /**
    * 扫描并加载所有本地扩展
@@ -74,7 +57,7 @@ export class ExtensionLoader {
     const packagePath = path.join(extDir, 'package.json')
 
     const packageContent = fs.readFileSync(packagePath, 'utf-8')
-    const pkg: ExtensionPackageJson = JSON.parse(packageContent)
+    const pkg: ExtensionMeta = JSON.parse(packageContent)
 
     // 2. 验证必需字段
     if (!pkg.name || !pkg.main) {
@@ -120,7 +103,7 @@ export class ExtensionLoader {
       const meta: ExtensionMeta = {
         name: pkg.name,
         title: pkg.title || pkg.name,
-        desc: pkg.description,
+        desc: pkg.desc,
         icon: pkg.icon,
         version: pkg.version,
         type: 'local',
