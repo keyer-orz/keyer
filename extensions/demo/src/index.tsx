@@ -11,8 +11,39 @@ export default class Ext implements IExtension {
                 name: 'test',
                 title: 'Test Command',
                 desc: 'This is a test command',
-                type: 'command',
+            },
+            {
+                icon: '😂',
+                name: 'test2',
+                title: 'Test Command',
+                desc: 'This is a test command',
+            },{
+                icon: '😂',
+                name: 'test3',
+                title: 'Test Command',
+                desc: 'This is a test command',
+            },{
+                icon: '😂',
+                name: 'test4',
+                title: 'Test Command',
+                desc: 'This is a test command',
+            },{
+                icon: '😂',
+                name: 'test5',
+                title: 'Test Command',
+                desc: 'This is a test command',
+            },{
+                icon: '😂',
+                name: 'test6',
+                title: 'Test Command',
+                desc: 'This is a test command',
+            },{
+                icon: '😂',
+                name: 'test7',
+                title: 'Test Command',
+                desc: 'This is a test command',
             }
+
         ]
     }
 

@@ -54,15 +54,11 @@ export default function Main() {
         return (
             <HStack spacing={12}>
                 <Text size="large">{cmd.icon}</Text>
-                <VStack spacing={2} style={{ flex: 1, alignItems: 'flex-start' }}>
-                    <HStack spacing={8} style={{ alignItems: 'center' }}>
-                        <Text color="title" size="medium">{cmd.title}</Text>
-                        <Text color="subtitle" size="small">{cmd.extTitle}</Text>
-                    </HStack>
-                    <HStack spacing={8} style={{ alignItems: 'center', width: '100%' }}>
-                        <Text color="subtitle" size="small">{cmd.type}</Text>
-                    </HStack>
-                </VStack>
+                <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
+                    <Text color="title" size="medium">{cmd.title}</Text>
+                    <Text color="subtitle" style={{ flex: 1 }} size="small">{cmd.extTitle}</Text>
+                    <Text color="subtitle" size="small">{cmd.type}</Text>
+                </HStack>
             </HStack>
         )
     }
@@ -87,21 +83,19 @@ export default function Main() {
         )}
 
         {/* Command List */}
-        <div style={{ flex: 1, overflow: 'auto' }}>
-            {commands.length > 0 ? (
-                <List
-                    groups={groups}
-                    renderItem={renderItem}
-                    selectedId={selectedId}
-                    onSelect={handleSelect}
-                    onEnter={handleExecuteCommand}
-                />
-            ) : (
-                <VStack spacing={8} style={{ alignItems: 'center', padding: '32px' }}>
-                    <Text color="subtitle" size="medium">未找到匹配的命令</Text>
-                    <Text color="subtitle" size="small">尝试其他搜索词</Text>
-                </VStack>
-            )}
-        </div>
+        {commands.length > 0 ? (
+            <List
+                groups={groups}
+                renderItem={renderItem}
+                selectedId={selectedId}
+                onSelect={handleSelect}
+                onEnter={handleExecuteCommand}
+            />
+        ) : (
+            <VStack spacing={8} style={{ alignItems: 'center', padding: '32px' }}>
+                <Text color="subtitle" size="medium">未找到匹配的命令</Text>
+                <Text color="subtitle" size="small">尝试其他搜索词</Text>
+            </VStack>
+        )}
     </VStack>
 }

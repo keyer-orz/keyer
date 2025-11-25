@@ -117,7 +117,7 @@ export class ExtensionLoader {
           desc: cmd.desc || '',
           icon: cmd.icon || '📦',
           extTitle: pkg.title || pkg.name,
-          type: cmd.type || 'command'
+          type: cmd.type || 'Command'
         }))
       }
 

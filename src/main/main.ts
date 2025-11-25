@@ -27,8 +27,8 @@ function createWindow() {
   const isDev = !!VITE_DEV_SERVER_URL
 
   win = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 800,
+    height: 500,
     show: isDev, // 开发模式下默认显示，生产模式隐藏
     frame: false,
     webPreferences: {

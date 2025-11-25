@@ -12,7 +12,7 @@ export async function registerExtensions() {
   console.log('🚀 Registering extensions...')
 
   // 1. 注册系统内置扩展（防止重复注册）
-  if (!commandManager.getAllCommands().some(cmd => cmd.id.startsWith('@system#'))) {
+  if (!commandManager.getAllCommands().some(cmd => cmd.id!.startsWith('@system#'))) {
     commandManager.register(SystemExts)
     console.log('✅ Registered system extensions')
   } else {

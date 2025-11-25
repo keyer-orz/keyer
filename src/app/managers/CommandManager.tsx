@@ -12,6 +12,8 @@ class CommandManager {
     if (meta.commands) {
       meta.commands.map(item => {
         item.id = `${meta.name}#${item.name}`
+        item.extTitle = meta.title
+        item.type = item.type || 'Command'
         return item
       })
         .forEach(item => this.commands.push(item))
@@ -24,6 +26,8 @@ class CommandManager {
         if (Array.isArray(loaded)) {
           loaded.map(item => {
             item.id = `${meta.name}#${item.name}`
+            item.extTitle = meta.title
+            item.type = item.type || 'Command'
             return item
           }).forEach(item => this.commands.push(item))
         }
