@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, ReactNode, useRef } from 'react'
+import { useState, useCallback, useEffect, ReactNode } from 'react'
 import { NavigationContext, PageStackItem } from 'keyerext'
 import { commandManager } from '../managers/CommandManager'
 
