@@ -35,9 +35,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       const newStack = prev.slice(0, -1)
       console.log('📤 Pop:', prev[prev.length - 1].pageName, '→', newStack[newStack.length - 1]?.pageName || 'empty')
 
-      if (window.electronAPI?.onStackChange) {
-        window.electronAPI.onStackChange(newStack.length)
-      }
+      window.electronAPI.onStackChange(newStack.length)
 
       return newStack
     })
@@ -66,8 +64,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   }, [pop])
 
   useEffect(() => {
-    if (window.electronAPI?.onNavigateToPage) {
-      window.electronAPI.onNavigateToPage((pageName: string) => {
+    window.electronAPI.onNavigateToPage((pageName: string) => {
         console.log('📨 Shortcut triggered:', pageName)
 
         setStack(() => {
@@ -77,14 +74,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
             console.error('❌ Failed to create:', pageName)
             return []
           }
-
-          if (window.electronAPI?.onStackChange) {
-            window.electronAPI.onStackChange(1)
-          }
+          window.electronAPI.onStackChange(1)
           return [{ pageName, element }]
         })
       })
-    }
   }, [])
 
   const push = useCallback((page: string) => {
@@ -99,9 +92,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
       const newStack = [...prev, { pageName: page, element }]
 
-      if (window.electronAPI?.onStackChange) {
-        window.electronAPI.onStackChange(newStack.length)
-      }
+      window.electronAPI.onStackChange(newStack.length)
 
       return newStack
     })
