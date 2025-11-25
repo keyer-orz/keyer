@@ -50,7 +50,7 @@ export default function Main() {
     const renderItem = (item: ListItem<ICommand>) => {
         const cmd = item.data
         return (
-            <HStack spacing={12} style={{ alignItems: 'center', width: '100%', padding: '8px' }}>
+            <HStack spacing={12}>
                 <Text size="large">{cmd.icon}</Text>
                 <VStack spacing={2} style={{ flex: 1, alignItems: 'flex-start' }}>
                     <HStack spacing={8} style={{ alignItems: 'center' }}>
@@ -65,36 +65,32 @@ export default function Main() {
         )
     }
 
-    return (
-        <div style={{ padding: '16px', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-            <VStack spacing={16} style={{ flex: 1, alignItems: 'stretch' }}>
-                {/* Search Input */}
-                <Input
-                    ref={inputRef}
-                    value={searchText}
-                    placeholder="搜索命令..."
-                    onChange={setSearchText}
-                    autoFocus
-                />
+    return <VStack spacing={16} className='plugin'>
+        {/* Search Input */}
+        <Input
+            ref={inputRef}
+            value={searchText}
+            placeholder="搜索命令..."
+            onChange={setSearchText}
+            autoFocus
+        />
 
-                {/* Command List */}
-                <div style={{ flex: 1, overflow: 'auto' }}>
-                    {commands.length > 0 ? (
-                        <List
-                            groups={groups}
-                            renderItem={renderItem}
-                            selectedId={selectedId}
-                            onSelect={handleSelect}
-                            onEnter={handleExecuteCommand}
-                        />
-                    ) : (
-                        <VStack spacing={8} style={{ alignItems: 'center', padding: '32px' }}>
-                            <Text color="subtitle" size="medium">未找到匹配的命令</Text>
-                            <Text color="subtitle" size="small">尝试其他搜索词</Text>
-                        </VStack>
-                    )}
-                </div>
-            </VStack>
+        {/* Command List */}
+        <div style={{ flex: 1, overflow: 'auto' }}>
+            {commands.length > 0 ? (
+                <List
+                    groups={groups}
+                    renderItem={renderItem}
+                    selectedId={selectedId}
+                    onSelect={handleSelect}
+                    onEnter={handleExecuteCommand}
+                />
+            ) : (
+                <VStack spacing={8} style={{ alignItems: 'center', padding: '32px' }}>
+                    <Text color="subtitle" size="medium">未找到匹配的命令</Text>
+                    <Text color="subtitle" size="small">尝试其他搜索词</Text>
+                </VStack>
+            )}
         </div>
-    )
+    </VStack>
 }

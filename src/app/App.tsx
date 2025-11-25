@@ -35,7 +35,7 @@ function AppContent() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        height: '100vh',
+        height: '100%',
         color: 'var(--color-title)'
       }}>
         Loading extensions...
@@ -51,16 +51,17 @@ function AppContent() {
   console.log('🎨 Render:', currentPage.pageName)
 
   return (
-    <div className="main">
+    <>
       {stack.map(item => (
         <div
+          className="main"
           key={item.pageName}
-          style={{ display: item === currentPage ? 'block' : 'none' }}
+          style={{ display: item === currentPage ? 'flex' : 'none' }}
         >
           {item.element}
         </div>
       ))}
-    </div>
+    </>
   )
 }
 

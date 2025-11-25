@@ -1,7 +1,7 @@
 /* Input Component */
 .keyer-input {
   width: 100%;
-  padding: 12px 0;
+  padding: 12px 6px 12px 0px;
   font-size: 18px;
   color: var(--color-title);
   background-color: var(--color-input-bg);
