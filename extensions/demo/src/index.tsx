@@ -1,4 +1,4 @@
-import { ICommand, IExtension } from "keyerext"
+import { HStack, ICommand, IExtension } from "keyerext"
 import React from "react"
 
 export default class Ext implements IExtension {
@@ -49,7 +49,7 @@ export default class Ext implements IExtension {
 
     preview(input: string): React.ReactElement | null {
         if (input === '1+1=') {
-            return <div>2</div>
+            return <HStack style={{paddingLeft: 20}}><div style={{fontSize: 36}}>2</div></HStack>
         }
         return null
     }

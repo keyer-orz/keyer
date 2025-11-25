@@ -82,19 +82,12 @@ export default function Main() {
             </VStack>
         )}
 
-        {commands.length > 0 ? (
-            <List
-                groups={groups}
-                renderItem={renderItem}
-                selectedId={selectedId}
-                onSelect={handleSelect}
-                onEnter={handleExecuteCommand}
-            />
-        ) : (
-            <VStack spacing={8} style={{ alignItems: 'center', padding: '32px' }}>
-                <Text color="subtitle" size="medium">未找到匹配的命令</Text>
-                <Text color="subtitle" size="small">尝试其他搜索词</Text>
-            </VStack>
-        )}
+        <List
+            groups={groups}
+            renderItem={renderItem}
+            selectedId={selectedId}
+            onSelect={handleSelect}
+            onEnter={handleExecuteCommand}
+        />
     </VStack>
 }
