@@ -14,12 +14,12 @@ export interface ListProps<T = any> {
   groups: ListGroup<T>[]
   selectedId?: string
   onSelect?: (id: string, data: T) => void
-  onDoubleClick?: (id: string, data: T) => void
+  onEnter?: (id: string, data: T) => void
   renderItem: (item: ListItem<T>, isSelected: boolean, isHovered: boolean) => React.ReactNode
   className?: string
 }
 
-export function List<T = any>({ groups, selectedId, onSelect, onDoubleClick, renderItem, className = '' }: ListProps<T>) {
+export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderItem, className = '' }: ListProps<T>) {
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [internalSelectedId, setInternalSelectedId] = useState<string | undefined>(selectedId)
 
@@ -38,9 +38,9 @@ export function List<T = any>({ groups, selectedId, onSelect, onDoubleClick, ren
     onSelect?.(id, data)
   }, [onSelect])
 
-  const handleDoubleClick = useCallback((id: string, data: T) => {
-    onDoubleClick?.(id, data)
-  }, [onDoubleClick])
+  const handleEnter = useCallback((id: string, data: T) => {
+    onEnter?.(id, data)
+  }, [onEnter])
 
   // 键盘导航
   useEffect(() => {
@@ -64,14 +64,14 @@ export function List<T = any>({ groups, selectedId, onSelect, onDoubleClick, ren
       } else if (e.key === 'Enter' && currentSelectedId) {
         const currentItem = allItems.find(item => item.id === currentSelectedId)
         if (currentItem) {
-          handleDoubleClick(currentSelectedId, currentItem.data)
+          handleEnter(currentSelectedId, currentItem.data)
         }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [allItems, currentSelectedId, handleSelect, handleDoubleClick])
+  }, [allItems, currentSelectedId, handleSelect, handleEnter])
 
   return (
     <div className={`keyer-list ${className}`}>
@@ -89,7 +89,6 @@ export function List<T = any>({ groups, selectedId, onSelect, onDoubleClick, ren
                 key={item.id}
                 className={`keyer-list-item ${isSelected ? 'keyer-list-item-selected' : ''}`}
                 onClick={() => handleSelect(item.id, item.data)}
-                onDoubleClick={() => handleDoubleClick(item.id, item.data)}
                 onMouseEnter={() => setHoverId(item.id)}
                 onMouseLeave={() => setHoverId(null)}
               >

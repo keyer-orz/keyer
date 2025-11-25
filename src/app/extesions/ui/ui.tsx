@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, useEscapeHandler } from 'keyerext'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
@@ -14,6 +14,9 @@ export default function UIDemo() {
     const [agreeTerms, setAgreeTerms] = useState(false)
     const [receiveNewsletter, setReceiveNewsletter] = useState(true)
     const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['feature1'])
+
+    // Enable ESC key to go back
+    useEscapeHandler(false)
 
     interface ProjectData {
         name: string
@@ -100,9 +103,8 @@ export default function UIDemo() {
                     <Text color="title" size="medium">Input 组件</Text>
                     <Input
                         value={searchText}
-                        placeholder="搜索项目... (支持回车键)"
+                        placeholder="搜索项目..."
                         onChange={setSearchText}
-                        onEnter={(val) => alert(`搜索: ${val}`)}
                     />
                     {searchText && (
                         <Text color="subtitle" size="small">当前输入: {searchText}</Text>
@@ -133,7 +135,7 @@ export default function UIDemo() {
                             setSelectedId(id)
                             console.log('选中:', id, data)
                         }}
-                        onDoubleClick={(_id, data) => {
+                        onEnter={(_id, data) => {
                             alert(`打开: ${data.name} (${data.type})`)
                         }}
                     />

@@ -5,6 +5,8 @@ export type ICommand = {
     title: string
     icon: string
     desc: string
+    extTitle: string
+    type: string // 类型
 }
 
 export type ExtensionMeta = {

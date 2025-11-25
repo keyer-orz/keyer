@@ -14,8 +14,28 @@ class CommandManager {
         item.id = `${meta.name}#${item.name}`
         return item
       })
-      .forEach(item => this.commands.push(item))
+        .forEach(item => this.commands.push(item))
     }
+  }
+
+  getAllCommands(): ICommand[] {
+    return this.commands
+  }
+
+  search(query: string): ICommand[] {
+    if (!query || query.trim() === '') {
+      return this.commands
+    }
+
+    const lowerQuery = query.toLowerCase()
+    return this.commands.filter(cmd => {
+      const titleMatch = cmd.title?.toLowerCase().includes(lowerQuery)
+      const nameMatch = cmd.name?.toLowerCase().includes(lowerQuery)
+      const descMatch = cmd.desc?.toLowerCase().includes(lowerQuery)
+      const extTitleMatch = cmd.extTitle?.toLowerCase().includes(lowerQuery)
+
+      return titleMatch || nameMatch || descMatch || extTitleMatch
+    })
   }
 
   execute(commandName: string): ReactElement | null {

@@ -59,7 +59,6 @@ export default function Setting() {
                             value={email}
                             placeholder="请输入邮箱地址"
                             onChange={setEmail}
-                            onEnter={handleSave}
                         />
                     </VStack>
                 </VStack>
