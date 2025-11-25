@@ -29,6 +29,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     show: isDev, // 开发模式下默认显示，生产模式隐藏
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -38,8 +39,6 @@ function createWindow() {
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', (new Date).toLocaleString())
-
     // 开发模式下，页面加载完成后显示窗口
     if (isDev && win) {
       win.show()
@@ -101,6 +100,8 @@ app.on('activate', () => {
 app.whenReady().then(() => {
   createWindow()
   registerShortcuts()
+
+  console.log("user data:", app.getPath('userData'))
 })
 
 app.on('will-quit', () => {
