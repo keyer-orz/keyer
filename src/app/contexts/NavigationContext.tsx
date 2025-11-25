@@ -1,19 +1,6 @@
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode, ReactElement } from 'react'
+import { useState, useCallback, useEffect, ReactNode, useRef } from 'react'
+import { NavigationContext, PageStackItem } from 'keyerext'
 import { commandManager } from '../managers/CommandManager'
-
-interface PageStackItem {
-  pageName: string
-  element: ReactElement
-}
-
-interface NavigationContextType {
-  push: (page: string) => void
-  pop: () => void
-  currentPage: PageStackItem | null
-  stack: PageStackItem[]
-}
-
-const NavigationContext = createContext<NavigationContextType | undefined>(undefined)
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [stack, setStack] = useState<PageStackItem[]>(() => {
@@ -30,6 +17,16 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
     return []
   })
+
+  const escapeHandlerRef = useRef<(() => boolean) | null>(null)
+
+  const registerEscapeHandler = useCallback((handler: () => boolean) => {
+    escapeHandlerRef.current = handler
+  }, [])
+
+  const unregisterEscapeHandler = useCallback(() => {
+    escapeHandlerRef.current = null
+  }, [])
 
   const pop = useCallback(() => {
     setStack(prev => {
@@ -50,7 +47,18 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         console.log('⌨️  ESC')
-        pop()
+
+        // 如果有组件注册了 Escape 处理器，先调用它
+        if (escapeHandlerRef.current) {
+          const shouldPop = escapeHandlerRef.current()
+          console.log('🎯 Component handled ESC:', shouldPop ? 'allow pop' : 'prevent pop')
+          if (shouldPop) {
+            pop()
+          }
+        } else {
+          // 没有处理器时，直接执行 pop
+          pop()
+        }
       }
     }
     window.addEventListener('keydown', handleEscape)
@@ -102,16 +110,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   const currentPage = stack.length > 0 ? stack[stack.length - 1] : null
 
   return (
-    <NavigationContext.Provider value={{ push, pop, currentPage, stack }}>
+    <NavigationContext.Provider value={{ push, pop, currentPage, stack, registerEscapeHandler, unregisterEscapeHandler }}>
       {children}
     </NavigationContext.Provider>
   )
-}
-
-export function useNavigation() {
-  const context = useContext(NavigationContext)
-  if (context === undefined) {
-    throw new Error('useNavigation must be used within a NavigationProvider')
-  }
-  return context
 }

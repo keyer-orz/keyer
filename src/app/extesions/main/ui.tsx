@@ -1,10 +1,19 @@
-import { useState } from 'react'
-import { useNavigation } from '../../contexts/NavigationContext'
-import { Text, VStack, HStack, Button, Divider } from 'keyerext'
+import { useState, useRef } from 'react'
+import { Text, VStack, HStack, Button, Divider, Switch, Input, useNavigation, useEscapeHandler, type InputRef } from 'keyerext'
+import { useInputEscapeHandler } from 'keyerext'
 
 export default function Main() {
     const { push } = useNavigation()
     const [count, setCount] = useState(0)
+    const [preventEscape, setPreventEscape] = useState(false)
+    const [searchText, setSearchText] = useState('')
+    const [useInputMode, setUseInputMode] = useState(false)
+
+    const inputRef = useRef<InputRef>(null)
+
+    // 根据模式选择不同的 Esc 处理方式
+    useEscapeHandler(useInputMode ? false : preventEscape)
+    useInputEscapeHandler(inputRef)
 
     return (
         <div style={{ padding: '24px', maxWidth: '600px', margin: '0 auto' }}>
@@ -68,6 +77,62 @@ export default function Main() {
                 </VStack>
 
                 <Divider />
+
+                {/* Input Escape Handler Demo */}
+                <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="medium">Input ESC 演示</Text>
+                    <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                        <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                            <Text color="title" size="medium">使用 Input 模式</Text>
+                            <Text color="subtitle" size="small">
+                                {useInputMode ? 'ESC: 未聚焦→聚焦, 有内容→清空, 为空→关闭' : '使用简单布尔模式'}
+                            </Text>
+                        </VStack>
+                        <Switch
+                            checked={useInputMode}
+                            onChange={(checked) => {
+                                setUseInputMode(checked)
+                                if (checked) setPreventEscape(false)
+                            }}
+                        />
+                    </HStack>
+                    {useInputMode && (
+                        <VStack spacing={8} style={{ alignItems: 'stretch' }}>
+                            <Text color="subtitle" size="small">搜索框</Text>
+                            <Input
+                                ref={inputRef}
+                                value={searchText}
+                                placeholder="尝试输入内容，然后按 ESC..."
+                                onChange={setSearchText}
+                            />
+                        </VStack>
+                    )}
+                </VStack>
+
+                <Divider />
+
+                {/* Simple Escape Handler Demo */}
+                {!useInputMode && (
+                    <>
+                        <VStack spacing={12} style={{ alignItems: 'stretch' }}>
+                            <Text color="title" size="medium">简单 ESC 阻止演示</Text>
+                            <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                                <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                                    <Text color="title" size="medium">阻止 ESC 关闭</Text>
+                                    <Text color="subtitle" size="small">
+                                        {preventEscape ? '开启后按 ESC 将无法关闭页面' : '关闭后按 ESC 可正常关闭页面'}
+                                    </Text>
+                                </VStack>
+                                <Switch
+                                    checked={preventEscape}
+                                    onChange={setPreventEscape}
+                                />
+                            </HStack>
+                        </VStack>
+                        <Divider />
+                    </>
+                )}
+
 
                 {/* Shortcuts */}
                 <VStack spacing={8} style={{ alignItems: 'flex-start' }}>

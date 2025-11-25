@@ -1,11 +1,24 @@
-import { useState } from 'react'
-import { Text, VStack, HStack, Input, Divider, Button, Switch } from 'keyerext'
+import { useState, useCallback } from 'react'
+import { Text, VStack, HStack, Input, Divider, Button, Switch, useEscapeHandler } from 'keyerext'
 
 export default function Setting() {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [darkMode, setDarkMode] = useState(false)
     const [notifications, setNotifications] = useState(true)
+    const [preventEscape, setPreventEscape] = useState(false)
+    const [confirmOnEscape, setConfirmOnEscape] = useState(false)
+
+    // 使用函数处理 Esc - 如果开启确认模式，有内容时会弹出确认对话框
+    const handleEscape = useCallback(() => {
+        if (confirmOnEscape && (username || email)) {
+            return window.confirm('有未保存的更改，确定退出吗？')
+        }
+        return true
+    }, [confirmOnEscape, username, email])
+
+    // 根据模式选择使用布尔值或函数
+    useEscapeHandler(confirmOnEscape ? handleEscape : preventEscape)
 
     const handleSave = () => {
         alert(`已保存设置:\n用户名: ${username}\n邮箱: ${email}`)
@@ -76,6 +89,38 @@ export default function Setting() {
                         <Switch
                             checked={notifications}
                             onChange={setNotifications}
+                        />
+                    </HStack>
+
+                    <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                        <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                            <Text color="title" size="medium">阻止 ESC 关闭</Text>
+                            <Text color="subtitle" size="small">
+                                {preventEscape ? '开启后按 ESC 将无法关闭' : '关闭后按 ESC 可正常关闭'}
+                            </Text>
+                        </VStack>
+                        <Switch
+                            checked={preventEscape}
+                            onChange={(checked) => {
+                                setPreventEscape(checked)
+                                if (checked) setConfirmOnEscape(false)
+                            }}
+                        />
+                    </HStack>
+
+                    <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
+                        <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+                            <Text color="title" size="medium">ESC 确认模式 (函数示例)</Text>
+                            <Text color="subtitle" size="small">
+                                {confirmOnEscape ? '有输入内容时会弹出确认对话框' : '关闭后按 ESC 可正常关闭'}
+                            </Text>
+                        </VStack>
+                        <Switch
+                            checked={confirmOnEscape}
+                            onChange={(checked) => {
+                                setConfirmOnEscape(checked)
+                                if (checked) setPreventEscape(false)
+                            }}
                         />
                     </HStack>
                 </VStack>
