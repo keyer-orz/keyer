@@ -1,0 +1,17 @@
+{
+  "icon": "🚀",
+  "name": "demo",
+  "title": "Demo plugin",
+  "desc": "Demo plugin",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "commands": [],
+  "scripts": {
+    "build": "tsc --watch"
+  },
+  "devDependencies": {
+    "keyerext": "file:../../keyerext",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
