@@ -5,6 +5,7 @@ import { electronApi } from '../electronApi'
 import Module from 'module'
 import React from 'react'
 import * as Keyerext from 'keyerext'
+import Log from '../utils/log'
 export class ExtensionLoader {
   /**
    * 扫描并加载所有本地扩展
@@ -17,11 +18,11 @@ export class ExtensionLoader {
     try {
       // 1. 获取 extensions 目录路径
       const extensionsDir = await electronApi.pathJoin(devDir, 'extensions')
-      console.log('📂 Scanning extensions directory:', extensionsDir)
+      Log.log('📂 Scanning extensions directory:', extensionsDir)
 
       // 2. 读取所有子文件夹
       const folders = await electronApi.readDir(extensionsDir)
-      console.log('📁 Found extension folders:', folders)
+      Log.log('📁 Found extension folders:', folders)
 
       // 3. 遍历每个文件夹，加载扩展
       for (const folderName of folders) {
@@ -29,14 +30,14 @@ export class ExtensionLoader {
           const ext = await this.loadExtension(devDir, folderName)
           if (ext) {
             extensions.push(ext)
-            console.log('✅ Loaded extension:', ext.name)
+            Log.log('✅ Loaded extension:', ext.name)
           }
         } catch (error) {
-          console.error(`❌ Failed to load extension "${folderName}":`, error)
+          Log.logError(`❌ Failed to load extension "${folderName}":`, error instanceof Error ? error.stack || error.message : String(error))
         }
       }
     } catch (error) {
-      console.error('❌ Failed to scan extensions directory:', error)
+      Log.logError('❌ Failed to scan extensions directory:', error instanceof Error ? error.stack || error.message : String(error))
     }
 
     return extensions
@@ -61,14 +62,14 @@ export class ExtensionLoader {
 
     // 2. 验证必需字段
     if (!pkg.name || !pkg.main) {
-      console.warn(`⚠️  Extension "${folderName}" missing required fields (name or main)`)
+      Log.warn(`⚠️  Extension "${folderName}" missing required fields (name or main)`)
       return null
     }
 
     const mainPath = path.join(extDir, pkg.main)
 
     if (!fs.existsSync(mainPath)) {
-      console.warn(`Main file not found: ${mainPath}`)
+      Log.warn(`Main file not found: ${mainPath}`)
       return null
     }
 
@@ -98,7 +99,7 @@ export class ExtensionLoader {
 
       const ExtensionClass = pluginModule.exports.default
       let extension: IExtension = new ExtensionClass()
-      console.log('Extension instance created:', pkg.commands)
+      Log.log('Extension instance created:', pkg.commands)
       // 4. 构造 ExtensionMeta
       const meta: ExtensionMeta = {
         name: pkg.name,
@@ -122,7 +123,7 @@ export class ExtensionLoader {
 
       return meta
     } catch (error) {
-      console.error(`❌ Failed to load extension module "${pkg.name}":`, error)
+      Log.error(`❌ Failed to load extension module "${pkg.name}":`, error instanceof Error ? error.stack || error.message : String(error))
       return null
     }
   }
