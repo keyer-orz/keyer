@@ -35,20 +35,12 @@ export function Dropdown<T = any>({
       }
     }
 
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false)
-      }
-    }
-
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
-      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
     }
   }, [isOpen])
 
@@ -78,9 +70,8 @@ export function Dropdown<T = any>({
           {options.map((option, index) => (
             <div
               key={index}
-              className={`keyer-dropdown-option ${
-                option.value === value ? 'keyer-dropdown-option-selected' : ''
-              } ${option.disabled ? 'keyer-dropdown-option-disabled' : ''}`}
+              className={`keyer-dropdown-option ${option.value === value ? 'keyer-dropdown-option-selected' : ''
+                } ${option.disabled ? 'keyer-dropdown-option-disabled' : ''}`}
               onClick={() => handleSelect(option)}
             >
               {option.label}
