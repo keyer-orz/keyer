@@ -33,11 +33,11 @@ export class ExtensionLoader {
             Log.log('✅ Loaded extension:', ext.name)
           }
         } catch (error) {
-          Log.logError(`❌ Failed to load extension "${folderName}":`, error instanceof Error ? error.stack || error.message : String(error))
+          Log.error(`❌ Failed to load extension "${folderName}":`, error instanceof Error ? error.stack || error.message : String(error))
         }
       }
     } catch (error) {
-      Log.logError('❌ Failed to scan extensions directory:', error instanceof Error ? error.stack || error.message : String(error))
+      Log.error('❌ Failed to scan extensions directory:', error instanceof Error ? error.stack || error.message : String(error))
     }
 
     return extensions
