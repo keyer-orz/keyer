@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, ReactNode } from 'react'
 import { NavigationContext, PageStackItem } from 'keyerext'
 import { commandManager } from '../managers/CommandManager'
+import { electronApi } from '../electronApi'
 
 /**
  * NavigationProvider 管理页面栈和导航逻辑
@@ -16,16 +17,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const [stack, setStack] = useState<PageStackItem[]>(() => {
     console.log('🚀 Navigation initialized')
-
-    // 开发模式下默认显示 Main 页面
-    if (import.meta.env.DEV) {
-      const mainElement = commandManager.execute('@system#main')
-      if (mainElement) {
-        console.log('🔧 DEV mode: Auto-show Main page')
-        return [{ pageName: '@system#main', element: mainElement }]
-      }
-    }
-
     return []
   })
 
@@ -46,7 +37,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       }
 
       const newStack = [...prev, { pageName: page, element }]
-      window.electronAPI.onStackChange(newStack.length)
+      electronApi.onStackChange(newStack.length)
 
       return newStack
     })
@@ -63,7 +54,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       const newStack = prev.slice(0, -1)
       console.log('📤 Pop:', poppedPage.pageName, '→', newStack[newStack.length - 1]?.pageName || 'empty')
 
-      window.electronAPI.onStackChange(newStack.length)
+      electronApi.onStackChange(newStack.length)
 
       return newStack
     })
@@ -140,7 +131,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   // ==================== Electron Shortcut Integration ====================
 
   useEffect(() => {
-    window.electronAPI.onNavigateToPage((pageName: string) => {
+    electronApi.onNavigateToPage((pageName: string) => {
       console.log('📨 Shortcut triggered:', pageName)
 
       setStack(() => {
@@ -150,7 +141,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
           console.error('❌ Failed to create:', pageName)
           return []
         }
-        window.electronAPI.onStackChange(1)
+        electronApi.onStackChange(1)
         return [{ pageName, element }]
       })
     })

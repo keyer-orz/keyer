@@ -5,7 +5,14 @@
   "desc": "Demo plugin",
   "version": "1.0.0",
   "main": "dist/index.js",
-  "commands": [],
+  "commands": [
+    {
+      "name": "hello",
+      "title": "Say Hello",
+      "icon": "👋",
+      "desc": "A demo command that says hello"
+    }
+  ],
   "scripts": {
     "build": "tsc --watch"
   },

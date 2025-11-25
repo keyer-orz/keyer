@@ -86,14 +86,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 })
 ```
 
-在 React 组件中使用:
-
-```typescript
-window.electronAPI.onMessage((message) => {
-  console.log(message)
-})
-```
-
 ### 添加新的依赖
 
 ```bash

@@ -15,16 +15,16 @@ export type ExtensionMeta = {
     title: string                   // 展示名称，如 "App Launcher"
     desc?: string                   // 展示描述
     version?: string                // 版本号
-    commands?: ICommand[]  // 静态命令列表（可选，只需提供 name, title, desc, icon, type）
+    commands?: ICommand[]           // 静态命令列表（可选，只需提供 name, title, desc, icon, type）
 
     type: 'store' | 'local' | 'app' // 插件类型
 
     // 本地磁盘上的插件
     pkgPath?: string                // 插件包路径
-    main: string                    // 主入口文件
+    main?: string                   // 主入口文件
 
     // App包内插件
-    ext: IExtension                 // 插件实例
+    ext?: IExtension                // 插件实例（本地扩展加载前可能为空）
 }
 
 export interface IExtension {

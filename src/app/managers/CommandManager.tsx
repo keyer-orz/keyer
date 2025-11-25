@@ -48,7 +48,11 @@ class CommandManager {
 
     try {
       const ext = this.extensions.get(extId)
-      return ext?.ext.run(cmdName) || null
+      if (!ext?.ext) {
+        console.warn(`Extension "${extId}" not loaded yet`)
+        return null
+      }
+      return ext.ext.run(cmdName) || null
     } catch (error) {
       console.error(`Error executing command "${commandName}":`, error)
       return null
