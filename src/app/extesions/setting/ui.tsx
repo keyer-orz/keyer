@@ -30,7 +30,7 @@ export default function Setting() {
     }
 
     return (
-        <VStack spacing={24} style={{ alignItems: 'stretch' }}>
+        <VStack spacing={24} className='plugin'>
             {/* Header */}
             <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
                 <Text color="title" size="large">设置</Text>

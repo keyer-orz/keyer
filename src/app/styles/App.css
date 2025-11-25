@@ -28,6 +28,7 @@ body {
   height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg);
 }
 
 .main {
@@ -37,7 +38,6 @@ body {
   flex-direction: column;
   box-sizing: border-box;
   padding: 12px;
-  background-color: var(--color-bg);
 }
 
 .plugin {
