@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, useEscapeHandler } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup } from 'keyerext'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
@@ -14,9 +14,6 @@ export default function UIDemo() {
     const [agreeTerms, setAgreeTerms] = useState(false)
     const [receiveNewsletter, setReceiveNewsletter] = useState(true)
     const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['feature1'])
-
-    // Enable ESC key to go back
-    useEscapeHandler(false)
 
     interface ProjectData {
         name: string

@@ -3,6 +3,7 @@ import { createContext, ReactElement } from 'react'
 export interface PageStackItem {
   pageName: string
   element: ReactElement
+  escapeHandler?: () => boolean
 }
 
 export interface NavigationContextType {
