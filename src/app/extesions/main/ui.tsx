@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Text, VStack, HStack, Input, List, useInputEscapeHandler, useNavigation, type InputRef, type ListItem, type ListGroup } from 'keyerext'
+import { Text, VStack, HStack, Input, List, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, type ListGroup } from 'keyerext'
 import { commandManager } from '../../managers/CommandManager'
 import type { ICommand } from 'keyerext'
 
@@ -11,6 +11,7 @@ export default function Main() {
     const { push } = useNavigation()
 
     useInputEscapeHandler(inputRef)
+    useAutoFocusOnVisible(inputRef)
 
     // Load all commands on mount and update when search text changes
     useEffect(() => {

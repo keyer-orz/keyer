@@ -15,7 +15,7 @@ export type ExtensionMeta = {
     title: string                   // 展示名称，如 "App Launcher"
     desc?: string                   // 展示描述
     version?: string                // 版本号
-    commands?: Partial<ICommand>[]  // 静态命令列表（可选，只需提供 name, title, desc, icon, type）
+    commands?: ICommand[]  // 静态命令列表（可选，只需提供 name, title, desc, icon, type）
 
     type: 'store' | 'local' | 'app' // 插件类型
 
@@ -36,6 +36,8 @@ export { NavigationContext, type NavigationContextType, type PageStackItem } fro
 export { useNavigation } from './hooks/useNavigation'
 export { useEscapeHandler } from './hooks/useEscapeHandler'
 export { useInputEscapeHandler } from './hooks/useInputEscapeHandler'
+export { usePageVisible } from './hooks/usePageVisible'
+export { useAutoFocusOnVisible } from './hooks/useAutoFocusOnVisible'
 
 // UI Components
 export { Text, type TextProps } from './components/Text'
