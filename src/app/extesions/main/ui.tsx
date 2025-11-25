@@ -6,6 +6,7 @@ import type { ICommand } from 'keyerext'
 export default function Main() {
     const [searchText, setSearchText] = useState('')
     const [commands, setCommands] = useState<ICommand[]>([])
+    const [previewItems, setPreviewItems] = useState<React.ReactElement[]>([])
     const [selectedId, setSelectedId] = useState<string | undefined>(undefined)
     const inputRef = useRef<InputRef>(null)
     const { push } = useNavigation()
@@ -17,6 +18,7 @@ export default function Main() {
     useEffect(() => {
         const results = commandManager.search(searchText)
         setCommands(results)
+        setPreviewItems(commandManager.preview(searchText))
         // Auto-select first item when commands change
         if (results.length > 0) {
             setSelectedId(results[0].id)
@@ -29,7 +31,7 @@ export default function Main() {
     // Handle command execution
     const handleExecuteCommand = (id: string, cmd: ICommand) => {
         console.log('Executing command:', cmd.id)
-        push(cmd.id)
+        push(cmd.id!)
     }
 
     // Handle selection change
@@ -39,7 +41,7 @@ export default function Main() {
 
     // Convert ICommand to ListItem format
     const listItems: ListItem<ICommand>[] = commands.map(cmd => ({
-        id: cmd.id,
+        id: cmd.id!,
         data: cmd
     }))
 
@@ -74,6 +76,15 @@ export default function Main() {
             onChange={setSearchText}
             autoFocus
         />
+
+        {/* Preview Items */}
+        {previewItems.length > 0 && (
+            <VStack spacing={8} style={{ marginBottom: 8 }}>
+                {previewItems.map((item, idx) => (
+                    <div key={idx}>{item}</div>
+                ))}
+            </VStack>
+        )}
 
         {/* Command List */}
         <div style={{ flex: 1, overflow: 'auto' }}>

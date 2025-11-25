@@ -8,7 +8,7 @@ class CommandManager {
   register(meta: ExtensionMeta) {
     this.extensions.set(meta.name, meta)
 
-    // 注册所有命令
+    // 1. 静态命令
     if (meta.commands) {
       meta.commands.map(item => {
         item.id = `${meta.name}#${item.name}`
@@ -16,10 +16,34 @@ class CommandManager {
       })
         .forEach(item => this.commands.push(item))
     }
+
+    // 2. 动态命令（load）
+    if (meta.ext && typeof meta.ext.load === 'function') {
+      try {
+        const loaded = meta.ext.load()
+        if (Array.isArray(loaded)) {
+          loaded.map(item => {
+            item.id = `${meta.name}#${item.name}`
+            return item
+          }).forEach(item => this.commands.push(item))
+        }
+      } catch (e) {
+        // 可选：日志输出
+      }
+    }
   }
 
   getAllCommands(): ICommand[] {
     return this.commands
+  }
+
+  preview(query: string): ReactElement[] {
+    return (
+      Array.from(this.extensions.values())
+        .filter(e => e.ext && typeof e.ext.preview === 'function')
+        .map(e => e.ext!.preview!(query))
+        .filter(el => el !== null) as ReactElement[]
+    )
   }
 
   search(query: string): ICommand[] {

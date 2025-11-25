@@ -1,12 +1,12 @@
 
 export type ICommand = {
-    id: string
+    id?: string
     name: string
-    title: string
-    icon: string
-    desc: string
-    extTitle: string
-    type: string // 类型
+    title?: string
+    icon?: string
+    desc?: string
+    extTitle?: string
+    type?: string // 类型
 }
 
 export type ExtensionMeta = {
@@ -28,6 +28,8 @@ export type ExtensionMeta = {
 }
 
 export interface IExtension {
+    load?(): ICommand[];
+    preview?(input: string): React.ReactElement | null;
     run(name: string): React.ReactElement | null;
 }
 
