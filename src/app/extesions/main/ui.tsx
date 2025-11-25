@@ -63,7 +63,7 @@ export default function Main() {
         )
     }
 
-    return <VStack spacing={16} className='plugin'>
+    return <VStack className='plugin'>
         {/* Search Input */}
         <Input
             ref={inputRef}
@@ -82,7 +82,6 @@ export default function Main() {
             </VStack>
         )}
 
-        {/* Command List */}
         {commands.length > 0 ? (
             <List
                 groups={groups}

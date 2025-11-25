@@ -2,8 +2,11 @@
 .keyer-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 8px;
   width: 100%;
+  overflow: auto;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .keyer-list-group {
