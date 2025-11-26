@@ -3,19 +3,16 @@ import { VStack, HStack, Text, Divider } from 'keyerext'
 import { ShortcutRecorder } from '../../../components/ShortcutRecorder'
 import { ThemeSwitcher } from '../../../components/ThemeSwitcher'
 import { configManager } from '../../../utils/config'
+import { getAppVersion, getAppName, getAppDescription } from '../../../utils/app'
 import { electronApi } from '../../../electronApi'
 
 export function GeneralSettings() {
   const [shortcut, setShortcut] = useState('')
-  const [version, setVersion] = useState('')
 
   useEffect(() => {
     // 初始化快捷键
     const currentShortcut = configManager.get('globalShortcut')
     setShortcut(currentShortcut || '')
-
-    // 获取版本号
-    electronApi.getAppVersion().then(setVersion)
   }, [])
 
   const handleShortcutChange = (newShortcut: string) => {
@@ -82,12 +79,20 @@ export function GeneralSettings() {
         <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
             <Text color="title">Application Name</Text>
-            <Text color="subtitle" size="small">Keyer - Keyboard launcher</Text>
+            <Text color="subtitle" size="small">{getAppName()}</Text>
           </VStack>
         </HStack>
+        {getAppDescription() && (
+          <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+            <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
+              <Text color="title">Description</Text>
+              <Text color="subtitle" size="small">{getAppDescription()}</Text>
+            </VStack>
+          </HStack>
+        )}
         <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
           <Text color="title">Version</Text>
-          <Text color="subtitle">{version || 'Loading...'}</Text>
+          <Text color="subtitle">{getAppVersion()}</Text>
         </HStack>
       </VStack>
     </VStack>

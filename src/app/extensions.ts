@@ -21,7 +21,8 @@ export async function registerExtensions() {
 
   // 2. 加载本地扩展
   try {
-    const devDir = await electronApi.getDevDir()
+    const paths = await electronApi.getAppPaths()
+    const devDir = paths.appRoot || paths.userData
     console.log('📂 Dev directory:', devDir)
 
     const localExtensions = await extensionLoader.loadLocalExtensions(devDir)

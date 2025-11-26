@@ -1,7 +1,7 @@
 import { ExtensionMeta, IExtension } from 'keyerext'
 import * as path from 'path'
 import * as fs from 'fs'
-import { electronApi } from '../electronApi'
+import { readDir } from '../utils/fs'
 import Module from 'module'
 import React from 'react'
 import * as Keyerext from 'keyerext'
@@ -17,11 +17,11 @@ export class ExtensionLoader {
 
     try {
       // 1. 获取 extensions 目录路径
-      const extensionsDir = await electronApi.pathJoin(devDir, 'extensions')
+      const extensionsDir = path.join(devDir, 'extensions')
       Log.log('📂 Scanning extensions directory:', extensionsDir)
 
       // 2. 读取所有子文件夹
-      const folders = await electronApi.readDir(extensionsDir)
+      const folders = await readDir(extensionsDir)
       Log.log('📁 Found extension folders:', folders)
 
       // 3. 遍历每个文件夹，加载扩展

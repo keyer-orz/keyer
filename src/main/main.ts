@@ -1,7 +1,6 @@
 import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import fs from 'node:fs/promises'
 import Store from 'electron-store'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -144,9 +143,15 @@ ipcMain.handle('update-global-shortcut', (_event, newShortcut: string) => {
   }
 })
 
-// 获取应用版本
-ipcMain.handle('get-app-version', () => {
-  return app.getVersion()
+// 获取应用路径相关信息(这个需要保留在主进程)
+ipcMain.handle('get-app-paths', () => {
+  return {
+    userData: app.getPath('userData'),
+    appData: app.getPath('appData'),
+    temp: app.getPath('temp'),
+    home: app.getPath('home'),
+    appRoot: VITE_DEV_SERVER_URL ? process.env.APP_ROOT : undefined
+  }
 })
 
 app.on('window-all-closed', () => {
@@ -162,53 +167,12 @@ app.on('activate', () => {
   }
 })
 
-// 注册文件系统相关的 IPC 处理器
-function registerFileSystemHandlers() {
-  // 获取开发目录（项目根目录）
-  ipcMain.handle('get-dev-dir', () => {
-    // 在开发模式下返回项目根目录，生产模式返回用户数据目录
-    if (VITE_DEV_SERVER_URL) {
-      return process.env.APP_ROOT
-    }
-    return app.getPath('userData')
-  })
-
-  // 读取目录
-  ipcMain.handle('read-dir', async (_event, dirPath: string) => {
-    try {
-      const entries = await fs.readdir(dirPath, { withFileTypes: true })
-      return entries
-        .filter(entry => entry.isDirectory())
-        .map(entry => entry.name)
-    } catch (error) {
-      console.error('Error reading directory:', error)
-      throw error
-    }
-  })
-
-  // 读取文件
-  ipcMain.handle('read-file', async (_event, filePath: string) => {
-    try {
-      return await fs.readFile(filePath, 'utf-8')
-    } catch (error) {
-      console.error('Error reading file:', error)
-      throw error
-    }
-  })
-
-  // 路径拼接
-  ipcMain.handle('path-join', (_event, paths: string[]) => {
-    return path.join(...paths)
-  })
-}
-
 app.whenReady().then(() => {
   // 初始化 electron-store 以供渲染进程使用
   Store.initRenderer()
 
   createWindow()
   registerShortcuts()
-  registerFileSystemHandlers()
 
   console.log("user data:", app.getPath('userData'))
 })
