@@ -34,7 +34,7 @@
 }
 
 .keyer-loading-text {
-  color: var(--color-text);
+  color: var(--color-title);
   font-size: 14px;
   user-select: none;
 }
