@@ -6,8 +6,8 @@ import Setting from "./setting/ui";
 class Ext implements IExtension {
     run(name: string): React.ReactElement | null {
         console.log('Extension @system run with name:', name)
-        if (name == 'main') return <Main/>
-        if (name == 'setting') return <Setting/>
+        if (name == 'main') return <Main />
+        if (name == 'setting') return <Setting />
         if (name == 'ui') return <UIDemo />
         return <div>none</div>
     }

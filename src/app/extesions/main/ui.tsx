@@ -68,7 +68,7 @@ export default function Main() {
         <Input
             ref={inputRef}
             value={searchText}
-            placeholder="搜索命令..."
+            placeholder="Search for commands..."
             onChange={setSearchText}
             autoFocus
         />
