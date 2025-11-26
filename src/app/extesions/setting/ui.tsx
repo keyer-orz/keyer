@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
 import { Text, VStack, HStack, Input, Divider, Button, Switch, useEscapeHandler } from 'keyerext'
+import { configManager } from '../../utils/config'
 
 export default function Setting() {
-    const [username, setUsername] = useState('')
-    const [email, setEmail] = useState('')
-    const [darkMode, setDarkMode] = useState(false)
-    const [notifications, setNotifications] = useState(true)
+    const [username, setUsername] = useState(() => configManager.get('username') || '')
+    const [email, setEmail] = useState(() => configManager.get('email') || '')
+    const [notifications, setNotifications] = useState(() => configManager.get('notifications') ?? true)
     const [preventEscape, setPreventEscape] = useState(false)
     const [confirmOnEscape, setConfirmOnEscape] = useState(false)
 
@@ -19,10 +19,6 @@ export default function Setting() {
 
     // 根据模式选择使用布尔值或函数
     useEscapeHandler(confirmOnEscape ? handleEscape : preventEscape)
-
-    const handleSave = () => {
-        alert(`已保存设置:\n用户名: ${username}\n邮箱: ${email}`)
-    }
 
     const handleReset = () => {
         setUsername('')
@@ -67,17 +63,6 @@ export default function Setting() {
             {/* Preferences */}
             <VStack spacing={16} style={{ alignItems: 'stretch' }}>
                 <Text color="title" size="medium">偏好设置</Text>
-
-                <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
-                    <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
-                        <Text color="title" size="medium">深色模式</Text>
-                        <Text color="subtitle" size="small">使用深色主题</Text>
-                    </VStack>
-                    <Switch
-                        checked={darkMode}
-                        onChange={setDarkMode}
-                    />
-                </HStack>
 
                 <HStack spacing={16} style={{ justifyContent: 'space-between' }}>
                     <VStack spacing={4} style={{ alignItems: 'flex-start' }}>
@@ -154,7 +139,6 @@ export default function Setting() {
                     <Button
                         variant="solid"
                         size="normal"
-                        onClick={handleSave}
                         disabled={!username && !email}
                     >
                         保存设置

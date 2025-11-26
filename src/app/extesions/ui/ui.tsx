@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup } from 'keyerext'
+import { configManager } from '../../utils/config'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
     const [selectedId, setSelectedId] = useState('item-1')
-    const [theme, setTheme] = useState<'light' | 'dark' | 'pink' | 'github' | 'github-dark'>('light')
+    const [theme, setTheme] = useState<'light' | 'dark' | 'pink' | 'github' | 'github-dark'>(() => {
+        return configManager.get('theme') || 'light'
+    })
     const [notificationsEnabled, setNotificationsEnabled] = useState(true)
     const [autoSave, setAutoSave] = useState(false)
     const [language, setLanguage] = useState('zh-CN')
@@ -14,6 +17,14 @@ export default function UIDemo() {
     const [agreeTerms, setAgreeTerms] = useState(false)
     const [receiveNewsletter, setReceiveNewsletter] = useState(true)
     const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['feature1'])
+
+    // 应用启动时恢复保存的主题
+    useEffect(() => {
+        const savedTheme = configManager.get('theme')
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme)
+        }
+    }, [])
 
     interface ProjectData {
         name: string
@@ -59,6 +70,8 @@ export default function UIDemo() {
     const handleThemeChange = (newTheme: ThemeType) => {
         setTheme(newTheme)
         document.documentElement.setAttribute('data-theme', newTheme)
+        // 保存主题到配置
+        configManager.set('theme', newTheme)
     }
 
     return (

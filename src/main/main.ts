@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs/promises'
+import Store from 'electron-store'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -141,6 +142,9 @@ function registerFileSystemHandlers() {
 }
 
 app.whenReady().then(() => {
+  // 初始化 electron-store 以供渲染进程使用
+  Store.initRenderer()
+
   createWindow()
   registerShortcuts()
   registerFileSystemHandlers()

@@ -3,6 +3,7 @@ import './styles/App.css'
 import { useNavigation } from 'keyerext'
 import { NavigationProvider } from './contexts/NavigationContext'
 import { registerExtensions } from './extensions'
+import { configManager } from './utils/config'
 
 function AppContent() {
   const { currentPage, stack, push } = useNavigation()
@@ -14,6 +15,12 @@ function AppContent() {
   useEffect(() => {
     if (!hasRegistered.current) {
       hasRegistered.current = true
+      // 恢复保存的主题
+      const savedTheme = configManager.get('theme')
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme)
+      }
+
       registerExtensions().then(() => {
         console.log('✅ Extensions registered, app is ready')
         setIsReady(true)
