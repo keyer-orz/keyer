@@ -1,3 +1,4 @@
+import { HStack } from 'keyerext';
 import React, { useState, useEffect, useCallback } from 'react'
 import { VscClose } from "react-icons/vsc";
 
@@ -16,37 +17,28 @@ const symbols: Record<string, string> = {
   'Enter': '↩',
   'Backspace': '⌫',
   'Delete': '⌦',
-  'Escape': '⎋',
+  'Escape': 'Esc',
   'Tab': '⇥',
-  'Space': '␣',
-  'ArrowUp': '↑',
-  'ArrowDown': '↓',
-  'ArrowLeft': '←',
-  'ArrowRight': '→'
+  'Up': '↑',
+  'Down': '↓',
+  'Left': '←',
+  'Right': '→'
+}
+// 将symbols键值反转
+const reverseSymbols: Record<string, string> = Object.fromEntries(
+  Object.entries(symbols).map(([key, value]) => [value, key])
+)
+
+function parseShortcut(keys: string[]): string {
+  return keys.map(key => reverseSymbols[key] || key).join('+')
 }
 
-function formatKey(key: string): string {
-  if (symbols[key]) {
-    return symbols[key]
-  }
-  if (key.startsWith('Key')) {
-    return key.replace('Key', '').toUpperCase()
-  }
-  if (key.startsWith('Digit')) {
-    return key.replace('Digit', '')
-  }
-  return key.toUpperCase()
-}
-// 将快捷键对象转换为显示字符串
-function formatShortcut(keys: string[]): string {
-  return keys.map(formatKey).join('')
-}
 /**
  * 快捷键录制组件
  * 自动捕获键盘输入并转换为快捷键格式（如 Shift+Space, Ctrl+Alt+K）
  * 兼容 Windows 和 Mac
  */
-export function ShortcutRecorder({ value, onChange, onClear, placeholder = 'Record Shortcut' }: ShortcutRecorderProps) {
+export function ShortcutRecorder({ value, onChange, onClear, placeholder = '--' }: ShortcutRecorderProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set())
 
@@ -66,7 +58,23 @@ export function ShortcutRecorder({ value, onChange, onClear, placeholder = 'Reco
 
     // 添加主键（排除单独的修饰键）- 使用 e.code 而不是 e.key 来获取物理按键
     if (!['Meta', 'Control', 'Alt', 'Shift'].includes(e.key)) {
-      newKeys.add(formatKey(e.code))
+      // 使用 code 获取物理按键，如 KeyV, KeyA 等
+      let mainKey = e.key
+
+      // 如果是字母键，使用 code 来确保获取正确的字母
+      if (e.code.startsWith('Key')) {
+        mainKey = e.code.replace('Key', '') // KeyV -> V
+      } else if (e.code.startsWith('Digit')) {
+        mainKey = e.code.replace('Digit', '') // Digit1 -> 1
+      } else if (e.code === 'Space') {
+        mainKey = 'Space'
+      } else if (e.code.startsWith('Arrow')) {
+         mainKey = e.code.replace('Arrow', '') // KeyV -> V
+      } else if (['Enter', 'Tab', 'Backspace', 'Delete', 'Escape'].includes(e.code)) {
+        mainKey = e.code
+      }
+
+      newKeys.add(mainKey)
     }
 
     setPressedKeys(newKeys)
@@ -87,8 +95,8 @@ export function ShortcutRecorder({ value, onChange, onClear, placeholder = 'Reco
       const modifiers = keysArray.filter(k => modifierOrder.includes(k))
         .sort((a, b) => modifierOrder.indexOf(a) - modifierOrder.indexOf(b))
       const mainKeys = keysArray.filter(k => !modifierOrder.includes(k))
-
-      const shortcut = [...modifiers, ...mainKeys].join('+')
+      const shortcut = parseShortcut([...modifiers, ...mainKeys])
+      console.log('Recorded shortcut:', shortcut)
       onChange(shortcut)
       setIsRecording(false)
       setPressedKeys(new Set())
@@ -126,46 +134,44 @@ export function ShortcutRecorder({ value, onChange, onClear, placeholder = 'Reco
     setPressedKeys(new Set())
   }
 
-  const getDisplayText = () => {
-    return isRecording
-      ? pressedKeys.size > 0
-        ? formatShortcut(Array.from(pressedKeys))
-        : 'Press keys...'
-      : formatShortcut(Array.from(value.split('+'))) || placeholder
-  }
-
   return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+    <HStack style={{
+      padding: '4px',
+      fontSize: '14px',
+      color: 'var(--color-title)',
+      backgroundColor: 'var(--color-input-bg)',
+      border: `2px solid ${isRecording ? 'var(--color-title)' : 'var(--color-border)'}`,
+    }}>
       <div
         onClick={handleClick}
         style={{
-          flex: 1,
-          padding: '8px 32px 8px 12px', // 右侧留空间给按钮
-          fontSize: '14px',
-          color: 'var(--color-title)',
-          backgroundColor: 'var(--color-input-bg)',
-          border: `2px solid ${isRecording ? 'var(--color-title)' : 'var(--color-border)'}`,
-          outline: 'none',
-          fontWeight: 800
+          flexGrow: 1,
         }}
-      >{getDisplayText()}</div>
-      <span
-        style={{
-          position: 'absolute',
-          right: 8,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          cursor: 'pointer',
-          color: 'var(--color-subtitle)',
-          background: 'transparent',
-          display: 'flex',
-          alignItems: 'center',
-          zIndex: 2
-        }}
-        onClick={handleClear}
-      >
-        <VscClose size={18} />
-      </span>
-    </div>
+      >{isRecording
+        ? pressedKeys.size > 0
+          ? <Keys keys={Array.from(pressedKeys)} />
+          : 'Recording...'
+        : value
+          ? <Keys keys={value.split("+")} />
+          : placeholder
+        }</div>
+      <VscClose onClick={handleClear} size={18} />
+    </HStack>
   )
+}
+
+
+function Keys({keys}: {keys: string[]}) {
+  return <HStack>
+    {keys.map((key, index) => (
+      <div key={index} style={{
+        padding: '4px 8px',
+        borderRadius: '2px',
+        backgroundColor: 'var(--color-selected)',
+        color: 'var(--color-title)',
+        fontSize: '12px',
+        fontWeight: 600, 
+      }}>{symbols[key] || key.toUpperCase()}</div>
+    ))}
+  </HStack>
 }
