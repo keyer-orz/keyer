@@ -69,35 +69,30 @@ function createWindow() {
 // 注册全局快捷键
 function registerShortcuts() {
   const store = new Store()
-  const userShortcut = store.get('globalShortcut') as string
-
-  if (userShortcut) {
-    shortcutConfig['@system#main'] = userShortcut
+  const shortcut = store.get('globalShortcut') as string
+  console.log(`✅ Registered shortcut: ${shortcut} -> main`)
+  if (!shortcut) {
+    return
   }
 
-  Object.entries(shortcutConfig).forEach(([pageName, shortcut]) => {
-    // 先注销可能存在的旧快捷键（虽然 register 会覆盖，但显式注销更安全）
-    if (globalShortcut.isRegistered(shortcut)) {
-      // globalShortcut.unregister(shortcut) 
-    }
-
-    const success = globalShortcut.register(shortcut, () => {
-      console.log(`🔥 Shortcut triggered: ${shortcut} -> ${pageName}`)
-      if (win) {
-        win.webContents.send('navigate-to-page', pageName)
-        if (!win.isVisible()) {
-          win.show()
-        }
-        win.focus()
+  if (globalShortcut.isRegistered(shortcut)) {
+    globalShortcut.unregister(shortcut)
+  }
+  const success = globalShortcut.register(shortcut, () => {
+    if (win) {
+      win.webContents.send('navigate-to-page', '@system#main')
+      if (!win.isVisible()) {
+        win.show()
       }
-    })
-
-    if (!success) {
-      console.error(`❌ Failed to register shortcut: ${shortcut}`)
-    } else {
-      console.log(`✅ Registered shortcut: ${shortcut} -> ${pageName}`)
+      win.focus()
     }
   })
+
+  if (!success) {
+    console.error(`❌ Failed to register shortcut: ${shortcut}`)
+  } else {
+    console.log(`✅ Registered shortcut: ${shortcut} -> main`)
+  }
 }
 
 // 更新全局快捷键

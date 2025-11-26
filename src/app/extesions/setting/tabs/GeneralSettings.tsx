@@ -3,8 +3,8 @@ import { VStack, HStack, Text, Divider } from 'keyerext'
 import { ShortcutRecorder } from '../../../components/ShortcutRecorder'
 import { ThemeSwitcher } from '../../../components/ThemeSwitcher'
 import { configManager } from '../../../utils/config'
-import { getAppVersion, getAppName, getAppDescription } from '../../../utils/app'
 import { electronApi } from '../../../electronApi'
+import { getAppVersion, getAppName, getAppDescription } from '../../../utils/app'
 
 export function GeneralSettings() {
   const [shortcut, setShortcut] = useState('')
@@ -17,20 +17,9 @@ export function GeneralSettings() {
 
   const handleShortcutChange = (newShortcut: string) => {
     setShortcut(newShortcut)
-  }
-
-  const handleShortcutValidate = async (newShortcut: string): Promise<boolean> => {
-    try {
-      const success = await electronApi.updateGlobalShortcut(newShortcut)
-      if (success) {
-        configManager.set('globalShortcut', newShortcut)
-        return true
-      }
-      return false
-    } catch (err) {
-      console.error('Failed to update shortcut', err)
-      return false
-    }
+    configManager.set('globalShortcut', newShortcut)
+    // 通知主线程刷新快捷键注册
+    electronApi.updateGlobalShortcut(newShortcut)
   }
 
   return (
@@ -66,7 +55,6 @@ export function GeneralSettings() {
           <ShortcutRecorder
             value={shortcut}
             onChange={handleShortcutChange}
-            onValidate={handleShortcutValidate}
           />
         </VStack>
       </VStack>
