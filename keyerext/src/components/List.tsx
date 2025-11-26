@@ -94,6 +94,7 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
             return (
               <div
                 key={item.id}
+                ref={el => itemRefs.current[item.id] = el}
                 className={`keyer-list-item ${isSelected ? 'keyer-list-item-selected' : ''}`}
                 onClick={() => handleSelect(item.id, item.data)}
                 onDoubleClick={() => handleEnter(item.id, item.data)}
