@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react'
 import './styles/App.css'
-import { useNavigation } from 'keyerext'
+import { useNavigation, setKeyer } from 'keyerext'
 import { NavigationProvider } from './contexts/NavigationContext'
 import { registerExtensions } from './extensions'
 import { configManager } from './utils/config'
+import { KeyerInstance } from './keyer'
 
 function AppContent() {
   const { currentPage, stack, push } = useNavigation()
@@ -15,12 +16,18 @@ function AppContent() {
   useEffect(() => {
     if (!hasRegistered.current) {
       hasRegistered.current = true
-      // 恢复保存的主题
+
+      // 1. 注入 Keyer 核心能力
+      setKeyer(KeyerInstance)
+      console.log('✅ Keyer instance injected')
+
+      // 2. 恢复保存的主题
       const savedTheme = configManager.get('theme')
       if (savedTheme) {
         document.documentElement.setAttribute('data-theme', savedTheme)
       }
 
+      // 3. 注册扩展
       registerExtensions().then(() => {
         console.log('✅ Extensions registered, app is ready')
         setIsReady(true)
