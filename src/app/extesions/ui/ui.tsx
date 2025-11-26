@@ -5,7 +5,7 @@ import { configManager } from '../../utils/config'
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
     const [selectedId, setSelectedId] = useState('item-1')
-    const [theme, setTheme] = useState<'light' | 'dark' | 'pink' | 'github' | 'github-dark'>(() => {
+    const [theme, setTheme] = useState<string>(() => {
         return configManager.get('theme') || 'light'
     })
     const [notificationsEnabled, setNotificationsEnabled] = useState(true)
@@ -57,9 +57,7 @@ export default function UIDemo() {
         }
     ]
 
-    type ThemeType = 'light' | 'dark' | 'pink' | 'github' | 'github-dark'
-
-    const themeOptions: DropdownOption<ThemeType>[] = [
+    const themeOptions: DropdownOption<string>[] = [
         { label: '☀️ 亮色', value: 'light' },
         { label: '🌙 暗色', value: 'dark' },
         { label: '💗 粉色', value: 'pink' },
@@ -67,7 +65,7 @@ export default function UIDemo() {
         { label: '🌃 GitHub 暗色', value: 'github-dark' }
     ]
 
-    const handleThemeChange = (newTheme: ThemeType) => {
+    const handleThemeChange = (newTheme: string) => {
         setTheme(newTheme)
         document.documentElement.setAttribute('data-theme', newTheme)
         // 保存主题到配置

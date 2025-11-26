@@ -1,11 +1,10 @@
 import { useState, useCallback } from 'react'
 import { Text, VStack, HStack, Input, Divider, Button, Switch, useEscapeHandler } from 'keyerext'
-import { configManager } from '../../utils/config'
 
 export default function Setting() {
-    const [username, setUsername] = useState(() => configManager.get('username') || '')
-    const [email, setEmail] = useState(() => configManager.get('email') || '')
-    const [notifications, setNotifications] = useState(() => configManager.get('notifications') ?? true)
+    const [username, setUsername] = useState(() => '')
+    const [email, setEmail] = useState(() => '')
+    const [notifications, setNotifications] = useState(() => true)
     const [preventEscape, setPreventEscape] = useState(false)
     const [confirmOnEscape, setConfirmOnEscape] = useState(false)
 
