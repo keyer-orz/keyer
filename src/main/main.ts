@@ -20,7 +20,7 @@ let win: BrowserWindow | null
 
 // 快捷键配置
 const shortcutConfig: Record<string, string> = {
-  '@system#main': 'Shift+Space',
+  '@system#main': 'Shift+Space', // This will be overwritten by user config
   '@system#setting': 'Shift+P',
 }
 
@@ -68,7 +68,19 @@ function createWindow() {
 
 // 注册全局快捷键
 function registerShortcuts() {
+  const store = new Store()
+  const userShortcut = store.get('globalShortcut') as string
+
+  if (userShortcut) {
+    shortcutConfig['@system#main'] = userShortcut
+  }
+
   Object.entries(shortcutConfig).forEach(([pageName, shortcut]) => {
+    // 先注销可能存在的旧快捷键（虽然 register 会覆盖，但显式注销更安全）
+    if (globalShortcut.isRegistered(shortcut)) {
+      // globalShortcut.unregister(shortcut) 
+    }
+
     const success = globalShortcut.register(shortcut, () => {
       console.log(`🔥 Shortcut triggered: ${shortcut} -> ${pageName}`)
       if (win) {
@@ -87,6 +99,55 @@ function registerShortcuts() {
     }
   })
 }
+
+// 更新全局快捷键
+ipcMain.handle('update-global-shortcut', (_event, newShortcut: string) => {
+  const oldShortcut = shortcutConfig['@system#main']
+
+  // 如果新旧快捷键相同，直接返回成功
+  if (oldShortcut === newShortcut) return true
+
+  // 注销旧快捷键
+  if (oldShortcut && globalShortcut.isRegistered(oldShortcut)) {
+    globalShortcut.unregister(oldShortcut)
+  }
+
+  // 注册新快捷键
+  const success = globalShortcut.register(newShortcut, () => {
+    console.log(`🔥 Shortcut triggered: ${newShortcut} -> @system#main`)
+    if (win) {
+      win.webContents.send('navigate-to-page', '@system#main')
+      if (!win.isVisible()) {
+        win.show()
+      }
+      win.focus()
+    }
+  })
+
+  if (success) {
+    shortcutConfig['@system#main'] = newShortcut
+    console.log(`✅ Updated shortcut to: ${newShortcut}`)
+    return true
+  } else {
+    console.error(`❌ Failed to register new shortcut: ${newShortcut}`)
+    // 尝试恢复旧快捷键
+    globalShortcut.register(oldShortcut, () => {
+      if (win) {
+        win.webContents.send('navigate-to-page', '@system#main')
+        if (!win.isVisible()) {
+          win.show()
+        }
+        win.focus()
+      }
+    })
+    return false
+  }
+})
+
+// 获取应用版本
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion()
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

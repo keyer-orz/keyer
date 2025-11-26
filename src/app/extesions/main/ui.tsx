@@ -29,7 +29,7 @@ export default function Main() {
 
 
     // Handle command execution
-    const handleExecuteCommand = (id: string, cmd: ICommand) => {
+    const handleExecuteCommand = (_id: string, cmd: ICommand) => {
         console.log('Executing command:', cmd.id)
         push(cmd.id!)
     }

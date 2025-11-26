@@ -19,5 +19,11 @@ export const electronApi = {
   },
   pathJoin: (...paths: string[]): Promise<string> => {
     return ipcRenderer.invoke('path-join', paths)
+  },
+  updateGlobalShortcut: (shortcut: string): Promise<boolean> => {
+    return ipcRenderer.invoke('update-global-shortcut', shortcut)
+  },
+  getAppVersion: (): Promise<string> => {
+    return ipcRenderer.invoke('get-app-version')
   }
 }

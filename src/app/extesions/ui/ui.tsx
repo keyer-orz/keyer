@@ -1,13 +1,10 @@
-import { useState, useEffect } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Dropdown, DropdownOption, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup } from 'keyerext'
-import { configManager } from '../../utils/config'
+import { useState } from 'react'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup } from 'keyerext'
+import { ThemeSwitcher } from '../../components'
 
 export default function UIDemo() {
     const [searchText, setSearchText] = useState('')
     const [selectedId, setSelectedId] = useState('item-1')
-    const [theme, setTheme] = useState<string>(() => {
-        return configManager.get('theme') || 'light'
-    })
     const [notificationsEnabled, setNotificationsEnabled] = useState(true)
     const [autoSave, setAutoSave] = useState(false)
     const [language, setLanguage] = useState('zh-CN')
@@ -17,14 +14,6 @@ export default function UIDemo() {
     const [agreeTerms, setAgreeTerms] = useState(false)
     const [receiveNewsletter, setReceiveNewsletter] = useState(true)
     const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['feature1'])
-
-    // 应用启动时恢复保存的主题
-    useEffect(() => {
-        const savedTheme = configManager.get('theme')
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme)
-        }
-    }, [])
 
     interface ProjectData {
         name: string
@@ -57,20 +46,6 @@ export default function UIDemo() {
         }
     ]
 
-    const themeOptions: DropdownOption<string>[] = [
-        { label: '☀️ 亮色', value: 'light' },
-        { label: '🌙 暗色', value: 'dark' },
-        { label: '💗 粉色', value: 'pink' },
-        { label: '🐙 GitHub', value: 'github' },
-        { label: '🌃 GitHub 暗色', value: 'github-dark' }
-    ]
-
-    const handleThemeChange = (newTheme: string) => {
-        setTheme(newTheme)
-        document.documentElement.setAttribute('data-theme', newTheme)
-        // 保存主题到配置
-        configManager.set('theme', newTheme)
-    }
 
     return (
         <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
@@ -82,11 +57,7 @@ export default function UIDemo() {
                         <Text color="subtitle" size="small">展示 Keyer 所有 UI 组件</Text>
                     </VStack>
                     <div style={{ width: '180px' }}>
-                        <Dropdown
-                            options={themeOptions}
-                            value={theme}
-                            onChange={handleThemeChange}
-                        />
+                        <ThemeSwitcher />
                     </div>
                 </HStack>
 
@@ -223,14 +194,9 @@ export default function UIDemo() {
                 <VStack spacing={12} style={{ alignItems: 'stretch' }}>
                     <Text color="title" size="medium">Dropdown 组件</Text>
                     <VStack spacing={8} style={{ alignItems: 'flex-start', width: '100%' }}>
-                        <Text color="subtitle" size="small">主题选择 (见右上角):</Text>
+                        <Text color="subtitle" size="small">主题选择 (见右上角 ThemeSwitcher 组件):</Text>
                         <div style={{ width: '100%', maxWidth: '300px' }}>
-                            <Dropdown
-                                options={themeOptions}
-                                value={theme}
-                                placeholder="选择主题..."
-                                onChange={handleThemeChange}
-                            />
+                            <ThemeSwitcher placeholder="选择主题..." />
                         </div>
                     </VStack>
                 </VStack>

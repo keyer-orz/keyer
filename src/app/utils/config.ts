@@ -3,11 +3,13 @@ import Store from 'electron-store'
 // 配置类型定义
 export interface AppConfig {
   theme: string
+  globalShortcut: string
 }
 
 // 默认配置
 const defaultConfig: AppConfig = {
   theme: 'light',
+  globalShortcut: 'Shift+Space',
 }
 
 // 创建配置存储实例
