@@ -59,20 +59,19 @@ export function GeneralSettings() {
       {/* Shortcuts Section */}
       <VStack spacing={16} style={{ alignItems: 'stretch' }}>
         <Text size="medium" color="title">Shortcuts</Text>
-        <HStack style={{ justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
-          <VStack spacing={4} style={{ alignItems: 'flex-start', flex: 1 }}>
-            <Text color="title">Toggle App Visibility</Text>
-            <Text color="subtitle" size="small">Global shortcut to show/hide the application</Text>
-          </VStack>
-          <div style={{ width: '200px' }}>
-            <ShortcutRecorder
-              value={shortcut}
-              onChange={handleShortcutChange}
-              onValidate={handleShortcutValidate}
-              placeholder="Click to record"
-            />
-          </div>
-        </HStack>
+        <VStack spacing={8} style={{ alignItems: 'stretch' }}>
+          <HStack style={{ justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+            <VStack spacing={4} style={{ alignItems: 'flex-start', flex: 1 }}>
+              <Text color="title">Toggle App Visibility</Text>
+              <Text color="subtitle" size="small">Global shortcut to show/hide the application</Text>
+            </VStack>
+          </HStack>
+          <ShortcutRecorder
+            value={shortcut}
+            onChange={handleShortcutChange}
+            onValidate={handleShortcutValidate}
+          />
+        </VStack>
       </VStack>
 
       <Divider />
