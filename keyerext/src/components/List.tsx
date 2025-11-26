@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 
 export interface ListItem<T = any> {
   id: string
@@ -22,16 +22,24 @@ export interface ListProps<T = any> {
 export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderItem, className = '' }: ListProps<T>) {
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [internalSelectedId, setInternalSelectedId] = useState<string | undefined>(selectedId)
-
   // 获取所有项的扁平列表
   const allItems = groups.flatMap(group => group.items)
   const currentSelectedId = selectedId !== undefined ? selectedId : internalSelectedId
+  // refs: 记录每个 item 的 dom
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   useEffect(() => {
     if (selectedId !== undefined) {
       setInternalSelectedId(selectedId)
     }
   }, [selectedId])
+
+  // 选中项变化时自动滚动到可视区
+  useEffect(() => {
+    if (currentSelectedId && itemRefs.current[currentSelectedId]) {
+      itemRefs.current[currentSelectedId]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  }, [currentSelectedId])
 
   const handleSelect = useCallback((id: string, data: T) => {
     setInternalSelectedId(id)
@@ -80,10 +88,9 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
           {group.title && (
             <div className="keyer-list-group-title">{group.title}</div>
           )}
-          {group.items.map(item => {
+          {group.items.map((item) => {
             const isSelected = item.id === currentSelectedId
             const isHovered = item.id === hoverId
-
             return (
               <div
                 key={item.id}
