@@ -26,9 +26,50 @@ export interface ClipboardData {
 }
 
 /**
+ * 命令执行模式
+ */
+export type ExecOptions = {
+  mode?: 'terminal' | 'window'
+  cwd?: string
+}
+
+/**
+ * 命令执行结果
+ */
+export interface ExecResult {
+  /**
+   * 退出码
+   */
+  exitCode: number | null
+
+  /**
+   * 标准输出
+   */
+  stdout: string
+
+  /**
+   * 标准错误输出
+   */
+  stderr: string
+
+  /**
+   * 是否被手动终止
+   */
+  killed: boolean
+}
+
+/**
  * Keyer 核心能力接口
  */
 export interface IKeyer {
+  /**
+   * 执行命令
+   * @param cmd 要执行的命令
+   * @param mode 执行模式: terminal(系统终端) 或 window(新窗口)
+   * @returns 执行结果的 Promise
+   */
+  exec(cmd: string, opt?: ExecOptions): Promise<ExecResult>
+
   /**
    * 剪贴板操作
    */

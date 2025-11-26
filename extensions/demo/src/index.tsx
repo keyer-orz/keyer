@@ -58,6 +58,18 @@ export default class Ext implements IExtension {
         if (name == 'hello') {
             Keyer.clipboard.writeText("hello")
         }
+        if (name == 'cmd-window') {
+            Keyer.exec('ping www.baidu.com', {
+                mode: 'window'
+            })
+            return null
+        }
+        if (name == 'cmd-shell') {
+            Keyer.exec('ping www.baidu.com', {
+                mode: 'terminal'
+            })
+            return null
+        }
         return <div>none</div>
     }
 }

@@ -32,7 +32,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
       const element = commandManager.execute(page)
       if (!element) {
-        console.error('❌ Failed to create:', page)
         return prev
       }
 
@@ -138,7 +137,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         console.log('🆕 Create:', pageName)
         const element = commandManager.execute(pageName)
         if (!element) {
-          console.error('❌ Failed to create:', pageName)
           return []
         }
         electronApi.onStackChange(1)

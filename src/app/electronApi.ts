@@ -39,5 +39,19 @@ export const electronApi = {
     appRoot?: string
   }> => {
     return ipcRenderer.invoke('get-app-paths')
+  },
+
+  /**
+   * 在系统终端中执行命令
+   */
+  execTerminal: (cmd: string, cwd?: string): Promise<any> => {
+    return ipcRenderer.invoke('exec-terminal', cmd, cwd)
+  },
+
+  /**
+   * 在新窗口中执行命令
+   */
+  execWindow: (cmd: string): Promise<any> => {
+    return ipcRenderer.invoke('exec-window', cmd)
   }
 }

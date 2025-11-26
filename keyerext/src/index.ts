@@ -55,4 +55,4 @@ export { Loading, type LoadingProps } from './components/Loading'
 export { Checkbox, CheckboxGroup, type CheckboxProps, type CheckboxGroupProps } from './components/Checkbox'
 
 // Keyer Core Capabilities
-export { Keyer, setKeyer, type IKeyer, type ClipboardData } from './keyer'
+export { Keyer, setKeyer, type IKeyer, type ClipboardData, type ExecOptions, type ExecResult } from './keyer'

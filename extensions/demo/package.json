@@ -11,6 +11,18 @@
       "title": "Say Hello",
       "icon": "👋",
       "desc": "A demo command that says hello"
+    },
+    {
+      "name": "cmd-window",
+      "title": "Cmd Window",
+      "icon": "👋",
+      "desc": "A demo command that says hello"
+    },
+    {
+      "name": "cmd-shell",
+      "title": "Cmd Shell",
+      "icon": "👋",
+      "desc": "A demo command that says hello"
     }
   ],
   "scripts": {

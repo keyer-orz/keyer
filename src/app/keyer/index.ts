@@ -6,7 +6,8 @@
  */
 
 import { clipboard, nativeImage } from 'electron'
-import type { IKeyer, ClipboardData } from 'keyerext'
+import type { IKeyer, ClipboardData, ExecOptions, ExecResult } from 'keyerext'
+import { electronApi } from '../electronApi'
 
 /**
  * 剪贴板操作实现
@@ -95,6 +96,20 @@ const appImpl = {
  * Keyer 实例
  */
 export const KeyerInstance: IKeyer = {
+  /**
+   * 执行命令
+   * @param cmd 要执行的命令
+   * @param mode 执行模式: terminal(系统终端) 或 window(新窗口)
+   * @returns 执行结果的 Promise
+   */
+  async exec(cmd: string, opt?: ExecOptions): Promise<ExecResult> {
+    if (opt?.mode === 'terminal') {
+      return await electronApi.execTerminal(cmd, opt.cwd)
+    } else {
+      return await electronApi.execWindow(cmd)
+    }
+  },
+
   clipboard: clipboardImpl,
   app: appImpl
 }
