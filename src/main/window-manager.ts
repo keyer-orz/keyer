@@ -37,7 +37,10 @@ export function createMainWindow(): BrowserWindow {
 
   // 监听窗口失去焦点时自动隐藏
   mainWindow.on('blur', () => {
-    mainWindow?.hide()
+    if (mainWindow) {
+      mainWindow.hide()
+      mainWindow.setVisibleOnAllWorkspaces(false)
+    }
   })
 
   // 监听窗口显示/隐藏事件
