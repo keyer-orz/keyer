@@ -28,6 +28,13 @@ export type ExtensionMeta = {
     ext?: IExtension                // 插件实例（本地扩展加载前可能为空）
 }
 
+export namespace WindowSize {
+    export const Normal = { width: 600, height: 400 } // 默认尺寸
+    export const Large = { width: 1000, height: 800 } // 适合复杂内容
+    export const Small = { width: 400, height: 300 }  // 适合简单内容
+    export const Wide = { width: 1200, height: 600 }  // 适合左右分屏
+}
+
 export interface IExtension {
     load?(): ICommand[];
     preview?(input: string): React.ReactElement | null;

@@ -1,0 +1,54 @@
+{
+  "extensions": [
+    {
+      "name": "demo-calculator",
+      "title": "Calculator Extension",
+      "description": "A simple calculator extension for basic arithmetic operations. Supports addition, subtraction, multiplication, and division with keyboard shortcuts.",
+      "version": "1.2.0",
+      "author": "Demo Team",
+      "icon": "🧮",
+      "tags": ["math", "utility", "calculator"],
+      "downloadUrl": "https://github.com/keyer-orz/extensions/releases/download/calculator-v1.2.0/calculator.zip"
+    },
+    {
+      "name": "demo-weather",
+      "title": "Weather Widget",
+      "description": "Display current weather information and forecasts. Get real-time weather data for any city worldwide with beautiful UI components.",
+      "version": "2.1.5",
+      "author": "Weather Team",
+      "icon": "🌤️",
+      "tags": ["weather", "widget", "information"],
+      "downloadUrl": "https://github.com/keyer-orz/extensions/releases/download/weather-v2.1.5/weather.zip"
+    },
+    {
+      "name": "demo-notes",
+      "title": "Quick Notes",
+      "description": "Take quick notes and organize your thoughts. Features markdown support, search functionality, and cloud sync capabilities.",
+      "version": "1.0.8",
+      "author": "Notes Team",
+      "icon": "📝",
+      "tags": ["notes", "productivity", "markdown"],
+      "downloadUrl": "https://github.com/keyer-orz/extensions/releases/download/notes-v1.0.8/notes.zip"
+    },
+    {
+      "name": "demo-timer",
+      "title": "Pomodoro Timer",
+      "description": "Boost your productivity with the Pomodoro Technique. Set work and break intervals, track your sessions, and stay focused.",
+      "version": "1.5.2",
+      "author": "Productivity Team",
+      "icon": "⏲️",
+      "tags": ["timer", "productivity", "pomodoro"],
+      "downloadUrl": "https://github.com/keyer-orz/extensions/releases/download/timer-v1.5.2/timer.zip"
+    },
+    {
+      "name": "demo-clipboard",
+      "title": "Clipboard Manager",
+      "description": "Advanced clipboard manager with history, search, and formatting options. Never lose your copied content again.",
+      "version": "3.0.1",
+      "author": "Tools Team",
+      "icon": "📋",
+      "tags": ["clipboard", "utility", "history"],
+      "downloadUrl": "https://github.com/keyer-orz/extensions/releases/download/clipboard-v3.0.1/clipboard.zip"
+    }
+  ]
+}
