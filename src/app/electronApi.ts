@@ -6,6 +6,25 @@
  */
 import { ipcRenderer } from 'electron'
 
+/**
+ * 扩展包信息（从主进程扫描结果）
+ */
+export interface ExtensionPackageInfo {
+  name: string
+  title?: string
+  desc?: string
+  icon?: string
+  version?: string
+  main: string
+  commands?: Array<{
+    name: string
+    title?: string
+    desc?: string
+    icon?: string
+    type?: string
+  }>
+}
+
 export const electronApi = {
   /**
    * 通知主进程导航栈变化(用于窗口显示/隐藏)
@@ -67,5 +86,19 @@ export const electronApi = {
    */
   updateCmdShortcut: (cmdId: string, shortcut: string | undefined): Promise<boolean> => {
     return ipcRenderer.invoke('update-cmd-shortcut', cmdId, shortcut)
+  },
+
+  /**
+   * 扫描并获取所有扩展的元数据
+   */
+  scanExtensions: (): Promise<ExtensionPackageInfo[]> => {
+    return ipcRenderer.invoke('scan-extensions')
+  },
+
+  /**
+   * 获取扩展文件的完整路径
+   */
+  getExtensionPath: (extensionMain: string): Promise<string> => {
+    return ipcRenderer.invoke('get-extension-path', extensionMain)
   }
 }

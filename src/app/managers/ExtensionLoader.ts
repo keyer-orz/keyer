@@ -1,43 +1,39 @@
 import { ExtensionMeta, IExtension } from 'keyerext'
 import * as path from 'path'
 import * as fs from 'fs'
-import { readDir } from '../utils/fs'
 import Module from 'module'
 import React from 'react'
 import * as Keyerext from 'keyerext'
 import Log from '../utils/log'
+import { electronApi, ExtensionPackageInfo } from '../electronApi'
+
 export class ExtensionLoader {
   /**
-   * 扫描并加载所有本地扩展
-   * @param devDir 项目根目录
+   * 从主进程扫描并加载所有本地扩展
    * @returns 已加载的扩展列表
    */
-  async loadLocalExtensions(devDir: string): Promise<ExtensionMeta[]> {
+  async loadLocalExtensions(): Promise<ExtensionMeta[]> {
     const extensions: ExtensionMeta[] = []
 
     try {
-      // 1. 获取 extensions 目录路径
-      const extensionsDir = path.join(devDir, 'extensions')
-      Log.log('📂 Scanning extensions directory:', extensionsDir)
+      // 1. 从主进程获取扩展元数据列表
+      const packageInfoList = await electronApi.scanExtensions()
+      Log.log(`📦 Received ${packageInfoList.length} extension packages from main process`)
 
-      // 2. 读取所有子文件夹
-      const folders = await readDir(extensionsDir)
-      Log.log('📁 Found extension folders:', folders)
-
-      // 3. 遍历每个文件夹，加载扩展
-      for (const folderName of folders) {
+      // 2. 遍历每个扩展，加载实例
+      for (const pkgInfo of packageInfoList) {
         try {
-          const ext = await this.loadExtension(devDir, folderName)
+          const ext = await this.loadExtension(pkgInfo)
           if (ext) {
             extensions.push(ext)
             Log.log('✅ Loaded extension:', ext.name)
           }
         } catch (error) {
-          Log.error(`❌ Failed to load extension "${folderName}":`, error instanceof Error ? error.stack || error.message : String(error))
+          Log.error(`❌ Failed to load extension "${pkgInfo.name}":`, error instanceof Error ? error.stack || error.message : String(error))
         }
       }
     } catch (error) {
-      Log.error('❌ Failed to scan extensions directory:', error instanceof Error ? error.stack || error.message : String(error))
+      Log.error('❌ Failed to load extensions:', error instanceof Error ? error.stack || error.message : String(error))
     }
 
     return extensions
@@ -45,38 +41,23 @@ export class ExtensionLoader {
 
   /**
    * 加载单个扩展
-   * @param devDir 项目根目录
-   * @param folderName 扩展文件夹名称
+   * @param pkgInfo 从主进程扫描得到的扩展包信息
    * @returns 扩展元数据，如果加载失败返回 null
    */
   private async loadExtension(
-    devDir: string,
-    folderName: string
+    pkgInfo: ExtensionPackageInfo
   ): Promise<ExtensionMeta | null> {
-    // 1. 读取 package.json
-    const extDir = path.join(devDir, 'extensions', folderName)
-    const packagePath = path.join(extDir, 'package.json')
-
-    const packageContent = fs.readFileSync(packagePath, 'utf-8')
-    const pkg: ExtensionMeta = JSON.parse(packageContent)
-
-    // 2. 验证必需字段
-    if (!pkg.name || !pkg.main) {
-      Log.warn(`⚠️  Extension "${folderName}" missing required fields (name or main)`)
-      return null
-    }
-
-    const mainPath = path.join(extDir, pkg.main)
-
-    if (!fs.existsSync(mainPath)) {
-      Log.warn(`Main file not found: ${mainPath}`)
-      return null
-    }
-
     try {
-      // 创建一个新的 Module 实例
-      const pluginCode = fs.readFileSync(mainPath, 'utf-8')
+      // 1. 从主进程获取扩展文件的完整路径
+      const mainPath = await electronApi.getExtensionPath(pkgInfo.main)
 
+      if (!fs.existsSync(mainPath)) {
+        Log.warn(`Main file not found: ${mainPath}`)
+        return null
+      }
+
+      // 2. 读取并执行扩展代码
+      const pluginCode = fs.readFileSync(mainPath, 'utf-8')
       const pluginModule = new Module(mainPath, module)
 
       // 设置路径以便插件能找到自己的 node_modules（如果有的话）
@@ -98,32 +79,33 @@ export class ExtensionLoader {
       pluginModule._compile(pluginCode, mainPath)
 
       const ExtensionClass = pluginModule.exports.default
-      let extension: IExtension = new ExtensionClass()
-      Log.log('Extension instance created:', pkg.commands)
-      // 4. 构造 ExtensionMeta
+      const extension: IExtension = new ExtensionClass()
+      Log.log('Extension instance created:', pkgInfo.name)
+
+      // 3. 构造 ExtensionMeta
       const meta: ExtensionMeta = {
-        name: pkg.name,
-        title: pkg.title || pkg.name,
-        desc: pkg.desc,
-        icon: pkg.icon,
-        version: pkg.version,
+        name: pkgInfo.name,
+        title: pkgInfo.title || pkgInfo.name,
+        desc: pkgInfo.desc,
+        icon: pkgInfo.icon,
+        version: pkgInfo.version,
         type: 'local',
-        main: pkg.main,
+        main: pkgInfo.main,
         ext: extension,
-        commands: pkg.commands?.map(cmd => ({
+        commands: pkgInfo.commands?.map(cmd => ({
           id: '', // 将由 CommandManager 填充
           name: cmd.name,
           title: cmd.title,
           desc: cmd.desc || '',
           icon: cmd.icon || '📦',
-          extTitle: pkg.title || pkg.name,
+          extTitle: pkgInfo.title || pkgInfo.name,
           type: cmd.type || 'Command'
         }))
       }
 
       return meta
     } catch (error) {
-      Log.error(`❌ Failed to load extension module "${pkg.name}":`, error instanceof Error ? error.stack || error.message : String(error))
+      Log.error(`❌ Failed to load extension module "${pkgInfo.name}":`, error instanceof Error ? error.stack || error.message : String(error))
       return null
     }
   }

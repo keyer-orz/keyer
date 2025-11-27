@@ -70,7 +70,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       if (prev.length === 0) return prev
 
       const currentPage = prev[prev.length - 1]
-      console.log('📝 Register escape handler for:', currentPage.pageName)
 
       const newStack = [...prev]
       newStack[newStack.length - 1] = { ...currentPage, escapeHandler: handler }
@@ -86,7 +85,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       if (prev.length === 0) return prev
 
       const currentPage = prev[prev.length - 1]
-      console.log('🗑️  Unregister escape handler for:', currentPage.pageName)
 
       const newStack = [...prev]
       newStack[newStack.length - 1] = { ...currentPage, escapeHandler: undefined }
@@ -133,8 +131,14 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     const handleNavigate = (pageName: string) => {
       console.log('📨 Shortcut triggered:', pageName)
 
-      setStack(() => {
-        console.log('🆕 Create:', pageName)
+      setStack((prev) => {
+        // 如果当前栈中只有一个页面，且就是要导航的页面，直接复用
+        if (prev.length === 1 && prev[0].pageName === pageName) {
+          console.log('♻️  Reuse existing page:', pageName)
+          // 不需要重新通知 stackChange，因为长度没变
+          return prev
+        }
+        // 否则，创建新页面并替换整个栈
         const element = commandManager.execute(pageName)
         if (!element) {
           return []

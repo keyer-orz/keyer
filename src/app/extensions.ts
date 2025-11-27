@@ -6,7 +6,7 @@ import SystemExts from './extesions'
 /**
  * 注册所有扩展
  * 1. 先注册内置的系统扩展
- * 2. 扫描并加载本地扩展
+ * 2. 从主进程扫描并加载本地扩展
  */
 export async function registerExtensions() {
   console.log('🚀 Registering extensions...')
@@ -19,16 +19,12 @@ export async function registerExtensions() {
     console.log('⚠️ System extensions already registered, skip.')
   }
 
-  // 2. 加载本地扩展
+  // 2. 从主进程扫描并加载本地扩展
   try {
-    const paths = await electronApi.getAppPaths()
-    const devDir = paths.appRoot || paths.userData
-    console.log('📂 Dev directory:', devDir)
+    const localExtensions = await extensionLoader.loadLocalExtensions()
+    console.log(`📦 Loaded ${localExtensions.length} local extensions`)
 
-    const localExtensions = await extensionLoader.loadLocalExtensions(devDir)
-    console.log(`📦 Found ${localExtensions.length} local extensions`)
-
-    // 注册每个本地扩展，避免重复命令 key
+    // 注册每个本地扩展
     for (const ext of localExtensions) {
       commandManager.register(ext)
       console.log('✅ Registered extension:', ext.name)

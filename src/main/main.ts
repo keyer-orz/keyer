@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { exec, spawn } from 'node:child_process'
 import Store from 'electron-store'
+import { extensionManager } from './ext-manager'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -233,6 +234,25 @@ ipcMain.handle('get-app-paths', () => {
     home: app.getPath('home'),
     appRoot: VITE_DEV_SERVER_URL ? process.env.APP_ROOT : undefined
   }
+})
+
+// 扫描并获取扩展列表
+ipcMain.handle('scan-extensions', async () => {
+  try {
+    const devDir = VITE_DEV_SERVER_URL ? process.env.APP_ROOT : undefined
+    const extensions = await extensionManager.scanExtensions(devDir)
+    console.log(`📦 Scanned ${extensions.length} extensions`)
+    return extensions
+  } catch (error) {
+    console.error('❌ Failed to scan extensions:', error)
+    return []
+  }
+})
+
+// 获取扩展文件的完整路径
+ipcMain.handle('get-extension-path', (_event, extensionMain: string) => {
+  const devDir = VITE_DEV_SERVER_URL ? process.env.APP_ROOT : undefined
+  return extensionManager.getExtensionPath(devDir, extensionMain)
 })
 
 // 命令执行 - 系统终端模式
