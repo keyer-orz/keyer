@@ -27,10 +27,17 @@ export interface ExtensionPackageInfo {
 
 export const electronApi = {
   /**
-   * 通知主进程导航栈变化(用于窗口显示/隐藏)
+   * 显示主窗口
    */
-  onStackChange: (stackLength: number) => {
-    ipcRenderer.send('stack-change', stackLength)
+  showWindow: () => {
+    ipcRenderer.send('window-show')
+  },
+
+  /**
+   * 隐藏主窗口
+   */
+  hideWindow: () => {
+    ipcRenderer.send('window-hide')
   },
 
   /**

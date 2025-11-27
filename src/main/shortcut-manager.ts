@@ -41,7 +41,6 @@ function registerMainShortcut(shortcut: string): boolean {
 
   const success = globalShortcut.register(shortcut, () => {
     sendToMainWindow('navigate-to-page', '@system#main')
-    showMainWindow()
   })
 
   if (!success) {
@@ -65,7 +64,6 @@ function registerCommandShortcut(cmdId: string, shortcut: string): boolean {
   const success = globalShortcut.register(shortcut, () => {
     console.log(`🔥 Shortcut triggered: ${shortcut} -> ${cmdId}`)
     sendToMainWindow('navigate-to-page', cmdId)
-    showMainWindow()
   })
 
   if (!success) {

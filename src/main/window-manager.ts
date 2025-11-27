@@ -35,12 +35,17 @@ export function createMainWindow(): BrowserWindow {
     }
   })
 
-  // 监听栈变化事件 - 控制窗口显示/隐藏
-  ipcMain.on('stack-change', (_event, stackLength: number) => {
-    if (stackLength === 0) {
-      mainWindow?.hide()
-    } else if (mainWindow && !mainWindow.isVisible()) {
+  // 监听窗口显示/隐藏事件
+  ipcMain.on('window-show', () => {
+    if (mainWindow && !mainWindow.isVisible()) {
       mainWindow.show()
+      mainWindow.focus()
+    }
+  })
+
+  ipcMain.on('window-hide', () => {
+    if (mainWindow && mainWindow.isVisible()) {
+      mainWindow.hide()
     }
   })
 
