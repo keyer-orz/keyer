@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { VStack, Input, useAutoFocusOnVisible, useInputEscapeHandler, type InputRef } from 'keyerext'
+import { VStack, Input, useAutoFocusOnVisible, useInputEscapeHandler, useEscapeHandler, type InputRef } from 'keyerext'
 import { useStore } from './useStore'
 import { ExtensionList } from './ExtensionList'
 import { ExtensionDetail } from './ExtensionDetail'
@@ -18,8 +18,23 @@ export function StoreUI() {
         fetchStoreData
     } = useStore()
 
-    useInputEscapeHandler(inputRef)
     useAutoFocusOnVisible(inputRef)
+
+    useEscapeHandler(() => {
+        if (selectedExtension) {
+            setSelectedExtension(null)
+            return false
+        }
+        if (inputRef.current && !inputRef.current.isFocused()) {
+            inputRef.current.focus()
+            return false
+        }
+        if (inputRef.current && !inputRef.current.isEmpty()) {
+            setSearchQuery('')
+            return false
+        }
+        return true
+    })
 
     return (
         <VStack spacing={16} style={{ height: '100%', padding: '16px' }}>

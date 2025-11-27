@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { usePageVisible } from '../hooks/usePageVisible'
 
 export interface ListItem<T = any> {
   id: string
@@ -22,6 +23,7 @@ export interface ListProps<T = any> {
 export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderItem, className = '' }: ListProps<T>) {
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [internalSelectedId, setInternalSelectedId] = useState<string | undefined>(selectedId)
+  const isPageVisible = usePageVisible()
   // 获取所有项的扁平列表
   const allItems = groups.flatMap(group => group.items)
   const currentSelectedId = selectedId !== undefined ? selectedId : internalSelectedId
@@ -50,11 +52,17 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
     onEnter?.(id, data)
   }, [onEnter])
 
-  // 键盘导航
+  // 键盘导航 - 只在绑定的页面为栈顶时响应
   useEffect(() => {
+    // 只有当绑定的页面为栈顶且有项目时才监听键盘事件
+    if (!isPageVisible || allItems.length === 0) {
+      return
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault()
+        e.stopPropagation()
 
         const currentIndex = allItems.findIndex(item => item.id === currentSelectedId)
         let nextIndex: number
@@ -70,6 +78,9 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
           handleSelect(nextItem.id, nextItem.data)
         }
       } else if (e.key === 'Enter' && currentSelectedId) {
+        e.preventDefault()
+        e.stopPropagation()
+        
         const currentItem = allItems.find(item => item.id === currentSelectedId)
         if (currentItem) {
           handleEnter(currentSelectedId, currentItem.data)
@@ -79,7 +90,7 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [allItems, currentSelectedId, handleSelect, handleEnter])
+  }, [isPageVisible, allItems, currentSelectedId, handleSelect, handleEnter])
 
   return (
     <div className={`keyer-list ${className}`}>
