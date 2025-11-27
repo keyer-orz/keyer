@@ -16,9 +16,16 @@ export const electronApi = {
 
   /**
    * 监听主进程发来的导航事件(全局快捷键触发)
+   * 返回清理函数，用于移除监听器
    */
   onNavigateToPage: (callback: (pageName: string) => void) => {
-    ipcRenderer.on('navigate-to-page', (_event, pageName) => callback(pageName))
+    const handler = (_event: any, pageName: string) => callback(pageName)
+    ipcRenderer.on('navigate-to-page', handler)
+
+    // 返回清理函数
+    return () => {
+      ipcRenderer.removeListener('navigate-to-page', handler)
+    }
   },
 
   /**
@@ -53,5 +60,12 @@ export const electronApi = {
    */
   execWindow: (cmd: string): Promise<any> => {
     return ipcRenderer.invoke('exec-window', cmd)
+  },
+
+  /**
+   * 更新命令快捷键
+   */
+  updateCmdShortcut: (cmdId: string, shortcut: string | undefined): Promise<boolean> => {
+    return ipcRenderer.invoke('update-cmd-shortcut', cmdId, shortcut)
   }
 }

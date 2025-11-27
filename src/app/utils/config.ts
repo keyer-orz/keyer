@@ -1,15 +1,23 @@
 import Store from 'electron-store'
 
+// 命令配置
+export interface CmdConfig {
+  disabled?: boolean  // 是否禁用，默认 false（开启）
+  shortcut?: string   // 快捷键
+}
+
 // 配置类型定义
 export interface AppConfig {
   theme: string
   globalShortcut: string
+  cmds?: Record<string, CmdConfig>  // 命令配置，key 是 cmd.id
 }
 
 // 默认配置
 const defaultConfig: AppConfig = {
   theme: 'light',
   globalShortcut: 'Shift+Space',
+  cmds: {}
 }
 
 // 创建配置存储实例
@@ -84,6 +92,39 @@ export class ConfigManager {
    */
   getPath(): string {
     return this.store.path
+  }
+
+  /**
+   * 获取命令配置
+   */
+  getCmdConfig(cmdId: string): CmdConfig {
+    const cmds = this.store.get('cmds') || {}
+    return cmds[cmdId] || {}
+  }
+
+  /**
+   * 设置命令配置
+   */
+  setCmdConfig(cmdId: string, config: CmdConfig): void {
+    const cmds = this.store.get('cmds') || {}
+    cmds[cmdId] = { ...cmds[cmdId], ...config }
+    this.store.set('cmds', cmds)
+  }
+
+  /**
+   * 获取所有命令配置
+   */
+  getAllCmdConfigs(): Record<string, CmdConfig> {
+    return this.store.get('cmds') || {}
+  }
+
+  /**
+   * 删除命令配置
+   */
+  deleteCmdConfig(cmdId: string): void {
+    const cmds = this.store.get('cmds') || {}
+    delete cmds[cmdId]
+    this.store.set('cmds', cmds)
   }
 }
 

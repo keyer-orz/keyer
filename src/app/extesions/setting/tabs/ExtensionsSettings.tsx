@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { VStack, HStack, Text, Divider, Input } from 'keyerext'
 import { commandManager } from '../../../managers/CommandManager'
+import { configManager } from '../../../utils/config'
+import { electronApi } from '../../../electronApi'
+import { ShortcutRecorder } from '../../../components/ShortcutRecorder'
 import { ExtensionMeta, ICommand } from 'keyerext'
 
 interface ExtensionItem {
@@ -12,6 +15,7 @@ export function ExtensionsSettings() {
   const [searchQuery, setSearchQuery] = useState('')
   const [extensions, setExtensions] = useState<ExtensionItem[]>([])
   const [expandedExtensions, setExpandedExtensions] = useState<Set<string>>(new Set())
+  const [cmdShortcuts, setCmdShortcuts] = useState<Record<string, string>>({})
 
   useEffect(() => {
     // 从 commandManager 获取所有命令
@@ -42,6 +46,16 @@ export function ExtensionsSettings() {
     })
 
     setExtensions(Array.from(extensionMap.values()))
+
+    // 加载所有命令的快捷键配置
+    const allConfigs = configManager.getAllCmdConfigs()
+    const shortcuts: Record<string, string> = {}
+    allCommands.forEach(cmd => {
+      if (cmd.id && allConfigs[cmd.id]?.shortcut) {
+        shortcuts[cmd.id] = allConfigs[cmd.id].shortcut!
+      }
+    })
+    setCmdShortcuts(shortcuts)
   }, [])
 
   const toggleExtension = (extName: string) => {
@@ -52,6 +66,25 @@ export function ExtensionsSettings() {
       newExpanded.add(extName)
     }
     setExpandedExtensions(newExpanded)
+  }
+
+  const handleShortcutChange = async (cmdId: string, newShortcut: string) => {
+    // 更新本地状态
+    setCmdShortcuts(prev => ({
+      ...prev,
+      [cmdId]: newShortcut
+    }))
+
+    // 保存到配置
+    configManager.setCmdConfig(cmdId, { shortcut: newShortcut })
+
+    // 通知主进程更新快捷键注册
+    const success = await electronApi.updateCmdShortcut(cmdId, newShortcut || undefined)
+
+    if (!success) {
+      console.error(`Failed to update shortcut for ${cmdId}`)
+      // 可以在这里添加用户提示
+    }
   }
 
   const filteredExtensions = extensions.filter(ext => {
@@ -156,11 +189,14 @@ export function ExtensionsSettings() {
                 }}
               >
                 {ext.commands.map((cmd) => (
-                  <HStack
+                  <div
                     key={cmd.id}
                     style={{
                       padding: '10px 12px',
-                      borderTop: '1px solid var(--color-border-subtle)'
+                      borderTop: '1px solid var(--color-border-subtle)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
                     }}
                   >
                     <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -173,12 +209,16 @@ export function ExtensionsSettings() {
                       <Text color="subtitle" size="small">{cmd.type}</Text>
                     </div>
                     <div style={{ flex: 1 }}>
+                      <ShortcutRecorder
+                        value={cmdShortcuts[cmd.id!] || ''}
+                        onChange={(shortcut) => handleShortcutChange(cmd.id!, shortcut)}
+                        placeholder="No shortcut"
+                      />
+                    </div>
+                    <div style={{ width: '80px', textAlign: 'center' }}>
                       <Text color="subtitle" size="small">-</Text>
                     </div>
-                    <div style={{ width: '80px' }}>
-                      {/* Placeholder for future functionality */}
-                    </div>
-                  </HStack>
+                  </div>
                 ))}
               </VStack>
             )}

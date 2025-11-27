@@ -130,7 +130,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   // ==================== Electron Shortcut Integration ====================
 
   useEffect(() => {
-    electronApi.onNavigateToPage((pageName: string) => {
+    const handleNavigate = (pageName: string) => {
       console.log('📨 Shortcut triggered:', pageName)
 
       setStack(() => {
@@ -142,7 +142,13 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         electronApi.onStackChange(1)
         return [{ pageName, element }]
       })
-    })
+    }
+
+    // onNavigateToPage 现在返回清理函数
+    const cleanup = electronApi.onNavigateToPage(handleNavigate)
+
+    // 返回清理函数，移除监听器
+    return cleanup
   }, [])
 
   // ==================== Render ====================

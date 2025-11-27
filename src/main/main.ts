@@ -69,30 +69,56 @@ function createWindow() {
 // 注册全局快捷键
 function registerShortcuts() {
   const store = new Store()
+
+  // 1. 注册主窗口快捷键
   const shortcut = store.get('globalShortcut') as string
-  console.log(`✅ Registered shortcut: ${shortcut} -> main`)
-  if (!shortcut) {
-    return
+  if (shortcut) {
+    if (globalShortcut.isRegistered(shortcut)) {
+      globalShortcut.unregister(shortcut)
+    }
+    const success = globalShortcut.register(shortcut, () => {
+      if (win) {
+        win.webContents.send('navigate-to-page', '@system#main')
+        if (!win.isVisible()) {
+          win.show()
+        }
+        win.focus()
+      }
+    })
+
+    if (!success) {
+      console.error(`❌ Failed to register shortcut: ${shortcut}`)
+    } else {
+      console.log(`✅ Registered shortcut: ${shortcut} -> main`)
+    }
   }
 
-  if (globalShortcut.isRegistered(shortcut)) {
-    globalShortcut.unregister(shortcut)
-  }
-  const success = globalShortcut.register(shortcut, () => {
-    if (win) {
-      win.webContents.send('navigate-to-page', '@system#main')
-      if (!win.isVisible()) {
-        win.show()
+  // 2. 注册命令快捷键
+  const cmds = store.get('cmds') as Record<string, { disabled?: boolean; shortcut?: string }> || {}
+  Object.entries(cmds).forEach(([cmdId, config]) => {
+    if (config.shortcut && !config.disabled) {
+      if (globalShortcut.isRegistered(config.shortcut)) {
+        console.warn(`⚠️  Shortcut ${config.shortcut} already registered, skipping ${cmdId}`)
+        return
       }
-      win.focus()
+
+      const success = globalShortcut.register(config.shortcut, () => {
+        if (win) {
+          win.webContents.send('navigate-to-page', cmdId)
+          if (!win.isVisible()) {
+            win.show()
+          }
+          win.focus()
+        }
+      })
+
+      if (!success) {
+        console.error(`❌ Failed to register shortcut: ${config.shortcut} -> ${cmdId}`)
+      } else {
+        console.log(`✅ Registered shortcut: ${config.shortcut} -> ${cmdId}`)
+      }
     }
   })
-
-  if (!success) {
-    console.error(`❌ Failed to register shortcut: ${shortcut}`)
-  } else {
-    console.log(`✅ Registered shortcut: ${shortcut} -> main`)
-  }
 }
 
 // 更新全局快捷键
@@ -135,6 +161,65 @@ ipcMain.handle('update-global-shortcut', (_event, newShortcut: string) => {
         win.focus()
       }
     })
+    return false
+  }
+})
+
+// 更新命令快捷键
+ipcMain.handle('update-cmd-shortcut', (_event, cmdId: string, newShortcut: string | undefined) => {
+  const store = new Store()
+  const cmds = store.get('cmds') as Record<string, { disabled?: boolean; shortcut?: string }> || {}
+  const oldShortcut = cmds[cmdId]?.shortcut
+
+  // 如果新旧快捷键相同，直接返回成功
+  if (oldShortcut === newShortcut) return true
+
+  // 注销旧快捷键
+  if (oldShortcut && globalShortcut.isRegistered(oldShortcut)) {
+    globalShortcut.unregister(oldShortcut)
+  }
+
+  // 如果新快捷键为空，只是删除
+  if (!newShortcut) {
+    console.log(`✅ Removed shortcut for: ${cmdId}`)
+    return true
+  }
+
+  // 检查快捷键是否已被占用
+  if (globalShortcut.isRegistered(newShortcut)) {
+    console.error(`❌ Shortcut ${newShortcut} already registered`)
+    return false
+  }
+
+  // 注册新快捷键
+  const success = globalShortcut.register(newShortcut, () => {
+    console.log(`🔥 Shortcut triggered: ${newShortcut} -> ${cmdId}`)
+    if (win) {
+      win.webContents.send('navigate-to-page', cmdId)
+      if (!win.isVisible()) {
+        win.show()
+      }
+      win.focus()
+    }
+  })
+
+  if (success) {
+    console.log(`✅ Updated shortcut: ${newShortcut} -> ${cmdId}`)
+    return true
+  } else {
+    console.error(`❌ Failed to register shortcut: ${newShortcut} -> ${cmdId}`)
+    // 尝试恢复旧快捷键
+    if (oldShortcut) {
+      globalShortcut.register(oldShortcut, () => {
+        if (win) {
+          win.webContents.send('navigate-to-page', cmdId)
+          if (!win.isVisible()) {
+            win.show()
+          }
+          win.focus()
+        }
+      })
+    }
     return false
   }
 })
