@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, ReactNode } from 'react'
 import { NavigationContext, PageStackItem } from 'keyerext'
-import { commandManager } from '../managers/CommandManager'
-import { electronApi } from '../electronApi'
+import { commandManager } from '@/app/managers/CommandManager'
+import { electronApi } from '@/app/electronApi'
 
 /**
  * NavigationProvider 管理页面栈和导航逻辑

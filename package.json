@@ -2,7 +2,7 @@
   "name": "keyer",
   "version": "1.0.0",
   "description": "Electron + React + Vite + TypeScript application",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/app-main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",

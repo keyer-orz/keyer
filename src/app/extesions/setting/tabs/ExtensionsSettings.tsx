@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { VStack, HStack, Text, Divider, Input } from 'keyerext'
-import { commandManager } from '../../../managers/CommandManager'
-import { configManager } from '../../../utils/config'
-import { electronApi } from '../../../electronApi'
-import { ShortcutRecorder } from '../../../components/ShortcutRecorder'
+import { VStack, HStack, Text, Input } from 'keyerext'
+import { commandManager } from '@/app/managers/CommandManager'
+import { configManager } from '@/app/utils/config'
+import { electronApi } from '@/app/electronApi'
+import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
 import { ExtensionMeta, ICommand } from 'keyerext'
+import { VscDiffRemoved, VscDiffAdded } from "react-icons/vsc";
 
 interface ExtensionItem {
   meta: ExtensionMeta
@@ -102,7 +103,7 @@ export function ExtensionsSettings() {
   })
 
   return (
-    <VStack spacing={24} style={{ padding: '24px', flex: 1, overflow: 'auto' }}>
+    <VStack spacing={24} style={{ padding: '24px', flex: 1, overflow: 'overlay' }}>
       {/* Search Bar */}
       <Input
         placeholder="Search..."
@@ -153,13 +154,7 @@ export function ExtensionsSettings() {
               onClick={() => toggleExtension(ext.meta.name)}
             >
               <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{
-                  fontSize: '12px',
-                  transition: 'transform 0.2s',
-                  transform: expandedExtensions.has(ext.meta.name) ? 'rotate(90deg)' : 'rotate(0deg)'
-                }}>
-                  ▶
-                </span>
+                {expandedExtensions.has(ext.meta.name) ? <VscDiffRemoved /> : <VscDiffAdded />}
                 <VStack spacing={2} style={{ alignItems: 'flex-start' }}>
                   <Text color="title" size="small">{ext.meta.title || ext.meta.name}</Text>
                   <Text color="subtitle" size="small" style={{ fontSize: '12px' }}>
@@ -185,14 +180,13 @@ export function ExtensionsSettings() {
                 style={{
                   alignItems: 'stretch',
                   backgroundColor: 'var(--color-bg-secondary)',
-                  paddingLeft: '40px'
                 }}
               >
                 {ext.commands.map((cmd) => (
                   <div
                     key={cmd.id}
                     style={{
-                      padding: '10px 12px',
+                      padding: '10px 24px',
                       borderTop: '1px solid var(--color-border-subtle)',
                       display: 'flex',
                       alignItems: 'center',
@@ -200,7 +194,7 @@ export function ExtensionsSettings() {
                     }}
                   >
                     <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px' }}>{cmd.icon || '📦'}</span>
+                      <span style={{ fontSize: '14px',marginLeft: '20px' }}>{cmd.icon || '📦'}</span>
                       <VStack spacing={2} style={{ alignItems: 'flex-start' }}>
                         <Text color="title" size="small">{cmd.title || cmd.name}</Text>
                       </VStack>
@@ -237,3 +231,4 @@ export function ExtensionsSettings() {
     </VStack>
   )
 }
+

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Text, VStack, HStack, Input, List, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, type ListGroup } from 'keyerext'
-import { commandManager } from '../../managers/CommandManager'
+import { commandManager } from '@/app/managers/CommandManager'
 import type { ICommand } from 'keyerext'
 
 export default function Main() {

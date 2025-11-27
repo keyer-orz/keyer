@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { VStack, HStack, Text, Divider } from 'keyerext'
-import { ShortcutRecorder } from '../../../components/ShortcutRecorder'
-import { ThemeSwitcher } from '../../../components/ThemeSwitcher'
-import { configManager } from '../../../utils/config'
-import { electronApi } from '../../../electronApi'
-import { getAppVersion, getAppName, getAppDescription } from '../../../utils/app'
+import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
+import { ThemeSwitcher } from '@/app/components/ThemeSwitcher'
+import { configManager } from '@/app/utils/config'
+import { electronApi } from '@/app/electronApi'
+import { getAppVersion, getAppName, getAppDescription } from '@/app/utils/app'
 
 export function GeneralSettings() {
   const [shortcut, setShortcut] = useState('')

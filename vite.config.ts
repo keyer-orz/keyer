@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     electron({
       main: {
-        entry: 'src/main/main.ts',
+        entry: 'src/main/app-main.ts',
         async onstart(args) {
           if (args.reload) {
             await args.reload()

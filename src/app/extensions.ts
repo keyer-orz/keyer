@@ -1,6 +1,5 @@
 import { commandManager } from './managers/CommandManager'
 import { extensionLoader } from './managers/ExtensionLoader'
-import { electronApi } from './electronApi'
 import SystemExts from './extesions'
 
 /**
