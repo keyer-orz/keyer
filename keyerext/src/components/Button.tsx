@@ -3,7 +3,7 @@ import React from 'react'
 export interface ButtonProps {
   children: React.ReactNode
   onClick?: () => void
-  variant?: 'solid' | 'outline'
+  type?: 'default' | 'primary' | 'danger'
   size?: 'normal' | 'small'
   disabled?: boolean
   className?: string
@@ -12,18 +12,18 @@ export interface ButtonProps {
 export function Button({
   children,
   onClick,
-  variant = 'solid',
+  type = 'default',
   size = 'normal',
   disabled = false,
   className = ''
 }: ButtonProps) {
-  const variantClass = variant === 'solid' ? 'keyer-button-solid' : 'keyer-button-outline'
+  const typeClass = `keyer-button-${type}`
   const sizeClass = size === 'normal' ? 'keyer-button-normal' : 'keyer-button-small'
   const disabledClass = disabled ? 'keyer-button-disabled' : ''
 
   return (
     <button
-      className={`keyer-button ${variantClass} ${sizeClass} ${disabledClass} ${className}`}
+      className={`keyer-button ${typeClass} ${sizeClass} ${disabledClass} ${className}`}
       onClick={onClick}
       disabled={disabled}
     >

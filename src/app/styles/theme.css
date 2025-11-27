@@ -11,6 +11,8 @@
   --color-divider: #e0e0e0;
   --color-scrollbar-thumb: #c1c1c1;
   --color-scrollbar-thumb-hover: #a8a8a8;
+  --color-primary: #1976d2;
+  --color-danger: #d32f2f;
 }
 
 [data-theme="dark"] {
@@ -24,6 +26,8 @@
   --color-divider: #333333;
   --color-scrollbar-thumb: #555555;
   --color-scrollbar-thumb-hover: #666666;
+  --color-primary: #42a5f5;
+  --color-danger: #ef5350;
 }
 
 [data-theme="pink"] {
@@ -37,6 +41,8 @@
   --color-divider: #f8bbd0;
   --color-scrollbar-thumb: #f48fb1;
   --color-scrollbar-thumb-hover: #ec407a;
+  --color-primary: #e91e63;
+  --color-danger: #d32f2f;
 }
 
 [data-theme="github"] {
@@ -50,6 +56,8 @@
   --color-divider: #d8dee4;
   --color-scrollbar-thumb: #959da5;
   --color-scrollbar-thumb-hover: #6e7781;
+  --color-primary: #0969da;
+  --color-danger: #d1242f;
 }
 
 [data-theme="github-dark"] {
@@ -63,5 +71,7 @@
   --color-divider: #21262d;
   --color-scrollbar-thumb: #6e7681;
   --color-scrollbar-thumb-hover: #8b949e;
+  --color-primary: #1f6feb;
+  --color-danger: #f85149;
 }
 

@@ -27,33 +27,50 @@
   font-size: 12px;
 }
 
-.keyer-button-solid {
-  background-color: var(--color-title);
-  color: var(--color-bg);
-  border: 1px solid var(--color-title);
+/* Default button - border style with primary color */
+.keyer-button-default {
+  background-color: transparent;
+  color: var(--color-title);
+  border: 1px solid var(--color-primary);
 }
 
-.keyer-button-solid:hover:not(.keyer-button-disabled) {
+.keyer-button-default:hover:not(.keyer-button-disabled) {
+  background-color: var(--color-hover);
+  border-color: var(--color-primary);
+}
+
+.keyer-button-default:active:not(.keyer-button-disabled) {
+  background-color: var(--color-selected);
+}
+
+/* Primary button - full primary background */
+.keyer-button-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border: 1px solid var(--color-primary);
+}
+
+.keyer-button-primary:hover:not(.keyer-button-disabled) {
   opacity: 0.85;
 }
 
-.keyer-button-solid:active:not(.keyer-button-disabled) {
+.keyer-button-primary:active:not(.keyer-button-disabled) {
   opacity: 0.7;
 }
 
-.keyer-button-outline {
-  background-color: transparent;
-  color: var(--color-title);
-  border: 1px solid var(--color-border);
+/* Danger button - full danger background */
+.keyer-button-danger {
+  background-color: var(--color-danger);
+  color: white;
+  border: 1px solid var(--color-danger);
 }
 
-.keyer-button-outline:hover:not(.keyer-button-disabled) {
-  background-color: var(--color-hover);
-  border-color: var(--color-title);
+.keyer-button-danger:hover:not(.keyer-button-disabled) {
+  opacity: 0.85;
 }
 
-.keyer-button-outline:active:not(.keyer-button-disabled) {
-  background-color: var(--color-selected);
+.keyer-button-danger:active:not(.keyer-button-disabled) {
+  opacity: 0.7;
 }
 
 .keyer-button-disabled {

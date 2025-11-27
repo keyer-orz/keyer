@@ -11,6 +11,8 @@ export default function UIDemo() {
     const [updateChannel, setUpdateChannel] = useState('stable')
     const [showFullscreenLoading, setShowFullscreenLoading] = useState(false)
     const [showOverlayLoading, setShowOverlayLoading] = useState(false)
+
+    const [showInlineLoading, setShowInlineLoading] = useState(false)
     const [agreeTerms, setAgreeTerms] = useState(false)
     const [receiveNewsletter, setReceiveNewsletter] = useState(true)
     const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['feature1'])
@@ -213,13 +215,13 @@ export default function UIDemo() {
                         <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
                             <Text color="subtitle" size="small">实心按钮 (Solid):</Text>
                             <HStack spacing={12}>
-                                <Button variant="solid" size="normal" onClick={() => alert('正常尺寸按钮')}>
-                                    正常按钮
+                                <Button type="primary" size="normal" onClick={() => alert('正常尺寸按钮')}>
+                                    正常尺寸
                                 </Button>
-                                <Button variant="solid" size="small" onClick={() => alert('小号尺寸按钮')}>
-                                    小号按钮
+                                <Button type="primary" size="small" onClick={() => alert('小号尺寸按钮')}>
+                                    小号尺寸
                                 </Button>
-                                <Button variant="solid" size="normal" disabled>
+                                <Button type="primary" size="normal" disabled>
                                     禁用状态
                                 </Button>
                             </HStack>
@@ -228,13 +230,13 @@ export default function UIDemo() {
                         <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
                             <Text color="subtitle" size="small">描边按钮 (Outline):</Text>
                             <HStack spacing={12}>
-                                <Button variant="outline" size="normal" onClick={() => alert('正常尺寸按钮')}>
-                                    正常按钮
+                                <Button type="default" size="normal" onClick={() => alert('正常尺寸按钮')}>
+                                    正常尺寸
                                 </Button>
-                                <Button variant="outline" size="small" onClick={() => alert('小号尺寸按钮')}>
-                                    小号按钮
+                                <Button type="default" size="small" onClick={() => alert('小号尺寸按钮')}>
+                                    小号尺寸
                                 </Button>
-                                <Button variant="outline" size="normal" disabled>
+                                <Button type="default" size="normal" disabled>
                                     禁用状态
                                 </Button>
                             </HStack>
@@ -448,7 +450,7 @@ export default function UIDemo() {
                             <Text color="subtitle" size="small">全屏模式 (点击按钮体验):</Text>
                             <HStack spacing={12}>
                                 <Button
-                                    variant="outline"
+                                    type="default"
                                     size="normal"
                                     onClick={() => {
                                         setShowFullscreenLoading(true)
@@ -458,7 +460,17 @@ export default function UIDemo() {
                                     显示全屏加载
                                 </Button>
                                 <Button
-                                    variant="outline"
+                                    type="default"
+                                    size="normal"
+                                    onClick={() => {
+                                        setShowInlineLoading(true)
+                                        setTimeout(() => setShowInlineLoading(false), 2000)
+                                    }}
+                                >
+                                    显示内联加载
+                                </Button>
+                                <Button
+                                    type="default"
                                     size="normal"
                                     onClick={() => {
                                         setShowOverlayLoading(true)
@@ -481,7 +493,11 @@ export default function UIDemo() {
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}>
-                                <Loading size="medium" text="正在加载数据..." />
+                                {showInlineLoading ? (
+                                    <Loading size="medium" text="正在加载数据..." />
+                                ) : (
+                                    <Text color="subtitle" size="small">点击按钮显示加载状态</Text>
+                                )}
                             </div>
                         </VStack>
                     </VStack>
@@ -498,14 +514,14 @@ export default function UIDemo() {
                         
                         <HStack spacing={12}>
                             <Button
-                                variant="solid"
+                                type="primary"
                                 size="normal"
                                 onClick={() => setLeftDrawerOpen(true)}
                             >
                                 打开左侧抽屉
                             </Button>
                             <Button
-                                variant="outline"
+                                type="default"
                                 size="normal"
                                 onClick={() => setRightDrawerOpen(true)}
                             >
@@ -554,14 +570,14 @@ export default function UIDemo() {
                     <Divider />
                     <VStack spacing={12} style={{ alignItems: 'flex-start' }}>
                         <Text color="title" size="medium">菜单选项</Text>
-                        <Button variant="outline" size="normal" onClick={() => {}}>
-                            选项 1
+                        <Button type="default" size="normal" onClick={() => {}}>
+                            标签页1
                         </Button>
-                        <Button variant="outline" size="normal" onClick={() => {}}>
-                            选项 2
+                        <Button type="default" size="normal" onClick={() => {}}>
+                            标签页2
                         </Button>
-                        <Button variant="outline" size="normal" onClick={() => {}}>
-                            选项 3
+                        <Button type="default" size="normal" onClick={() => {}}>
+                            标签页3
                         </Button>
                     </VStack>
                     <Divider />
@@ -624,7 +640,7 @@ export default function UIDemo() {
                             />
                         </VStack>
                         <Button 
-                            variant="solid" 
+                            type="primary" 
                             size="normal" 
                             onClick={() => setRightDrawerOpen(false)}
                         >
