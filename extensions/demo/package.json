@@ -10,7 +10,8 @@
       "name": "hello",
       "title": "Say Hello",
       "icon": "👋",
-      "desc": "A demo command that says hello"
+      "desc": "A demo command that says hello",
+      "windowSize": { "width": 600, "height": 400 }
     },
     {
       "name": "cmd-window",

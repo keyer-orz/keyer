@@ -7,6 +7,7 @@ export type ICommand = {
     desc?: string
     extTitle?: string
     type?: string // 类型
+    windowSize?: { width: number; height: number } // 窗口尺寸（可选，不配置则使用默认尺寸）
 }
 
 export type ExtensionMeta = {

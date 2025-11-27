@@ -49,6 +49,15 @@ export function createMainWindow(): BrowserWindow {
     }
   })
 
+  // 监听窗口尺寸调整事件
+  ipcMain.on('window-resize', (_event, size: { width: number; height: number }) => {
+    if (mainWindow) {
+      console.log('Window resized to:', size)
+      mainWindow.setSize(size.width, size.height, false) // true 表示动画
+      mainWindow.center() // 调整尺寸后居中
+    }
+  })
+
   // 加载页面
   if (VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(VITE_DEV_SERVER_URL)

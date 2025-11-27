@@ -29,7 +29,8 @@ export default {
             name: "setting",
             title: "Setting",
             desc: "Open the setting page",
-            icon: "⚙️"
+            icon: "⚙️",
+            windowSize: { width: 1000, height: 800 }
         },
         {
             name: 'ui',

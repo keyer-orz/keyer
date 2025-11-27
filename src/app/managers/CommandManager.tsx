@@ -66,9 +66,10 @@ class CommandManager {
     }).filter(cmd => cmd.id != "@system#main")
   }
 
-  execute(commandName: string): ReactElement | null {
+  execute(commandName: string): { element: ReactElement; windowSize?: { width: number; height: number } } | null {
     const [extId, cmdName] = commandName.split('#')
     const commandInfo = this.commands.find(it => it.id === commandName)
+    console.log('Command info:', commandInfo)
     if (!commandInfo) {
       console.warn(`Command "${commandName}" not found`)
       return null
@@ -80,7 +81,14 @@ class CommandManager {
         console.warn(`Extension "${extId}" not loaded yet`)
         return null
       }
-      return ext.ext.run(cmdName) || null
+      const element = ext.ext.run(cmdName)
+      if (!element) {
+        return null
+      }
+      return {
+        element,
+        windowSize: commandInfo.windowSize
+      }
     } catch (error) {
       console.error(`Error executing command "${commandName}":`, error)
       return null

@@ -41,6 +41,13 @@ export const electronApi = {
   },
 
   /**
+   * 调整窗口尺寸
+   */
+  resizeWindow: (size: { width: number; height: number }) => {
+    ipcRenderer.send('window-resize', size)
+  },
+
+  /**
    * 监听主进程发来的导航事件(全局快捷键触发)
    * 返回清理函数，用于移除监听器
    */

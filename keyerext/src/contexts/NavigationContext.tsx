@@ -4,6 +4,7 @@ export interface PageStackItem {
   pageName: string
   element: ReactElement
   escapeHandler?: () => boolean
+  windowSize?: { width: number; height: number }
 }
 
 export interface NavigationContextType {

@@ -30,15 +30,22 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     setStack(prev => {
       console.log('📥 Push:', page)
 
-      const element = commandManager.execute(page)
-      if (!element) {
+      const result = commandManager.execute(page)
+      if (!result) {
         return prev
       }
 
-      const newStack = [...prev, { pageName: page, element }]
+      const newStack = [...prev, {
+        pageName: page,
+        element: result.element,
+        windowSize: result.windowSize
+      }]
 
-      // 有页面时显示窗口
+      // 有页面时显示窗口并调整尺寸
       if (newStack.length > 0) {
+        // 总是调整窗口尺寸：使用配置的尺寸或默认尺寸
+        const targetSize = result.windowSize || { width: 800, height: 500 }
+        electronApi.resizeWindow(targetSize)
         electronApi.showWindow()
       }
 
@@ -60,6 +67,10 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       // 没有页面时隐藏窗口
       if (newStack.length === 0) {
         electronApi.hideWindow()
+      } else {
+        const targetSize = newStack[newStack.length - 1]?.windowSize || { width: 800, height: 500 }
+        electronApi.resizeWindow(targetSize)
+        electronApi.showWindow()
       }
 
       return newStack
@@ -142,18 +153,22 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         // 如果当前栈中只有一个页面，且就是要导航的页面，直接复用
         if (prev.length === 1 && prev[0].pageName === pageName) {
           console.log('♻️  Reuse existing page:', pageName)
-          // 显示窗口（可能是隐藏状态）
+          // 显示窗口（可能是隐藏状态），并确保尺寸正确
+          const targetSize = prev[0].windowSize || { width: 800, height: 500 }
+          electronApi.resizeWindow(targetSize)
           electronApi.showWindow()
           return prev
         }
         // 否则，创建新页面并替换整个栈
-        const element = commandManager.execute(pageName)
-        if (!element) {
+        const result = commandManager.execute(pageName)
+        if (!result) {
           return []
         }
-        // 显示窗口
+        // 总是调整窗口尺寸：使用配置的尺寸或默认尺寸
+        const targetSize = result.windowSize || { width: 800, height: 500 }
+        electronApi.resizeWindow(targetSize)
         electronApi.showWindow()
-        return [{ pageName, element }]
+        return [{ pageName, element: result.element, windowSize: result.windowSize }]
       })
     }
 
