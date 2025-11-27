@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { HStack, Text, List, ListGroup } from 'keyerext'
-import { GeneralSettings } from './tabs'
+import { GeneralSettings, ExtensionsSettings } from './tabs'
 
 interface SettingsSection {
     id: string
@@ -13,13 +13,12 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
         id: 'general',
         title: 'General',
         component: <GeneralSettings />
+    },
+    {
+        id: 'extensions',
+        title: 'Extensions',
+        component: <ExtensionsSettings />
     }
-    // 未来可以添加更多 tab:
-    // {
-    //     id: 'advanced',
-    //     title: 'Advanced',
-    //     component: <AdvancedSettings />
-    // }
 ]
 
 export default function Setting() {
@@ -41,7 +40,7 @@ export default function Setting() {
         <HStack style={{ height: '100%', alignItems: 'stretch' }}>
             {/* Sidebar */}
             <div style={{
-                width: '240px',
+                width: '140px',
                 borderRight: '1px solid var(--color-border)',
                 display: 'flex',
                 flexDirection: 'column'

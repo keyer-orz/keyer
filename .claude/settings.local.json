@@ -7,7 +7,8 @@
       "Bash(npm run dev:*)",
       "Bash(node test-config.js:*)",
       "Bash(cat:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
