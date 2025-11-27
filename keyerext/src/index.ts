@@ -61,6 +61,7 @@ export { Switch, type SwitchProps } from './components/Switch'
 export { RadioGroup, type RadioGroupProps, type RadioOption } from './components/Radio'
 export { Loading, type LoadingProps } from './components/Loading'
 export { Checkbox, CheckboxGroup, type CheckboxProps, type CheckboxGroupProps } from './components/Checkbox'
+export { Drawer, type DrawerProps } from './components/Drawer'
 
 // Keyer Core Capabilities
 export { Keyer, setKeyer, type IKeyer, type ClipboardData, type ExecOptions, type ExecResult } from './keyer'

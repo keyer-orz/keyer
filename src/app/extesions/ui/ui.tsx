@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, Drawer } from 'keyerext'
 import { ThemeSwitcher } from '../../components'
 
 export default function UIDemo() {
@@ -14,6 +14,8 @@ export default function UIDemo() {
     const [agreeTerms, setAgreeTerms] = useState(false)
     const [receiveNewsletter, setReceiveNewsletter] = useState(true)
     const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['feature1'])
+    const [leftDrawerOpen, setLeftDrawerOpen] = useState(false)
+    const [rightDrawerOpen, setRightDrawerOpen] = useState(false)
 
     interface ProjectData {
         name: string
@@ -487,6 +489,42 @@ export default function UIDemo() {
 
                 <Divider />
 
+                {/* Drawer 抽屉组件演示 */}
+                <VStack spacing={16} style={{ alignItems: 'stretch' }}>
+                    <Text color="title" size="large">Drawer 抽屉组件</Text>
+                    
+                    <VStack spacing={12} style={{ alignItems: 'flex-start' }}>
+                        <Text color="subtitle" size="medium">从左侧或右侧滑出的抽屉面板，支持模态遮罩和动画效果。</Text>
+                        
+                        <HStack spacing={12}>
+                            <Button
+                                variant="solid"
+                                size="normal"
+                                onClick={() => setLeftDrawerOpen(true)}
+                            >
+                                打开左侧抽屉
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="normal"
+                                onClick={() => setRightDrawerOpen(true)}
+                            >
+                                打开右侧抽屉
+                            </Button>
+                        </HStack>
+
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">特性:</Text>
+                            <Text color="subtitle" size="small">• 支持从左侧/右侧呼出</Text>
+                            <Text color="subtitle" size="small">• 带模态遮罩和滑出动画</Text>
+                            <Text color="subtitle" size="small">• 可配置关闭按钮</Text>
+                            <Text color="subtitle" size="small">• 支持点击遮罩关闭</Text>
+                        </VStack>
+                    </VStack>
+                </VStack>
+
+                <Divider />
+
                 {/* 底部提示 */}
                 <VStack spacing={4} style={{ alignItems: 'center' }}>
                     <Text color="subtitle" size="small">按 ESC 返回主页</Text>
@@ -501,6 +539,100 @@ export default function UIDemo() {
             {showOverlayLoading && (
                 <Loading overlay size="large" text="处理中，请稍候..." />
             )}
+
+            {/* Drawer 组件实例 */}
+            <Drawer
+                open={leftDrawerOpen}
+                onClose={() => setLeftDrawerOpen(false)}
+                placement="left"
+                width={300}
+                showCloseButton={true}
+                maskClosable={true}
+            >
+                <VStack spacing={20} style={{ padding: '20px' }}>
+                    <Text color="title" size="large">左侧抽屉</Text>
+                    <Divider />
+                    <VStack spacing={12} style={{ alignItems: 'flex-start' }}>
+                        <Text color="title" size="medium">菜单选项</Text>
+                        <Button variant="outline" size="normal" onClick={() => {}}>
+                            选项 1
+                        </Button>
+                        <Button variant="outline" size="normal" onClick={() => {}}>
+                            选项 2
+                        </Button>
+                        <Button variant="outline" size="normal" onClick={() => {}}>
+                            选项 3
+                        </Button>
+                    </VStack>
+                    <Divider />
+                    <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                        <Text color="title" size="medium">设置</Text>
+                        <HStack spacing={8} style={{ alignItems: 'center' }}>
+                            <Switch
+                                checked={notificationsEnabled}
+                                onChange={setNotificationsEnabled}
+                            />
+                            <Text color="title" size="medium">推送通知</Text>
+                        </HStack>
+                        <HStack spacing={8} style={{ alignItems: 'center' }}>
+                            <Switch
+                                checked={autoSave}
+                                onChange={setAutoSave}
+                            />
+                            <Text color="title" size="medium">自动保存</Text>
+                        </HStack>
+                    </VStack>
+                </VStack>
+            </Drawer>
+
+            <Drawer
+                open={rightDrawerOpen}
+                onClose={() => setRightDrawerOpen(false)}
+                placement="right"
+                width={400}
+                showCloseButton={true}
+                maskClosable={true}
+            >
+                <VStack spacing={20} style={{ padding: '20px' }}>
+                    <Text color="title" size="large">右侧抽屉</Text>
+                    <Divider />
+                    <VStack spacing={12} style={{ alignItems: 'flex-start' }}>
+                        <Text color="title" size="medium">详细信息</Text>
+                        <Text color="subtitle" size="medium">
+                            这是一个从右侧滑出的抽屉组件演示。你可以在这里放置任何内容，
+                            比如详细信息、表单、或者其他复杂的UI组件。
+                        </Text>
+                    </VStack>
+                    <Divider />
+                    <VStack spacing={12} style={{ alignItems: 'flex-start' }}>
+                        <Text color="title" size="medium">表单示例</Text>
+                        <Input
+                            placeholder="输入你的名字"
+                            value={searchText}
+                            onChange={setSearchText}
+                        />
+                        <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                            <Text color="subtitle" size="small">选择语言:</Text>
+                            <RadioGroup
+                                value={language}
+                                onChange={setLanguage}
+                                options={[
+                                    { value: 'zh-CN', label: '中文' },
+                                    { value: 'en-US', label: 'English' },
+                                    { value: 'ja-JP', label: '日本語' }
+                                ]}
+                            />
+                        </VStack>
+                        <Button 
+                            variant="solid" 
+                            size="normal" 
+                            onClick={() => setRightDrawerOpen(false)}
+                        >
+                            保存并关闭
+                        </Button>
+                    </VStack>
+                </VStack>
+            </Drawer>
         </div>
     )
 }
