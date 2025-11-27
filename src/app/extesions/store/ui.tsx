@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { VStack, Input, useAutoFocusOnVisible, useInputEscapeHandler, useEscapeHandler, type InputRef } from 'keyerext'
+import { VStack, Input, useAutoFocusOnVisible, useEscapeHandler, type InputRef } from 'keyerext'
 import { useStore } from './useStore'
 import { ExtensionList } from './ExtensionList'
 import { ExtensionDetail } from './ExtensionDetail'
