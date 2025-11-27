@@ -35,9 +35,15 @@ export function createMainWindow(): BrowserWindow {
     }
   })
 
+  // 监听窗口失去焦点时自动隐藏
+  mainWindow.on('blur', () => {
+    mainWindow?.hide()
+  })
+
   // 监听窗口显示/隐藏事件
   ipcMain.on('window-show', () => {
-    if (mainWindow && !mainWindow.isVisible()) {
+    if (mainWindow) {
+      // 确保窗口显示并置于最前面
       mainWindow.show()
       mainWindow.focus()
     }
@@ -85,6 +91,9 @@ export function showMainWindow(): void {
       mainWindow.show()
     }
     mainWindow.focus()
+    // 确保窗口置于最前面
+    mainWindow.setAlwaysOnTop(true)
+    mainWindow.setAlwaysOnTop(false)
   }
 }
 
