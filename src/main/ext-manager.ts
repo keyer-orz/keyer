@@ -18,6 +18,7 @@ export interface ExtensionPackageInfo {
     desc?: string
     icon?: string
     type?: string
+    mode?: string
   }>
 }
 

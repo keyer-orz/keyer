@@ -9,6 +9,13 @@ export default defineConfig({
     electron({
       main: {
         entry: 'src/main/main.ts',
+        async onstart(args) {
+          if (args.reload) {
+            await args.reload()
+          } else {
+            await args.startup()
+          }
+        },
         vite: {
           build: {
             outDir: 'dist-electron',
