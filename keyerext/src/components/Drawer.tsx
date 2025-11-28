@@ -125,7 +125,9 @@ export function Drawer({
         {/* Content */}
         <div
           style={{
-            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
             overflow: 'auto',
             padding: showCloseButton ? 0 : '16px'
           }}

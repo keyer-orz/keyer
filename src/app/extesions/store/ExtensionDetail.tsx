@@ -67,62 +67,64 @@ export function ExtensionDetail({ extension, extensionStatus, onClose }: Extensi
             maskClosable={true}
         >
             {extension && (
-                <VStack spacing={20} style={{ padding: '24px' }}>
-                    {/* Header */}
-                    <HStack spacing={12} style={{ alignItems: 'flex-start' }}>
-                        <div style={{ fontSize: '48px' }}>
-                            {extension.icon || '📦'}
-                        </div>
-                        <VStack spacing={8} style={{ alignItems: 'flex-start', flex: 1 }}>
-                            <Text color="title" size="large" style={{ fontWeight: 700 }}>
-                                {extension.title}
-                            </Text>
-                            <Text color="subtitle" size="medium">
-                                by {extension.author}
-                            </Text>
-                            <Text color="subtitle" size="small">
-                                Version {extension.version}
-                            </Text>
-                        </VStack>
-                    </HStack>
+                <VStack spacing={20} style={{ flexGrow: 1, padding: '10px' }}>
+                    <VStack style={{ flexGrow: 1 }}>
+                        {/* Header */}
+                        <HStack spacing={12} style={{ alignItems: 'flex-start' }}>
+                            <div style={{ fontSize: '48px' }}>
+                                {extension.icon || '📦'}
+                            </div>
+                            <VStack spacing={8} style={{ alignItems: 'flex-start', flex: 1 }}>
+                                <Text color="title" size="large" style={{ fontWeight: 700 }}>
+                                    {extension.title}
+                                </Text>
+                                <Text color="subtitle" size="medium">
+                                    by {extension.author}
+                                </Text>
+                                <Text color="subtitle" size="small">
+                                    Version {extension.version}
+                                </Text>
+                            </VStack>
+                        </HStack>
 
-                    {/* Description */}
-                    <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
-                        <Text color="title" size="medium" style={{ fontWeight: 600 }}>
-                            Description
-                        </Text>
-                        <Text color="subtitle" size="medium" style={{ lineHeight: 1.5 }}>
-                            {extension.description}
-                        </Text>
-                    </VStack>
-
-                    {/* Tags */}
-                    {extension.tags && extension.tags.length > 0 && (
+                        {/* Description */}
                         <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
                             <Text color="title" size="medium" style={{ fontWeight: 600 }}>
-                                Tags
+                                Description
                             </Text>
-                            <HStack spacing={8} style={{ flexWrap: 'wrap' }}>
-                                {extension.tags.map(tag => (
-                                    <span
-                                        key={tag}
-                                        style={{
-                                            padding: '4px 8px',
-                                            backgroundColor: 'var(--color-bg-secondary)',
-                                            borderRadius: 4,
-                                            fontSize: '12px',
-                                            color: 'var(--color-subtitle)'
-                                        }}
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
-                            </HStack>
+                            <Text color="subtitle" size="medium" style={{ lineHeight: 1.5 }}>
+                                {extension.description}
+                            </Text>
                         </VStack>
-                    )}
+
+                        {/* Tags */}
+                        {extension.tags && extension.tags.length > 0 && (
+                            <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
+                                <Text color="title" size="medium" style={{ fontWeight: 600 }}>
+                                    Tags
+                                </Text>
+                                <HStack spacing={8} style={{ flexWrap: 'wrap' }}>
+                                    {extension.tags.map(tag => (
+                                        <span
+                                            key={tag}
+                                            style={{
+                                                padding: '4px 8px',
+                                                backgroundColor: 'var(--color-bg-secondary)',
+                                                borderRadius: 4,
+                                                fontSize: '12px',
+                                                color: 'var(--color-subtitle)'
+                                            }}
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </HStack>
+                            </VStack>
+                        )}
+                    </VStack>
 
                     {/* Actions */}
-                    <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--color-border)' }}>
+                    <div style={{ paddingTop: '10px', borderTop: '1px solid var(--color-border)' }}>
                         {renderActionButton(extension)}
                     </div>
                 </VStack>
