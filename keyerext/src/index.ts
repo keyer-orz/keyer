@@ -1,3 +1,4 @@
+import { IExtensionStore } from './keyer'
 
 export type ICommand = {
     id?: string
@@ -12,7 +13,7 @@ export type ICommand = {
 
 export type ExtensionMeta = {
     icon?: string                   // 展示图标（emoji 或图标路径）
-    name: string                    // 存储名称，建议 xxx-xxx-xx 格式，如 "app-launcher"
+    name: string                    // 存储名称，建议 xxx-xxx 格式，如 "app-launcher"
     title: string                   // 展示名称，如 "App Launcher"
     desc?: string                   // 展示描述
     version?: string                // 版本号
@@ -36,6 +37,11 @@ export namespace WindowSize {
 }
 
 export interface IExtension {
+    /**
+     * 扩展数据存储（由框架注入）
+     */
+    store?: IExtensionStore;
+    
     load?(): ICommand[];
     preview?(input: string): React.ReactElement | null;
     run(name: string): React.ReactElement | null;
@@ -64,4 +70,4 @@ export { Checkbox, CheckboxGroup, type CheckboxProps, type CheckboxGroupProps } 
 export { Drawer, type DrawerProps } from './components/Drawer'
 
 // Keyer Core Capabilities
-export { Keyer, setKeyer, type IKeyer, type ClipboardData, type ExecOptions, type ExecResult } from './keyer'
+export { Keyer, setKeyer, type IKeyer, type IExtensionStore, type ClipboardData, type ExecOptions, type ExecResult } from './keyer'

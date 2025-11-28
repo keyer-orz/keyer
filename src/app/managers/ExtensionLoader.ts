@@ -7,6 +7,7 @@ import * as Keyerext from 'keyerext'
 import Log from '../utils/log'
 import { api } from '../api'
 import { ExtensionPackageInfo } from '../../shared/ipc'
+import { ExtensionStore } from './ExtensionStore'
 
 export class ExtensionLoader {
   /**
@@ -82,6 +83,10 @@ export class ExtensionLoader {
       const ExtensionClass = pluginModule.exports.default
       const extension: IExtension = new ExtensionClass()
       Log.log('Extension instance created:', pkgInfo.name)
+
+      // 创建并注入扩展存储
+      const store = new ExtensionStore(pkgInfo.name)
+      extension.store = store
 
       // 3. 构造 ExtensionMeta
       const meta: ExtensionMeta = {

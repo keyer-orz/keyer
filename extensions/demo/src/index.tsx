@@ -1,7 +1,8 @@
-import { HStack, ICommand, IExtension, Keyer } from "keyerext"
+import { HStack, ICommand, IExtension, IExtensionStore, Keyer } from "keyerext"
 import React from "react"
 
 export default class Ext implements IExtension {
+    store?: IExtensionStore;
     enabledPreview = true;
 
     load(): ICommand[] {
@@ -70,6 +71,7 @@ export default class Ext implements IExtension {
             })
             return null
         }
+        this.store?.set('last-run-command', name)
         return <div>none</div>
     }
 }

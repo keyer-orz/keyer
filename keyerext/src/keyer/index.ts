@@ -43,6 +43,52 @@ export interface ExecResult {
 }
 
 /**
+ * 扩展数据存储接口
+ */
+export interface IExtensionStore {
+  /**
+   * 获取数据
+   * @param key 键名
+   * @param defaultValue 默认值
+   */
+  get<T = any>(key: string, defaultValue?: T): T
+
+  /**
+   * 设置数据
+   * @param key 键名
+   * @param value 值
+   */
+  set<T = any>(key: string, value: T): void
+
+  /**
+   * 删除数据
+   * @param key 键名
+   */
+  delete(key: string): void
+
+  /**
+   * 检查键是否存在
+   * @param key 键名
+   */
+  has(key: string): boolean
+
+  /**
+   * 清空所有数据
+   */
+  clear(): void
+
+  /**
+   * 获取所有键名
+   */
+  keys(): string[]
+
+  /**
+   * 保存到文件（自动调用，通常不需要手动调用）
+   */
+  save(): Promise<void>
+}
+
+/**
  * Keyer 核心能力接口
  */
 export interface IKeyer {
