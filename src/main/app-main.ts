@@ -2,9 +2,8 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import Store from 'electron-store'
-import { createMainWindow, clearMainWindow } from './window-manager'
-import { registerShortcuts, unregisterAllShortcuts } from './shortcut-manager'
-import { registerIpcHandlers } from './ipc-handlers'
+import { createMainWindow, clearMainWindow } from './window-module'
+import { registerShortcuts, unregisterAllShortcuts } from './shortcuts-module'
 import { appHandler } from './app-module'
 import { fileHandler } from './file-module'
 import { windowHandler } from './window-module'
@@ -63,9 +62,6 @@ app.whenReady().then(() => {
 
   // 注册新的模块化 IPC 处理器
   registerIPC()
-
-  // 注册传统 IPC 处理器（用于导航等事件）
-  registerIpcHandlers()
 
   // 创建主窗口
   createMainWindow()
