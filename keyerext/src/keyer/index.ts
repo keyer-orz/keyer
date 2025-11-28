@@ -37,25 +37,9 @@ export type ExecOptions = {
  * 命令执行结果
  */
 export interface ExecResult {
-  /**
-   * 退出码
-   */
-  exitCode: number | null
-
-  /**
-   * 标准输出
-   */
-  stdout: string
-
-  /**
-   * 标准错误输出
-   */
-  stderr: string
-
-  /**
-   * 是否被手动终止
-   */
-  killed: boolean
+  success: boolean
+  output?: string
+  error?: string
 }
 
 /**

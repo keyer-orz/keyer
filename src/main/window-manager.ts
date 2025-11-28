@@ -1,13 +1,9 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { BrowserWindow } from 'electron'
 import path from 'node:path'
 
 export const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 let mainWindow: BrowserWindow | null = null
-
-function getRendererDist(): string {
-  return path.join(process.env.APP_ROOT!, 'dist')
-}
 
 /**
  * 创建主窗口
@@ -43,36 +39,14 @@ export function createMainWindow(): BrowserWindow {
     }
   })
 
-  // 监听窗口显示/隐藏事件
-  ipcMain.on('window-show', () => {
-    if (mainWindow) {
-      // 确保窗口显示并置于最前面
-      mainWindow.show()
-      mainWindow.focus()
-    }
-  })
-
-  ipcMain.on('window-hide', () => {
-    if (mainWindow && mainWindow.isVisible()) {
-      mainWindow.hide()
-    }
-  })
-
-  // 监听窗口尺寸调整事件
-  ipcMain.on('window-resize', (_event, size: { width: number; height: number }) => {
-    if (mainWindow) {
-      console.log('Window resized to:', size)
-      mainWindow.setSize(size.width, size.height, false) // true 表示动画
-      mainWindow.center() // 调整尺寸后居中
-    }
-  })
+  // 窗口操作现在通过新的IPC系统处理 (window-module.ts)
 
   // 加载页面
   if (VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(VITE_DEV_SERVER_URL)
     mainWindow.webContents.openDevTools()
   } else {
-    mainWindow.loadFile(path.join(getRendererDist(), 'index.html'))
+    mainWindow.loadFile(path.join(path.join(process.env.APP_ROOT!, 'dist'), 'index.html'))
   }
 
   return mainWindow
@@ -83,28 +57,6 @@ export function createMainWindow(): BrowserWindow {
  */
 export function getMainWindow(): BrowserWindow | null {
   return mainWindow
-}
-
-/**
- * 显示主窗口并聚焦
- */
-export function showMainWindow(): void {
-  if (mainWindow) {
-    if (!mainWindow.isVisible()) {
-      mainWindow.show()
-    }
-    mainWindow.focus()
-    // 确保窗口置于最前面
-    mainWindow.setAlwaysOnTop(true)
-    mainWindow.setAlwaysOnTop(false)
-  }
-}
-
-/**
- * 隐藏主窗口
- */
-export function hideMainWindow(): void {
-  mainWindow?.hide()
 }
 
 /**

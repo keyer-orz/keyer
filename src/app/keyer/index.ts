@@ -7,7 +7,7 @@
 
 import { clipboard, nativeImage } from 'electron'
 import type { IKeyer, ClipboardData, ExecOptions, ExecResult } from 'keyerext'
-import { electronApi } from '../electronApi'
+import { api } from '../api'
 
 /**
  * 剪贴板操作实现
@@ -104,9 +104,9 @@ export const KeyerInstance: IKeyer = {
    */
   async exec(cmd: string, opt?: ExecOptions): Promise<ExecResult> {
     if (opt?.mode === 'terminal') {
-      return await electronApi.execTerminal(cmd, opt.cwd)
+      return await api.exec.terminal(cmd, opt.cwd)
     } else {
-      return await electronApi.execWindow(cmd)
+      return await api.exec.window(cmd)
     }
   },
 

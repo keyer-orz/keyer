@@ -1,15 +1,11 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import { exec, spawn, ChildProcess } from 'node:child_process'
+import { ExecResult } from '@/shared/ipc'
 
 /**
  * 在系统终端中执行命令
  */
-export async function executeInTerminal(cmd: string, cwd?: string): Promise<{
-  exitCode: number
-  stdout: string
-  stderr: string
-  killed: boolean
-}> {
+export async function executeInTerminal(cmd: string, cwd?: string): Promise<ExecResult> {
   try {
     const workDir = cwd || process.cwd()
 
@@ -35,26 +31,22 @@ export async function executeInTerminal(cmd: string, cwd?: string): Promise<{
     }
 
     return {
-      exitCode: 0,
-      stdout: '',
-      stderr: '',
-      killed: false
+      success: true,
+      output: `Command sent to terminal: ${cmd}`
     }
   } catch (error) {
     console.error('Failed to execute in terminal:', error)
-    throw error
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }
   }
 }
 
 /**
  * 在新窗口中执行命令
  */
-export async function executeInWindow(cmd: string): Promise<{
-  exitCode: number | null
-  stdout: string
-  stderr: string
-  killed: boolean
-}> {
+export async function executeInWindow(cmd: string): Promise<ExecResult> {
   return new Promise((resolve) => {
     // 创建新的窗口来显示命令执行过程
     const execWindow = new BrowserWindow({
@@ -69,7 +61,6 @@ export async function executeInWindow(cmd: string): Promise<{
 
     let stdout = ''
     let stderr = ''
-    let killed = false
 
     // 执行命令
     const childProcess: ChildProcess = spawn(cmd, {
@@ -98,16 +89,14 @@ export async function executeInWindow(cmd: string): Promise<{
     childProcess.on('exit', (code) => {
       execWindow.webContents.send('exit', code)
       resolve({
-        exitCode: code,
-        stdout,
-        stderr,
-        killed
+        success: code === 0,
+        output: stdout || 'Command executed successfully',
+        error: stderr || (code !== 0 ? `Process exited with code ${code}` : undefined)
       })
     })
 
     // 监听终止请求
     ipcMain.once('kill-process', () => {
-      killed = true
       childProcess.kill()
       execWindow.webContents.send('killed')
     })
@@ -116,7 +105,6 @@ export async function executeInWindow(cmd: string): Promise<{
     execWindow.on('closed', () => {
       if (!childProcess.killed) {
         childProcess.kill()
-        killed = true
       }
     })
   })

@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react'
 import { VStack, HStack, Text, Input } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { configManager } from '@/app/utils/config'
-import { electronApi } from '@/app/electronApi'
 import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
 import { ExtensionMeta, ICommand } from 'keyerext'
 import { VscDiffRemoved, VscDiffAdded } from "react-icons/vsc";
+import { api } from '@/app/api'
 
 interface ExtensionItem {
   meta: ExtensionMeta
@@ -80,7 +80,7 @@ export function ExtensionsSettings() {
     configManager.setCmdConfig(cmdId, { shortcut: newShortcut })
 
     // 通知主进程更新快捷键注册
-    const success = await electronApi.updateCmdShortcut(cmdId, newShortcut || undefined)
+    const success = await api.shortcuts.updateCommand(cmdId, newShortcut || undefined)
 
     if (!success) {
       console.error(`Failed to update shortcut for ${cmdId}`)

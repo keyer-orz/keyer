@@ -3,8 +3,8 @@ import { VStack, HStack, Text, Divider } from 'keyerext'
 import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
 import { ThemeSwitcher } from '@/app/components/ThemeSwitcher'
 import { configManager } from '@/app/utils/config'
-import { electronApi } from '@/app/electronApi'
 import { getAppVersion, getAppName, getAppDescription } from '@/app/utils/app'
+import { api } from '@/app/api'
 
 export function GeneralSettings() {
   const [shortcut, setShortcut] = useState('')
@@ -19,7 +19,7 @@ export function GeneralSettings() {
     setShortcut(newShortcut)
     configManager.set('globalShortcut', newShortcut)
     // 通知主线程刷新快捷键注册
-    electronApi.updateGlobalShortcut(newShortcut)
+    api.shortcuts.updateGlobal(newShortcut)
   }
 
   return (

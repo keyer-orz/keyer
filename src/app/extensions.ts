@@ -20,6 +20,7 @@ export async function registerExtensions() {
 
   // 2. 从主进程扫描并加载本地扩展
   try {
+    console.log('📦 registerExtensions: About to call loadLocalExtensions')
     const localExtensions = await extensionLoader.loadLocalExtensions()
     console.log(`📦 Loaded ${localExtensions.length} local extensions`)
 

@@ -5,7 +5,8 @@ import Module from 'module'
 import React from 'react'
 import * as Keyerext from 'keyerext'
 import Log from '../utils/log'
-import { electronApi, ExtensionPackageInfo } from '../electronApi'
+import { api } from '../api'
+import { ExtensionPackageInfo } from '../../shared/ipc'
 
 export class ExtensionLoader {
   /**
@@ -13,12 +14,14 @@ export class ExtensionLoader {
    * @returns 已加载的扩展列表
    */
   async loadLocalExtensions(): Promise<ExtensionMeta[]> {
+    console.log('📦 ExtensionLoader: loadLocalExtensions() called')
     const extensions: ExtensionMeta[] = []
 
     try {
       // 1. 从主进程获取扩展元数据列表
-      const packageInfoList = await electronApi.scanExtensions()
-      Log.log(`📦 Received ${packageInfoList.length} extension packages from main process`)
+      console.log('📦 ExtensionLoader: About to call api.extensions.scan()...')
+      const packageInfoList = await api.extensions.scan()
+      console.log(`📦 ExtensionLoader: Received ${packageInfoList.length} extension packages from main process`)
 
       // 2. 遍历每个扩展，加载实例
       for (const pkgInfo of packageInfoList) {
@@ -49,7 +52,7 @@ export class ExtensionLoader {
   ): Promise<ExtensionMeta | null> {
     try {
       // 1. 从主进程获取扩展文件的完整路径
-      const mainPath = await electronApi.getExtensionPath(pkgInfo.main)
+      const mainPath = await api.extensions.getPath(pkgInfo.main)
 
       if (!fs.existsSync(mainPath)) {
         Log.warn(`Main file not found: ${mainPath}`)

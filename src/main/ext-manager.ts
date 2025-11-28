@@ -1,25 +1,7 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import { app } from 'electron'
-
-/**
- * 扩展包信息（从 package.json 读取）
- */
-export interface ExtensionPackageInfo {
-  name: string
-  title?: string
-  desc?: string
-  icon?: string
-  version?: string
-  main: string
-  commands?: Array<{
-    name: string
-    title?: string
-    desc?: string
-    icon?: string
-    type?: string
-  }>
-}
+import { ExtensionPackageInfo } from '@/shared/ipc'
 
 /**
  * 主进程扩展管理器
