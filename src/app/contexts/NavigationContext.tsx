@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, ReactNode } from 'react'
 import { NavigationContext, PageStackItem } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
-import { electronApi } from '@/app/electronApi'
 import { api } from '../api'
+import { ipcRenderer } from 'electron'
 
 /**
  * NavigationProvider 管理页面栈和导航逻辑
@@ -172,12 +172,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         return [{ pageName, element: result.element, windowSize: result.windowSize }]
       })
     }
-
-    // onNavigateToPage 现在返回清理函数
-    const cleanup = electronApi.onNavigateToPage(handleNavigate)
-
-    // 返回清理函数，移除监听器
-    return cleanup
+    const handler = (_event: any, pageName: string) => handleNavigate(pageName)
+    ipcRenderer.on('navigate-to-page', handler)
+    return () => {
+      ipcRenderer.removeListener('navigate-to-page', handler)
+    } 
   }, [])
 
   // ==================== Render ====================
