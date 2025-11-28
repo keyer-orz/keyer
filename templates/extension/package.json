@@ -1,0 +1,20 @@
+{
+  "icon": "🚀",
+  "name": "${name}",
+  "title": "${title}",
+  "desc": "${desc}",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "commands": [
+     
+  ],
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "keyerext": "git+https://github.com/keyer-orz/keyerext.git",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  }
+}
