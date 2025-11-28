@@ -3,13 +3,11 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { app } from 'electron'
 import { ExtensionPackageInfo } from '@/shared/ipc'
-import { VITE_DEV_SERVER_URL } from './shared'
 
 export const extensionsHandler: APIType['extensions'] = {
   scan: async () => {
     try {
-      const devDir = VITE_DEV_SERVER_URL ? process.env.APP_ROOT : undefined
-      const extensions = await extensionManager.scanExtensions(devDir)
+      const extensions = await extensionManager.scanExtensions(process.env.APP_ROOT)
       console.log(`📦 Scanned ${extensions.length} extensions`)
       return extensions
     } catch (error) {
