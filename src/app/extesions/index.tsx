@@ -3,6 +3,7 @@ import UIDemo from "./ui/ui";
 import Main from "./main/ui";
 import Setting from "./setting/ui";
 import { StoreUI } from "./store/ui";
+import { CreateExtensionUI } from "./create-ext/ui";
 
 class Ext implements IExtension {
     run(name: string): React.ReactElement | null {
@@ -11,6 +12,7 @@ class Ext implements IExtension {
         if (name == 'setting') return <Setting />
         if (name == 'ui') return <UIDemo />
         if (name == 'store') return <StoreUI />
+        if (name == 'create_ext') return <CreateExtensionUI />
         return <div>none</div>
     }
 }
@@ -45,6 +47,13 @@ export default {
             title: 'Extensions Store',
             desc: 'Browse and install extensions',
             icon: '🏪',
+        },
+        {
+            name: 'create_ext',
+            title: 'Create Extension',
+            desc: 'Create a new extension from template',
+            icon: '✨',
+            windowSize: WindowSize.Normal
         }
     ]
 } as ExtensionMeta;

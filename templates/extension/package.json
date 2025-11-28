@@ -6,7 +6,6 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "commands": [
-     
   ],
   "scripts": {
     "dev": "tsc --watch",

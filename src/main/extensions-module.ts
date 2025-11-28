@@ -2,7 +2,7 @@ import { APIType } from '@/shared/ipc'
 import * as path from 'path'
 import * as fs from 'fs'
 import { app } from 'electron'
-import { ExtensionPackageInfo } from '@/shared/ipc'
+import { ExtensionPackageInfo, ExtensionCreateOptions } from '@/shared/ipc'
 
 export const extensionsHandler: APIType['extensions'] = {
   scan: async () => {
@@ -13,6 +13,16 @@ export const extensionsHandler: APIType['extensions'] = {
     } catch (error) {
       console.error('❌ Failed to scan extensions:', error)
       return []
+    }
+  },
+
+  create: async (options) => {
+    try {
+      await extensionManager.createExtension(options)
+      console.log(`✨ Created extension: ${options.name}`)
+    } catch (error) {
+      console.error('❌ Failed to create extension:', error)
+      throw error
     }
   }
 }
@@ -136,6 +146,71 @@ export class ExtensionManager {
   clearCache(): void {
     this.extensionsCache = null
     console.log('🗑️  Extension cache cleared')
+  }
+
+  /**
+   * 创建新扩展
+   * @param options 扩展创建选项
+   */
+  async createExtension(options: ExtensionCreateOptions): Promise<void> {
+    const { name, title, desc, targetDir } = options
+
+    // 创建扩展目录
+    const extDir = path.join(targetDir, name)
+    if (fs.existsSync(extDir)) {
+      throw new Error(`Extension directory already exists: ${extDir}`)
+    }
+
+    // 获取模板路径
+    const appRoot = process.env.APP_ROOT || app.getAppPath()
+    const templateDir = process.env.APP_ROOT 
+      ? path.join(appRoot, 'templates', 'extension')  // 开发模式
+      : path.join(app.getAppPath(), '..', 'templates', 'extension')  // 打包模式
+
+    if (!fs.existsSync(templateDir)) {
+      throw new Error(`Template directory not found: ${templateDir}`)
+    }
+
+    // 创建目标目录
+    fs.mkdirSync(extDir, { recursive: true })
+
+    // 递归复制模板文件并替换占位符
+    this.copyTemplateFiles(templateDir, extDir, {
+      name,
+      title,
+      desc,
+    })
+
+    console.log(`✨ Extension "${name}" created successfully at ${extDir}`)
+  }
+
+  /**
+   * 复制模板文件并替换占位符
+   */
+  private copyTemplateFiles(sourceDir: string, targetDir: string, replacements: Record<string, string>) {
+    const files = fs.readdirSync(sourceDir, { withFileTypes: true })
+
+    for (const file of files) {
+      const sourcePath = path.join(sourceDir, file.name)
+      const targetPath = path.join(targetDir, file.name)
+
+      if (file.isDirectory()) {
+        // 创建目录并递归处理
+        fs.mkdirSync(targetPath, { recursive: true })
+        this.copyTemplateFiles(sourcePath, targetPath, replacements)
+      } else {
+        // 复制文件并替换占位符
+        let content = fs.readFileSync(sourcePath, 'utf-8')
+        
+        // 替换所有占位符
+        for (const [key, value] of Object.entries(replacements)) {
+          const regex = new RegExp(`\\$\\{${key}\\}`, 'g')
+          content = content.replace(regex, value)
+        }
+        
+        fs.writeFileSync(targetPath, content)
+      }
+    }
   }
 }
 

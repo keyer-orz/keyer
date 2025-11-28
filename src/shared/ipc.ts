@@ -21,6 +21,13 @@ export interface ExecResult {
   error?: string
 }
 
+export interface ExtensionCreateOptions {
+  name: string
+  title: string
+  desc: string
+  targetDir: string
+}
+
 export type APIType = {
   app: {
     getVersion: () => Promise<string>
@@ -29,6 +36,7 @@ export type APIType = {
   file: {
     read: (path: string) => Promise<string>
     write: (path: string, content: string) => Promise<void>
+    selectDirectory: () => Promise<string | undefined>
   }
   window: {
     show: () => Promise<void>
@@ -37,6 +45,7 @@ export type APIType = {
   }
   extensions: {
     scan: () => Promise<ExtensionPackageInfo[]>
+    create: (options: ExtensionCreateOptions) => Promise<void>
   }
   shortcuts: {
     updateGlobal: (shortcut: string) => Promise<boolean>

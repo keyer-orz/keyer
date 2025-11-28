@@ -22,6 +22,16 @@ export const fileHandler: APIType['file'] = {
     } catch (error) {
       throw new Error(`Failed to write file ${filePath}: ${error}`)
     }
+  },
+
+  selectDirectory: async () => {
+    const { dialog, BrowserWindow } = require('electron')
+    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory']
+    })
+    return result.canceled ? undefined : result.filePaths[0]
   }
 }
 
