@@ -45,7 +45,6 @@ export default {
             title: 'Extensions Store',
             desc: 'Browse and install extensions',
             icon: '🏪',
-            windowSize: WindowSize.Wide
         }
     ]
 } as ExtensionMeta;

@@ -37,7 +37,7 @@ export function StoreUI() {
     })
 
     return (
-        <VStack spacing={16} style={{ height: '100%', padding: '16px' }}>
+        <VStack className='plugin'>
             {/* Search */}
             <Input
                 ref={inputRef}

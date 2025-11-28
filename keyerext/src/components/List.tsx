@@ -14,13 +14,14 @@ export interface ListGroup<T = any> {
 export interface ListProps<T = any> {
   groups: ListGroup<T>[]
   selectedId?: string
-  onSelect?: (id: string, data: T) => void
-  onEnter?: (id: string, data: T) => void
+  onClick?: (id: string, data: T) => void  // 鼠标单击
+  onSelect?: (id: string, data: T) => void // 键盘或鼠标选中
+  onEnter?: (id: string, data: T) => void  // 回车/双击
   renderItem: (item: ListItem<T>, isSelected: boolean, isHovered: boolean) => React.ReactNode
   className?: string
 }
 
-export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderItem, className = '' }: ListProps<T>) {
+export function List<T = any>({ groups, selectedId, onClick, onSelect, onEnter, renderItem, className = '' }: ListProps<T>) {
   const [hoverId, setHoverId] = useState<string | null>(null)
   const [internalSelectedId, setInternalSelectedId] = useState<string | undefined>(selectedId)
   const isPageVisible = usePageVisible()
@@ -47,6 +48,11 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
     setInternalSelectedId(id)
     onSelect?.(id, data)
   }, [onSelect])
+
+  const handleClick = useCallback((id: string, data: T) => {
+    setInternalSelectedId(id)
+    onClick?.(id, data)
+  }, [onClick])
 
   const handleEnter = useCallback((id: string, data: T) => {
     onEnter?.(id, data)
@@ -90,7 +96,7 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isPageVisible, allItems, currentSelectedId, handleSelect, handleEnter])
+  }, [isPageVisible, allItems, currentSelectedId, handleClick, handleSelect, handleEnter])
 
   return (
     <div className={`keyer-list ${className}`}>
@@ -107,7 +113,7 @@ export function List<T = any>({ groups, selectedId, onSelect, onEnter, renderIte
                 key={item.id}
                 ref={el => itemRefs.current[item.id] = el}
                 className={`keyer-list-item ${isSelected ? 'keyer-list-item-selected' : ''}`}
-                onClick={() => handleSelect(item.id, item.data)}
+                onClick={() => handleClick(item.id, item.data)}
                 onDoubleClick={() => handleEnter(item.id, item.data)}
                 onMouseEnter={() => setHoverId(item.id)}
                 onMouseLeave={() => setHoverId(null)}

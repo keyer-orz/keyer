@@ -29,7 +29,7 @@ export type ExtensionMeta = {
 }
 
 export namespace WindowSize {
-    export const Normal = { width: 600, height: 400 } // 默认尺寸
+    export const Normal = { width: 800, height: 500 } // 默认尺寸
     export const Large = { width: 1000, height: 800 } // 适合复杂内容
     export const Small = { width: 400, height: 300 }  // 适合简单内容
     export const Wide = { width: 1200, height: 600 }  // 适合左右分屏

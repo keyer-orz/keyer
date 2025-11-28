@@ -109,6 +109,7 @@ export function ExtensionList({
             <List
                 groups={listGroups}
                 selectedId={selectedExtension?.name}
+                onClick={(_, data) => onSelectExtension(data)}
                 onEnter={(_, data) => onSelectExtension(data)}
                 renderItem={renderExtensionItem}
             />
