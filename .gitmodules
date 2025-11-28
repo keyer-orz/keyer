@@ -1,0 +1,3 @@
+[submodule "keyerext"]
+	path = keyerext
+	url = git@github.com:keyer-orz/keyerext.git
