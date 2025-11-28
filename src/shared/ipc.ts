@@ -5,6 +5,7 @@ export interface ExtensionPackageInfo {
   icon?: string
   version?: string
   main: string
+  dir: string
   commands?: Array<{
     name: string
     title?: string
@@ -36,7 +37,6 @@ export type APIType = {
   }
   extensions: {
     scan: () => Promise<ExtensionPackageInfo[]>
-    getPath: (extensionMain: string) => Promise<string>
   }
   shortcuts: {
     updateGlobal: (shortcut: string) => Promise<boolean>

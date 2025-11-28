@@ -10,7 +10,6 @@ function wrapAPI<T>(path: string[] = []): T {
     },
     apply(_, __, args: any[]) {
       const channel = path.join(".")
-      console.log(`📡 IPC call: ${channel} with args:`, args)
       return ipcRenderer.invoke(channel, ...args)
     }
   }) as T

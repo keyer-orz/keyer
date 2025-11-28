@@ -16,11 +16,6 @@ export const extensionsHandler: APIType['extensions'] = {
       console.error('❌ Failed to scan extensions:', error)
       return []
     }
-  },
-
-  getPath: async (extensionMain: string) => {
-    const devDir = VITE_DEV_SERVER_URL ? process.env.APP_ROOT : undefined
-    return extensionManager.getExtensionPath(devDir, extensionMain)
   }
 }
 
@@ -124,14 +119,15 @@ export class ExtensionManager {
       return null
     }
 
-    // 返回扩展信息（包含相对于 extensions 目录的路径）
+    // 返回扩展信息（包含完整目录路径和相对main文件路径）
     return {
       name: pkg.name,
       title: pkg.title || pkg.name,
       desc: pkg.desc,
       icon: pkg.icon,
       version: pkg.version,
-      main: path.join(folderName, pkg.main), // 相对路径：folderName/main.js
+      main: pkg.main, // 相对于扩展目录的路径：main.js
+      dir: extDir, // 扩展的完整目录路径
       commands: pkg.commands
     }
   }
@@ -142,16 +138,6 @@ export class ExtensionManager {
   clearCache(): void {
     this.extensionsCache = null
     console.log('🗑️  Extension cache cleared')
-  }
-
-  /**
-   * 获取扩展的完整路径
-   * @param devDir 开发目录
-   * @param extensionMain 扩展 main 文件相对路径（如 "demo/index.js"）
-   */
-  getExtensionPath(devDir: string | undefined, extensionMain: string): string {
-    const baseDir = devDir || app.getPath('userData')
-    return path.join(baseDir, 'extensions', extensionMain)
   }
 }
 

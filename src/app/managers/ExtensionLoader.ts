@@ -14,14 +14,12 @@ export class ExtensionLoader {
    * @returns 已加载的扩展列表
    */
   async loadLocalExtensions(): Promise<ExtensionMeta[]> {
-    console.log('📦 ExtensionLoader: loadLocalExtensions() called')
     const extensions: ExtensionMeta[] = []
 
     try {
       // 1. 从主进程获取扩展元数据列表
-      console.log('📦 ExtensionLoader: About to call api.extensions.scan()...')
       const packageInfoList = await api.extensions.scan()
-      console.log(`📦 ExtensionLoader: Received ${packageInfoList.length} extension packages from main process`)
+      Log.log(`📦 Received ${packageInfoList.length} extension packages from main process`)
 
       // 2. 遍历每个扩展，加载实例
       for (const pkgInfo of packageInfoList) {
@@ -51,8 +49,8 @@ export class ExtensionLoader {
     pkgInfo: ExtensionPackageInfo
   ): Promise<ExtensionMeta | null> {
     try {
-      // 1. 从主进程获取扩展文件的完整路径
-      const mainPath = await api.extensions.getPath(pkgInfo.main)
+      // 1. 构建扩展文件的完整路径
+      const mainPath = path.join(pkgInfo.dir, pkgInfo.main)
 
       if (!fs.existsSync(mainPath)) {
         Log.warn(`Main file not found: ${mainPath}`)

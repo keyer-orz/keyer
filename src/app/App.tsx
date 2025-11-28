@@ -21,16 +21,6 @@ function AppContent() {
       setKeyer(KeyerInstance)
       console.log('✅ Keyer instance injected')
 
-      // 1.5. 测试 API 连接
-      import('./api').then(({ api }) => {
-        console.log('🔧 Testing API connection...')
-        api.extensions.scan().then((result) => {
-          console.log('✅ API test successful:', result)
-        }).catch((error) => {
-          console.error('❌ API test failed:', error)
-        })
-      })
-
       // 2. 恢复保存的主题
       const savedTheme = configManager.get('theme')
       if (savedTheme) {
