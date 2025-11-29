@@ -63,9 +63,15 @@ export class ExtensionManager {
       }
 
       // 读取所有子文件夹
-      const folders = fs.readdirSync(extensionsDir, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name)
+      const folders = fs.readdirSync(extensionsDir)
+        .filter(dirent => {
+          try {
+          return fs.statSync(path.join(extensionsDir, dirent)).isDirectory()
+      } catch (err) {
+        return false
+      }
+        })
+        .map(dirent => dirent)
 
       console.log('📁 Found extension folders:', folders)
 

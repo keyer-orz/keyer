@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, Drawer } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, Drawer, Image } from 'keyerext'
 import { ThemeSwitcher } from '../../components'
 
 export default function UIDemo() {
@@ -54,6 +54,8 @@ export default function UIDemo() {
     return (
         <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
             <VStack spacing={24} style={{ alignItems: 'stretch' }}>
+                <Image src="app:///System/Applications/Argus.app" alt="App Icon" width={64} height={64} />
+
                 {/* Header */}
                 <HStack spacing={16} style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                     <VStack spacing={4} style={{ alignItems: 'flex-start' }}>

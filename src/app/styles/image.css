@@ -1,0 +1,48 @@
+/* Image 组件样式 */
+.keyer-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.keyer-image-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-bg-secondary);
+    border-radius: 4px;
+    min-height: 32px;
+    min-width: 32px;
+}
+
+.keyer-image-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: keyer-image-spin 1s linear infinite;
+}
+
+@keyframes keyer-image-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.keyer-image-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-bg-secondary);
+    border: 1px dashed var(--color-border);
+    border-radius: 4px;
+    color: var(--color-text-secondary);
+    min-height: 32px;
+    min-width: 32px;
+}
+
+.keyer-image-error-icon {
+    font-size: 16px;
+    opacity: 0.6;
+}

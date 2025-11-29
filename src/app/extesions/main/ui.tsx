@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Text, VStack, HStack, Input, List, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, type ListGroup } from 'keyerext'
+import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, type ListGroup } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import type { ICommand } from 'keyerext'
 
@@ -53,10 +53,10 @@ export default function Main() {
         const cmd = item.data
         return (
             <HStack spacing={12}>
-                <Text size="large">{cmd.icon}</Text>
+                <Image src={cmd.icon || "👵"} width={32} height={32}/>
                 <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
                     <Text color="title" size="medium">{cmd.title}</Text>
-                    <Text color="subtitle" style={{ flex: 1 }} size="small">{cmd.extTitle}</Text>
+                  <Text color="subtitle" style={{ flex: 1 }} size="small">{cmd.extTitle}</Text>
                     <Text color="subtitle" size="small">{cmd.type}</Text>
                 </HStack>
             </HStack>
