@@ -1,6 +1,6 @@
 import { ReactElement } from 'react'
 import { ExtensionMeta, ICommand } from 'keyerext'
-
+import { configManager } from '../utils/config'
 class CommandManager {
   private extensions: Map<string, ExtensionMeta> = new Map()
   private commands: ICommand[] = []
@@ -38,7 +38,7 @@ class CommandManager {
   }
 
   getAllCommands(): ICommand[] {
-    return this.commands
+    return this.commands.filter(cmd => !configManager.getCmdConfig(cmd.id!).disabled)
   }
 
   preview(query: string): ReactElement[] {
@@ -51,12 +51,13 @@ class CommandManager {
   }
 
   search(query: string): ICommand[] {
+    const filtered = this.commands.filter(cmd => !configManager.getCmdConfig(cmd.id!).disabled)
     if (!query || query.trim() === '') {
-      return this.commands.filter(cmd => cmd.id != "@system#main")
+      return filtered.filter(cmd => cmd.id != "@system#main")
     }
 
     const lowerQuery = query.toLowerCase()
-    return this.commands.filter(cmd => {
+    return filtered.filter(cmd => {
       const titleMatch = cmd.title?.toLowerCase().includes(lowerQuery)
       const nameMatch = cmd.name?.toLowerCase().includes(lowerQuery)
       const descMatch = cmd.desc?.toLowerCase().includes(lowerQuery)

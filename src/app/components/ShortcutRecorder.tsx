@@ -7,6 +7,7 @@ export interface ShortcutRecorderProps {
   onChange: (shortcut: string) => void
   onClear?: () => void
   placeholder?: string
+  disabled?: boolean
 }
 
 const symbols: Record<string, string> = {
@@ -38,7 +39,7 @@ function parseShortcut(keys: string[]): string {
  * 自动捕获键盘输入并转换为快捷键格式（如 Shift+Space, Ctrl+Alt+K）
  * 兼容 Windows 和 Mac
  */
-export function ShortcutRecorder({ value, onChange, onClear, placeholder = '--' }: ShortcutRecorderProps) {
+export function ShortcutRecorder({ value, onChange, onClear, placeholder = '--', disabled = false }: ShortcutRecorderProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set())
 
@@ -115,6 +116,7 @@ export function ShortcutRecorder({ value, onChange, onClear, placeholder = '--' 
   }, [isRecording, handleKeyDown, handleKeyUp])
 
   const handleClick = () => {
+    if (disabled) return
     if (isRecording) {
       // 取消录制
       setIsRecording(false)
@@ -138,14 +140,18 @@ export function ShortcutRecorder({ value, onChange, onClear, placeholder = '--' 
     <HStack style={{
       padding: '4px',
       fontSize: '14px',
-      color: 'var(--color-title)',
+      color: disabled ? 'var(--color-disabled)' : 'var(--color-title)',
       backgroundColor: 'var(--color-input-bg)',
       border: `2px solid ${isRecording ? 'var(--color-title)' : 'var(--color-border)'}`,
+      opacity: disabled ? 0.5 : 1,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      pointerEvents: disabled ? 'none' : 'auto',
     }}>
       <div
         onClick={handleClick}
         style={{
           flexGrow: 1,
+          userSelect: 'none',
         }}
       >{isRecording
         ? pressedKeys.size > 0
@@ -155,7 +161,7 @@ export function ShortcutRecorder({ value, onChange, onClear, placeholder = '--' 
           ? <Keys keys={value.split("+")} />
           : placeholder
         }</div>
-      <VscClose onClick={handleClear} size={18} />
+      <VscClose onClick={disabled ? undefined : handleClear} size={18} style={{ pointerEvents: disabled ? 'none' : 'auto', opacity: disabled ? 0.5 : 1 }} />
     </HStack>
   )
 }

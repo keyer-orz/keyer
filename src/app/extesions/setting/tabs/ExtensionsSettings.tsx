@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { VStack, HStack, Text, Input, Image } from 'keyerext'
+import { VStack, HStack, Text, Input, Image, Checkbox } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { configManager } from '@/app/utils/config'
 import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
@@ -17,6 +17,7 @@ export function ExtensionsSettings() {
   const [extensions, setExtensions] = useState<ExtensionItem[]>([])
   const [expandedExtensions, setExpandedExtensions] = useState<Set<string>>(new Set())
   const [cmdShortcuts, setCmdShortcuts] = useState<Record<string, string>>({})
+  const [cmdDisabled, setCmdDisabled] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     // 从 commandManager 获取所有命令
@@ -48,16 +49,32 @@ export function ExtensionsSettings() {
 
     setExtensions(Array.from(extensionMap.values()))
 
-    // 加载所有命令的快捷键配置
+    // 加载所有命令的快捷键配置和禁用状态
     const allConfigs = configManager.getAllCmdConfigs()
     const shortcuts: Record<string, string> = {}
+    const disabled: Record<string, boolean> = {}
     allCommands.forEach(cmd => {
-      if (cmd.id && allConfigs[cmd.id]?.shortcut) {
-        shortcuts[cmd.id] = allConfigs[cmd.id].shortcut!
+      if (cmd.id) {
+        if (allConfigs[cmd.id]?.shortcut) {
+          shortcuts[cmd.id] = allConfigs[cmd.id].shortcut!
+        }
+        if (allConfigs[cmd.id]?.disabled) {
+          disabled[cmd.id] = true
+        }
       }
     })
     setCmdShortcuts(shortcuts)
+    setCmdDisabled(disabled)
+  
+  
   }, [])
+
+  // 禁用/启用命令
+  const handleDisabledChange = async (cmdId: string, checked: boolean) => {
+    setCmdDisabled(prev => ({ ...prev, [cmdId]: !checked }))
+    configManager.setCmdConfig(cmdId, { disabled: !checked })
+    await api.shortcuts.updateCommand(cmdId, !checked ? undefined : cmdShortcuts[cmdId] || '')
+  }
 
   const toggleExtension = (extName: string) => {
     const newExpanded = new Set(expandedExtensions)
@@ -207,10 +224,14 @@ export function ExtensionsSettings() {
                         value={cmdShortcuts[cmd.id!] || ''}
                         onChange={(shortcut) => handleShortcutChange(cmd.id!, shortcut)}
                         placeholder="No shortcut"
+                        disabled={!!cmdDisabled[cmd.id!]}
                       />
                     </div>
-                    <div style={{ width: '80px', textAlign: 'center' }}>
-                      <Text color="subtitle" size="small">-</Text>
+                    <div style={{ flex: 1 }}>
+                      <Checkbox
+                        checked={!cmdDisabled[cmd.id!]}
+                        onChange={checked => handleDisabledChange(cmd.id!, checked)}
+                      />
                     </div>
                   </div>
                 ))}
