@@ -2,7 +2,6 @@ import { app, BrowserWindow, ipcMain, protocol } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import Store from 'electron-store'
-import fs from 'fs'
 import { createMainWindow, clearMainWindow } from './window-module'
 import { registerShortcuts, unregisterAllShortcuts } from './shortcuts-module'
 import { appHandler } from './app-module'
@@ -39,28 +38,6 @@ export function registerIPC() {
 }
 
 export function registerCustomProtocols() {
-  // 注册 keyer-cache:// 协议用于访问缓存文件
-  protocol.registerFileProtocol('keyer-cache', (request, callback) => {
-    try {
-      const url = request.url.replace('keyer-cache://', '')
-      const cachePath = path.join(app.getPath('userData'), 'img-cache', url)
-      
-      console.log(`[Protocol] Serving cache file: ${url} -> ${cachePath}`)
-      
-      // 检查文件是否存在
-      if (fs.existsSync(cachePath)) {
-        callback({ path: cachePath })
-      } else {
-        console.error(`[Protocol] Cache file not found: ${cachePath}`)
-        callback({ error: -6 }) // FILE_NOT_FOUND
-      }
-    } catch (error) {
-      console.error('[Protocol] Error serving cache file:', error)
-      callback({ error: -2 }) // FAILED
-    }
-  })
-
-  // 注册 keyer-app:// 协议（使用独立的app-icon模块）
   registerAppIconProtocol()
 }
 

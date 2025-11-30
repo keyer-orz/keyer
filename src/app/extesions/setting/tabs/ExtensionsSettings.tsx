@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { VStack, HStack, Text, Input } from 'keyerext'
+import { VStack, HStack, Text, Input, Image } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { configManager } from '@/app/utils/config'
 import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
@@ -194,7 +194,7 @@ export function ExtensionsSettings() {
                     }}
                   >
                     <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px',marginLeft: '20px' }}>{cmd.icon || '📦'}</span>
+                      <Image src={cmd.icon || "👵"} width={32} height={32}/>
                       <VStack spacing={2} style={{ alignItems: 'flex-start' }}>
                         <Text color="title" size="small">{cmd.title || cmd.name}</Text>
                       </VStack>

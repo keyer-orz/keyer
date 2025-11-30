@@ -25,7 +25,6 @@ export function registerAppIconProtocol() {
       const cacheFileName = `${hash}.png`
       const cachePath = path.join(app.getPath('userData'), 'img-cache', cacheFileName)
       
-      // 检查缓存是否存在且未过期
       if (fs.existsSync(cachePath)) {
         const buffer = fs.readFileSync(cachePath)
         callback({ mimeType: 'image/png', data: buffer })
