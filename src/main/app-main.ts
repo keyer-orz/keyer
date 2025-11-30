@@ -11,6 +11,7 @@ import { windowHandler } from './window-module'
 import { extensionsHandler } from './extensions-module'
 import { shortcutsHandler } from './shortcuts-module'
 import { execHandler } from './exec-module'
+import { registerAppIconProtocol } from './app-icon'
 
 // 设置应用根目录
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -59,40 +60,8 @@ export function registerCustomProtocols() {
     }
   })
 
-  // 注册 keyer-app:// 协议用于访问应用图标（带缓存）
-  protocol.registerBufferProtocol('keyer-app', async (request, callback) => {
-    try {
-      const appPath = decodeURIComponent(request.url.replace('keyer-app://', ''))
-      // 检查文件是否存在
-      if (!fs.existsSync(appPath)) {
-        callback({ error: -6 }) // FILE_NOT_FOUND
-        return
-      }
-      
-      const crypto = require('crypto')
-      const hash = crypto.createHash('md5').update(appPath).digest('hex')
-      const cacheFileName = `${hash}.png`
-      const cachePath = path.join(app.getPath('userData'), 'img-cache', cacheFileName)
-      console.log(`[Protocol] keyer-app request for: ${appPath}, cache path: ${cachePath}`)
-      const icon = await app.getFileIcon(appPath, { size: 'small' })
-
-      if (icon && !icon.isEmpty()) {
-        const buffer = icon.toPNG()
-        // 确保缓存目录存在
-        const cacheDir = path.dirname(cachePath)
-        if (!fs.existsSync(cacheDir)) {
-          fs.mkdirSync(cacheDir, { recursive: true })
-        }
-        fs.writeFileSync(cachePath, buffer)
-        callback({ mimeType: 'image/png', data: buffer })
-      } else {
-        callback({ error: -6 })
-      }
-    } catch (error) {
-      console.error('[Protocol] Error getting app icon:', error)
-      callback({ error: -2 })
-    }
-  })
+  // 注册 keyer-app:// 协议（使用独立的app-icon模块）
+  registerAppIconProtocol()
 }
 
 // 应用生命周期事件
