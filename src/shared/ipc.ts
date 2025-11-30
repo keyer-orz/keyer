@@ -28,7 +28,7 @@ export interface ExtensionCreateOptions {
   targetDir: string
 }
 
-export type APIType = {
+export interface APIType {
   app: {
     getVersion: () => Promise<string>
     getName: () => Promise<string>

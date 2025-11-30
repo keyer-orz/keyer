@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, Drawer, Image } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, Drawer, Image, Keyer } from 'keyerext'
 import { ThemeSwitcher } from '../../components'
 
 export default function UIDemo() {
@@ -54,7 +54,23 @@ export default function UIDemo() {
     return (
         <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
             <VStack spacing={24} style={{ alignItems: 'stretch' }}>
-                <Image src="app:///System/Applications/Argus.app" alt="App Icon" width={64} height={64} />
+                <Image src="app:///System/Applications/Calculator.app" alt="Calculator Icon" width={64} height={64} />
+                <Image src="cache://111.png" alt="Cached Image" width={64} height={64} />
+                <HStack spacing={8}>
+                    <Button onClick={async () => {
+                        console.log('Testing custom protocol...');
+                        // 测试创建一个新的Image元素来验证协议
+                        const img = document.createElement('img');
+                        img.src = 'keyer-app:///System/Applications/Calculator.app';
+                        img.onload = () => console.log('✅ keyer-app:// protocol works!');
+                        img.onerror = (e) => console.error('❌ keyer-app:// protocol failed:', e);
+                        
+                        const img2 = document.createElement('img');
+                        img2.src = 'keyer-cache://111.png';
+                        img2.onload = () => console.log('✅ keyer-cache:// protocol works!');
+                        img2.onerror = (e) => console.error('❌ keyer-cache:// protocol failed:', e);
+                    }}>Test Protocols</Button>
+                </HStack>
 
                 {/* Header */}
                 <HStack spacing={16} style={{ justifyContent: 'space-between', alignItems: 'center' }}>

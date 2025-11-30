@@ -99,15 +99,15 @@ const appImpl = {
   async getFileIcon(appPath: string): Promise<string> {
     try {
       // Electron v8+ 支持 app.getFileIcon
-      console.log(`Getting file icon for: ${appPath}`)
+      console.log(`[Renderer Process] Getting file icon for: ${appPath}`)
       const icon = await api.app.getFileIcon(appPath)
-      console.log(`Got icon for ${appPath}: chars ${icon ? 'success' : 'empty'}`)
+      console.log(`[Renderer Process] Got icon result: ${icon ? `${icon.substring(0, 50)}...` : 'empty'}`)
       return icon
     } catch (err) {
-      console.error('Error getting file icon:', err)
+      console.error('[Renderer Process] Error getting file icon:', err)
       return ''
     }
-  }
+  },
 }
 
 /**
