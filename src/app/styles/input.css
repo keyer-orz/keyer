@@ -8,6 +8,7 @@
   border: none;
   border-bottom: 2px solid var(--color-border);
   outline: none;
+  font-family: var(--font-mono);
 }
 
 .keyer-input:focus {
