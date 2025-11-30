@@ -48,6 +48,7 @@ export default function Setting() {
                 <List
                     groups={sections}
                     selectedId={selectedSection}
+                    onClick={(id) => setSelectedSection(id)}
                     onSelect={(id) => setSelectedSection(id)}
                     renderItem={(item) => (
                         <HStack>
