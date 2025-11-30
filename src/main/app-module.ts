@@ -13,12 +13,19 @@ export const appHandler: APIType["app"] = {
         throw new Error(`Path does not exist: ${appPath}`)
       }
       
+      // Get application icon using default size (large size may cause empty buffer on macOS)
+      console.log(`[Main Process] Getting icon for: ${appPath}`)
       const icon = await app.getFileIcon(appPath)
+      
       console.log(`[Main Process] Got icon object, isEmpty: ${icon.isEmpty()}`)
       
       if (icon && !icon.isEmpty()) {
+        // Get icon dimensions for debugging
+        const size = icon.getSize()
+        console.log(`[Main Process] Icon size: ${size.width}x${size.height}`)
+        
         const dataUrl = icon.toDataURL()
-        console.log(`[Main Process] Generated dataURL: ${dataUrl.substring(0, 100)}...`)
+        console.log(`[Main Process] Generated dataURL length: ${dataUrl.length}`)
         return dataUrl
       } else {
         console.error(`[Main Process] Icon is empty for path: ${appPath}`)
@@ -26,7 +33,6 @@ export const appHandler: APIType["app"] = {
       }
     } catch (err) {
       console.error('[Main Process] Error getting file icon:', err)
-      // Don't return empty string, throw error so renderer can handle it properly
       throw err
     }
   }
