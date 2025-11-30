@@ -12,6 +12,13 @@ interface ExtensionItem {
   commands: ICommand[]
 }
 
+const contentStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  flex: 1,
+}
+
 export function ExtensionsSettings() {
   const [searchQuery, setSearchQuery] = useState('')
   const [extensions, setExtensions] = useState<ExtensionItem[]>([])
@@ -138,10 +145,10 @@ export function ExtensionsSettings() {
           color: 'var(--color-text-secondary)'
         }}
       >
-        <div style={{ flex: 2 }}>Name</div>
-        <div style={{ flex: 1 }}>Type</div>
-        <div style={{ flex: 1 }}>Hotkey</div>
-        <div style={{ width: '80px', textAlign: 'center' }}>Enabled</div>
+        <div style={{ flex: 2, alignItems: 'center' }}>Name</div>
+        <div style={contentStyle}>Type</div>
+        <div style={contentStyle}>Hotkey</div>
+        <div style={contentStyle}>Enabled</div>
       </HStack>
 
       {/* Extension List */}
@@ -166,26 +173,26 @@ export function ExtensionsSettings() {
                 transition: 'background-color 0.15s',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px'
+                gap: '8px'
               }}
               onClick={() => toggleExtension(ext.meta.name)}
             >
-              <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ flex: 2, display: 'flex', alignItems: 'center' }}>
                 {expandedExtensions.has(ext.meta.name) ? <VscDiffRemoved /> : <VscDiffAdded />}
-                <VStack spacing={2} style={{ alignItems: 'flex-start' }}>
+                <VStack spacing={2} style={{ alignItems: 'flex-start', marginLeft:12 }}>
                   <Text color="title" size="small">{ext.meta.title || ext.meta.name}</Text>
                   <Text color="subtitle" size="small" style={{ fontSize: '12px' }}>
                     {ext.commands.length} command{ext.commands.length !== 1 ? 's' : ''}
                   </Text>
                 </VStack>
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={contentStyle}>
                 <Text color="subtitle" size="small">{ext.meta.type}</Text>
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={contentStyle}>
                 <Text color="subtitle" size="small">-</Text>
               </div>
-              <div style={{ width: '80px', textAlign: 'center' }}>
+              <div style={contentStyle}>
                 <Text color="subtitle" size="small">-</Text>
               </div>
             </div>
@@ -193,7 +200,6 @@ export function ExtensionsSettings() {
             {/* Expanded Commands */}
             {expandedExtensions.has(ext.meta.name) && (
               <VStack
-                spacing={0}
                 style={{
                   alignItems: 'stretch',
                   backgroundColor: 'var(--color-bg-secondary)',
@@ -203,23 +209,23 @@ export function ExtensionsSettings() {
                   <div
                     key={cmd.id}
                     style={{
-                      padding: '10px 24px',
+                      padding: '10px 12px',
                       borderTop: '1px solid var(--color-border-subtle)',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '12px'
+                      gap: '8px'
                     }}
                   >
                     <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Image src={cmd.icon || "👵"} width={32} height={32}/>
+                      <Image src={cmd.icon || ""} width={32} height={32} style={{marginLeft:20}}/>
                       <VStack spacing={2} style={{ alignItems: 'flex-start' }}>
                         <Text color="title" size="small">{cmd.title || cmd.name}</Text>
                       </VStack>
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={contentStyle}>
                       <Text color="subtitle" size="small">{cmd.type}</Text>
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={contentStyle}>
                       <ShortcutRecorder
                         value={cmdShortcuts[cmd.id!] || ''}
                         onChange={(shortcut) => handleShortcutChange(cmd.id!, shortcut)}
@@ -227,7 +233,7 @@ export function ExtensionsSettings() {
                         disabled={!!cmdDisabled[cmd.id!]}
                       />
                     </div>
-                    <div style={{ flex: 1 }}>
+                    <div style={contentStyle}>
                       <Checkbox
                         checked={!cmdDisabled[cmd.id!]}
                         onChange={checked => handleDisabledChange(cmd.id!, checked)}
