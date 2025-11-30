@@ -96,18 +96,6 @@ const appImpl = {
    * @param appPath 应用路径（.app）
    * @returns base64 PNG 字符串
    */
-  async getFileIcon(appPath: string): Promise<string> {
-    try {
-      // Electron v8+ 支持 app.getFileIcon
-      console.log(`[Renderer Process] Getting file icon for: ${appPath}`)
-      const icon = await api.app.getFileIcon(appPath)
-      console.log(`[Renderer Process] Got icon result: ${icon ? `${icon.substring(0, 50)}...` : 'empty'}`)
-      return icon
-    } catch (err) {
-      console.error('[Renderer Process] Error getting file icon:', err)
-      return ''
-    }
-  },
 }
 
 /**

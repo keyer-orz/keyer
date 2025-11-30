@@ -32,10 +32,6 @@ export interface APIType {
   app: {
     getVersion: () => Promise<string>
     getName: () => Promise<string>
-    /**
-     * 获取应用图标（返回 base64 PNG）
-     */
-    getFileIcon: (appPath: string) => Promise<string>
   }
   file: {
     read: (path: string) => Promise<string>
