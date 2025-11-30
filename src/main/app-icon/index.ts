@@ -7,9 +7,9 @@ import { getAppIcon } from './mac-icon-reader'
  * 注册 keyer-app:// 协议用于访问应用图标（带缓存）
  */
 export function registerAppIconProtocol() {
-  protocol.registerBufferProtocol('keyer-app', async (request, callback) => {
+  protocol.registerBufferProtocol('app', async (request, callback) => {
     try {
-      const appPath = decodeURIComponent(request.url.replace('keyer-app://', ''))
+      const appPath = decodeURIComponent(request.url.replace('app://', ''))
       console.log(`[AppIcon] Request for: ${appPath}`)
       
       // 检查应用文件是否存在
@@ -27,45 +27,27 @@ export function registerAppIconProtocol() {
       
       // 检查缓存是否存在且未过期
       if (fs.existsSync(cachePath)) {
-        const stats = fs.statSync(cachePath)
-        const cacheAge = Date.now() - stats.mtime.getTime()
-        const maxAge = 24 * 60 * 60 * 1000 // 1天
-        
-        if (cacheAge < maxAge) {
-          console.log(`[AppIcon] Using cached icon: ${cacheFileName}`)
-          const buffer = fs.readFileSync(cachePath)
-          callback({ mimeType: 'image/png', data: buffer })
-          return
-        } else {
-          console.log(`[AppIcon] Cache expired, removing: ${cacheFileName}`)
-          try { fs.unlinkSync(cachePath) } catch {}
-        }
+        const buffer = fs.readFileSync(cachePath)
+        callback({ mimeType: 'image/png', data: buffer })
+        return 
       }
       
       // 获取新图标
-      console.log(`[AppIcon] Fetching new icon for: ${appPath}`)
       const iconBuffer = await getAppIcon(appPath)
-      
       if (iconBuffer && iconBuffer.length > 0) {
-        console.log(`[AppIcon] Got icon buffer: ${iconBuffer.length} bytes`)
-        
         // 确保缓存目录存在
         const cacheDir = path.dirname(cachePath)
         if (!fs.existsSync(cacheDir)) {
           fs.mkdirSync(cacheDir, { recursive: true })
         }
-        
         // 保存到缓存
         fs.writeFileSync(cachePath, iconBuffer)
-        console.log(`[AppIcon] Cached new icon: ${cacheFileName}`)
         
         callback({ mimeType: 'image/png', data: iconBuffer })
       } else {
-        console.error(`[AppIcon] Failed to get icon for: ${appPath}`)
         callback({ error: -6 })
       }
     } catch (error) {
-      console.error('[AppIcon] Error processing app icon request:', error)
       callback({ error: -2 })
     }
   })
