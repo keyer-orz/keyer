@@ -1,5 +1,7 @@
-import { HStack, ICommand, IExtension, IExtensionStore, Keyer } from "keyerext"
+import { HStack, ICommand, IExtension, IExtensionStore, Image, Keyer } from "keyerext"
+import path from "path";
 import React from "react"
+import * as fs from 'fs';
 
 export default class Ext implements IExtension {
     store?: IExtensionStore;
@@ -12,39 +14,7 @@ export default class Ext implements IExtension {
                 name: 'test',
                 title: 'Test Command',
                 desc: 'This is a test command',
-            },
-            {
-                icon: '😂',
-                name: 'test2',
-                title: 'Test Command',
-                desc: 'This is a test command',
-            }, {
-                icon: '😂',
-                name: 'test3',
-                title: 'Test Command',
-                desc: 'This is a test command',
-            }, {
-                icon: '😂',
-                name: 'test4',
-                title: 'Test Command',
-                desc: 'This is a test command',
-            }, {
-                icon: '😂',
-                name: 'test5',
-                title: 'Test Command',
-                desc: 'This is a test command',
-            }, {
-                icon: '😂',
-                name: 'test6',
-                title: 'Test Command',
-                desc: 'This is a test command',
-            }, {
-                icon: '😂',
-                name: 'test7',
-                title: 'Test Command',
-                desc: 'This is a test command',
             }
-
         ]
     }
 
@@ -55,7 +25,19 @@ export default class Ext implements IExtension {
         return null
     }
 
+    private getIconUrl(iconName: string): string {
+        // 优先使用内置图标
+        console.log(__dirname)
+        const builtinIconPath = path.join(__dirname, '../assets', `${iconName}.png`)
+        console.log(`${builtinIconPath}`)
+        if (fs.existsSync(builtinIconPath)) {
+            return `asset://${builtinIconPath}`
+        }
+        return ""
+    }
+
     run(name: string): React.ReactElement | null {
+        console.log('run command:', name)
         if (name == 'hello') {
             Keyer.clipboard.writeText("hello")
         }
@@ -72,6 +54,6 @@ export default class Ext implements IExtension {
             return null
         }
         this.store?.set('last-run-command', name)
-        return <div>none</div>
+        return <div><Image ctx={this} src="asset://shottr.png" /></div>
     }
 }

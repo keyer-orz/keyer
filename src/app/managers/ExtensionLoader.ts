@@ -87,6 +87,7 @@ export class ExtensionLoader {
       // 创建并注入扩展存储
       const store = new ExtensionStore(pkgInfo.name)
       extension.store = store
+      extension.dir = pkgInfo.dir
 
       // 3. 构造 ExtensionMeta
       const meta: ExtensionMeta = {
