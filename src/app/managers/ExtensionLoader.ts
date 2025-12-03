@@ -18,11 +18,11 @@ export class ExtensionLoader {
     const extensions: ExtensionMeta[] = []
 
     try {
-      // 1. 从主进程获取扩展元数据列表
+      // 从主进程获取扩展元数据列表
       const packageInfoList = await api.extensions.scan()
       Log.log(`📦 Received ${packageInfoList.length} extension packages from main process`)
 
-      // 2. 遍历每个扩展，加载实例
+      // 遍历每个扩展，加载实例
       for (const pkgInfo of packageInfoList) {
         try {
           const ext = await this.loadExtension(pkgInfo)
@@ -42,7 +42,8 @@ export class ExtensionLoader {
   }
 
   /**
-   * 加载单个扩展
+   * 加载单个扩展（CommonJS 格式）
+   * keyerext 是 ESM，使用动态 import() 加载
    * @param pkgInfo 从主进程扫描得到的扩展包信息
    * @returns 扩展元数据，如果加载失败返回 null
    */
@@ -50,7 +51,7 @@ export class ExtensionLoader {
     pkgInfo: ExtensionPackageInfo
   ): Promise<ExtensionMeta | null> {
     try {
-      // 1. 构建扩展文件的完整路径
+      // 构建扩展文件的完整路径
       const mainPath = path.join(pkgInfo.dir, pkgInfo.main)
 
       if (!fs.existsSync(mainPath)) {
@@ -58,23 +59,25 @@ export class ExtensionLoader {
         return null
       }
 
-      // 2. 读取并执行扩展代码
+      // 动态导入 keyerext（ESM）
+      const Keyerext = await import('keyerext')
+
+      // 读取并执行扩展代码（CommonJS）
       const pluginCode = fs.readFileSync(mainPath, 'utf-8')
       const pluginModule = new Module(mainPath, module)
 
-      // 设置路径以便插件能找到自己的 node_modules（如果有的话）
+      // 设置路径以便插件能找到自己的 node_modules
       pluginModule.paths = (Module as any)._nodeModulePaths(path.dirname(mainPath))
       pluginModule.filename = mainPath
 
-      // 加载 keyerext (CommonJS)
-      const Keyerext = require('keyerext')
-      
-      // 覆盖 require 方法来拦截特定模块
+      // 覆盖 require 方法，注入共享依赖
       pluginModule.require = function (id: string) {
+        // 注入共享的 React 和 keyerext（Vite 已经通过 dedupe 确保单例）
         if (id === 'react') return React
         if (id === 'react/jsx-runtime') return (global as any).ReactJSXRuntime || require('react/jsx-runtime')
         if (id === 'keyerext') return Keyerext
-        // 其他模块使用默认加载方式
+        
+        // 其他模块使用默认加载
         return (Module as any)._load(id, pluginModule, false)
       } as any
 
@@ -84,14 +87,13 @@ export class ExtensionLoader {
 
       const ExtensionClass = pluginModule.exports.default
       const extension: IExtension = new ExtensionClass()
-      Log.log('Extension instance created:', pkgInfo.name)
 
-      // 创建并注入扩展存储
+      // 注入扩展存储和目录信息
       const store = new ExtensionStore(pkgInfo.name)
       extension.store = store
       extension.dir = pkgInfo.dir
 
-      // 3. 构造 ExtensionMeta
+      // 构造 ExtensionMeta
       const meta = new ExtensionMeta(pkgInfo, extension, 'local')
 
       return meta

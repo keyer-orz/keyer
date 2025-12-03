@@ -35,6 +35,7 @@ export default defineConfig({
     include: ['keyerext']
   },
   resolve: {
+    dedupe: ['react', 'react-dom'], // 确保 React 单例
     alias: {
       '@': resolve(__dirname, 'src')
     }
