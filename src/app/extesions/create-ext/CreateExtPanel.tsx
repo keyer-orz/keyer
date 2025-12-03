@@ -16,7 +16,7 @@ interface ExtensionFormData {
   targetDir: string
 }
 
-export function CreateExtensionUI() {
+export default function CreateExtPanel() {
   const { pop } = useNavigation()
   const [formData, setFormData] = useState<ExtensionFormData>({
     name: '',

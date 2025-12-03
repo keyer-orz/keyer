@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { HStack, Text, List } from 'keyerext'
-import { GeneralSettings, ExtensionsSettings } from './tabs'
+import { ExtensionsSettings } from './ExtensionsSettings'
+import { GeneralSettings } from './GeneralSettings'
 
 interface SettingsSection {
     id: string
@@ -21,7 +22,7 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
     }
 ]
 
-export default function Setting() {
+export default function SettingPanel() {
     const [selectedSection, setSelectedSection] = useState<string>('general')
 
     const items = SETTINGS_SECTIONS.map(section => ({

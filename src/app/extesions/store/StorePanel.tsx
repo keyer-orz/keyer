@@ -4,7 +4,7 @@ import { useStore } from './useStore'
 import { ExtensionList } from './ExtensionList'
 import { ExtensionDetail } from './ExtensionDetail'
 
-export function StoreUI() {
+export default function StorePanel() {
     const inputRef = useRef<InputRef>(null)
     const {
         searchQuery,
