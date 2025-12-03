@@ -26,8 +26,6 @@ export function registerAppIconProtocol() {
   protocol.registerBufferProtocol('app', async (request, callback) => {
     try {
       const appPath = decodeURIComponent(request.url.replace('app://', ''))
-      console.log(`[AppIcon] Request for: ${appPath}`)
-      
       // 检查应用文件是否存在
       if (!fs.existsSync(appPath)) {
         console.error(`[AppIcon] App not found: ${appPath}`)
