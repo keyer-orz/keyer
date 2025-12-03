@@ -1,5 +1,6 @@
 import { HStack, ICommand, IExtension, IExtensionStore, Text, Keyer, useExtensionContext, VStack } from "keyerext"
 import React from "react"
+import { DemoUI } from "./DemoUI";
 
 export default class Ext implements IExtension {
     store?: IExtensionStore;
@@ -52,29 +53,4 @@ export default class Ext implements IExtension {
         this.store?.set('last-run-command', name)
         return <div>11</div>
     }
-}
-
-function DemoUI() {
-  // 获取扩展上下文
-  const { meta } = useExtensionContext()
-
-  return (
-    <VStack spacing={16} style={{ padding: '20px', alignItems: 'flex-start' }}>
-      <Text size="large" color="title" style={{ fontWeight: 600 }}>
-        扩展信息
-      </Text>
-
-      <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
-        <HStack spacing={8}>
-          <Text color="subtitle">扩展dir：</Text>
-          <Text color="title">{meta.dir}</Text>
-        </HStack>
- 
-      </VStack>
-
-      <Text size="small" color="subtitle" style={{ marginTop: '20px' }}>
-        💡 提示：这些信息由 Keyer 框架自动注入，扩展无需手动配置
-      </Text>
-    </VStack>
-  )
 }

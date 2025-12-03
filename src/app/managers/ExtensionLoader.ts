@@ -62,41 +62,55 @@ export class ExtensionLoader {
       // 动态导入 keyerext（ESM）
       const Keyerext = await import('keyerext')
 
-      // 读取并执行扩展代码（CommonJS）
-      const pluginCode = fs.readFileSync(mainPath, 'utf-8')
-      const pluginModule = new Module(mainPath, module)
+      // 全局拦截 Module._load，确保扩展的所有文件都能正确加载依赖
+      const originalLoad = (Module as any)._load
+      const extensionDir = pkgInfo.dir
+      
+      ;(Module as any)._load = function (request: string, parent: any) {
+        // 只拦截来自当前扩展目录的模块加载
+        if (parent?.filename?.startsWith(extensionDir)) {
+          if (request === 'react') return React
+          if (request === 'react/jsx-runtime') return require('react/jsx-runtime')
+          if (request === 'keyerext') return Keyerext
+        }
+        return originalLoad.apply(this, arguments)
+      }
 
-      // 设置路径以便插件能找到自己的 node_modules
-      pluginModule.paths = (Module as any)._nodeModulePaths(path.dirname(mainPath))
-      pluginModule.filename = mainPath
+      try {
+        // 读取并执行扩展代码（CommonJS）
+        const pluginCode = fs.readFileSync(mainPath, 'utf-8')
+        const pluginModule = new Module(mainPath, module)
 
-      // 覆盖 require 方法，注入共享依赖
-      pluginModule.require = function (id: string) {
-        // 注入共享的 React 和 keyerext（Vite 已经通过 dedupe 确保单例）
-        if (id === 'react') return React
-        if (id === 'react/jsx-runtime') return (global as any).ReactJSXRuntime || require('react/jsx-runtime')
-        if (id === 'keyerext') return Keyerext
-        
-        // 其他模块使用默认加载
-        return (Module as any)._load(id, pluginModule, false)
-      } as any
+        // 设置路径以便插件能找到自己的 node_modules
+        pluginModule.paths = (Module as any)._nodeModulePaths(path.dirname(mainPath))
+        pluginModule.filename = mainPath
 
-      // 编译并执行插件代码
-      // @ts-ignore - _compile 是内部 API
-      pluginModule._compile(pluginCode, mainPath)
+        // 覆盖 require 方法，注入共享依赖
+        pluginModule.require = function (id: string) {
+          // 使用全局 _load，它会处理拦截
+          return (Module as any)._load(id, pluginModule, false)
+        } as any
 
-      const ExtensionClass = pluginModule.exports.default
-      const extension: IExtension = new ExtensionClass()
+        // 编译并执行插件代码
+        // @ts-ignore - _compile 是内部 API
+        pluginModule._compile(pluginCode, mainPath)
 
-      // 注入扩展存储和目录信息
-      const store = new ExtensionStore(pkgInfo.name)
-      extension.store = store
-      extension.dir = pkgInfo.dir
+        const ExtensionClass = pluginModule.exports.default
+        const extension: IExtension = new ExtensionClass()
 
-      // 构造 ExtensionMeta
-      const meta = new ExtensionMeta(pkgInfo, extension, 'local')
+        // 注入扩展存储和目录信息
+        const store = new ExtensionStore(pkgInfo.name)
+        extension.store = store
+        extension.dir = pkgInfo.dir
 
-      return meta
+        // 构造 ExtensionMeta
+        const meta = new ExtensionMeta(pkgInfo, extension, 'local')
+
+        return meta
+      } finally {
+        // 恢复原始的 _load 方法
+        ;(Module as any)._load = originalLoad
+      }
     } catch (error) {
       Log.error(`❌ Failed to load extension module "${pkgInfo.name}":`, error instanceof Error ? error.stack || error.message : String(error))
       return null
