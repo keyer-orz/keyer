@@ -49,12 +49,10 @@ export function ExtensionList({
         )
     }
 
-    const listGroups = [{
-        items: extensions.map(ext => ({
-            id: ext.name,
-            data: ext
-        }))
-    }]
+    const items = extensions.map(ext => ({
+        id: ext.name,
+        data: ext
+    }))
 
     const renderExtensionItem = (item: { id: string; data: StoreExtension }) => {
         const ext = item.data
@@ -107,7 +105,7 @@ export function ExtensionList({
     return (
         <div style={{ flex: 1, overflowY: 'auto' }}>
             <List
-                groups={listGroups}
+                items={items}
                 selectedId={selectedExtension?.name}
                 onClick={(_, data) => onSelectExtension(data)}
                 onEnter={(_, data) => onSelectExtension(data)}

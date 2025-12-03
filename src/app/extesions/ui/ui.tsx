@@ -106,7 +106,7 @@ export default function UIDemo() {
                     </VStack>
 
                     <List
-                        groups={groups}
+                        items={groups}
                         selectedId={selectedId}
                         renderItem={(item, _isSelected, _isHovered) => (
                             <VStack spacing={2} style={{ alignItems: 'flex-start' }}>

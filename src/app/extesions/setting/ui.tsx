@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { HStack, Text, List, ListGroup } from 'keyerext'
+import { HStack, Text, List } from 'keyerext'
 import { GeneralSettings, ExtensionsSettings } from './tabs'
 
 interface SettingsSection {
@@ -24,15 +24,10 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
 export default function Setting() {
     const [selectedSection, setSelectedSection] = useState<string>('general')
 
-    const sections: ListGroup[] = [
-        {
-            title: "Settings",
-            items: SETTINGS_SECTIONS.map(section => ({
-                id: section.id,
-                data: section
-            }))
-        }
-    ]
+    const items = SETTINGS_SECTIONS.map(section => ({
+        id: section.id,
+        data: section
+    }))
 
     const currentSection = SETTINGS_SECTIONS.find(s => s.id === selectedSection)
 
@@ -46,7 +41,7 @@ export default function Setting() {
                 flexDirection: 'column'
             }}>
                 <List
-                    groups={sections}
+                    items={items}
                     selectedId={selectedSection}
                     onClick={(id) => setSelectedSection(id)}
                     onSelect={(id) => setSelectedSection(id)}

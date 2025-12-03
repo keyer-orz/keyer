@@ -39,14 +39,10 @@ export default function Main() {
     }
 
     // Convert ICommand to ListItem format
-    const listItems: ListItem<ICommand>[] = commands.map(cmd => ({
+    const items: ListItem<ICommand>[] = commands.map(cmd => ({
         id: cmd.id!,
         data: cmd
     }))
-
-    const groups: ListGroup<ICommand>[] = [{
-        items: listItems
-    }]
 
     const renderItem = (item: ListItem<ICommand>) => {
         const cmd = item.data
@@ -82,7 +78,7 @@ export default function Main() {
         )}
 
         <List
-            groups={groups}
+            items={items}
             renderItem={renderItem}
             selectedId={selectedId}
             onSelect={handleSelect}
