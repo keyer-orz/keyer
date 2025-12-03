@@ -6,7 +6,8 @@ export default {
         name: "main",
         title: "Main Page",
         desc: "Open the main page",
-        icon: "🏠"
+        icon: "🏠",
+        dir: "",
     },
     ext: MainPanel
 } as AppExt

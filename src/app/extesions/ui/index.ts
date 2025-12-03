@@ -8,7 +8,8 @@ export default {
         title: 'UI Demo',
         desc: 'UI demo panel',
         icon: '✨',
-        windowSize: WindowSize.Normal
+        windowSize: WindowSize.Normal,
+        dir: "",
     },
     ext: UIDemo
 } as AppExt

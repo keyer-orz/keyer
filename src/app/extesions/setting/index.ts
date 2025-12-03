@@ -8,7 +8,8 @@ export default {
         title: "Setting",
         desc: "Open the setting page",
         icon: "⚙️",
-        windowSize: WindowSize.Large
+        windowSize: WindowSize.Large,
+        dir: "",
     },
     ext: SettingPanel
 } as AppExt

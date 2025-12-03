@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, Drawer, Image } from 'keyerext'
+import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, Drawer } from 'keyerext'
 import { ThemeSwitcher } from '../../components'
 
 export default function UIDemo() {
