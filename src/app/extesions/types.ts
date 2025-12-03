@@ -1,8 +1,8 @@
-import { ICommand } from "keyerext/dist"
+import { Command } from "@/shared/extension"
 import React from "react"
 
 type AppExt = {
-    cmd: ICommand
+    cmd: Command
     ext: React.ElementType
 }
 

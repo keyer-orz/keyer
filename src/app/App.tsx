@@ -2,9 +2,11 @@ import { useEffect, useState, useRef } from 'react'
 import './styles/App.css'
 import { useNavigation, setKeyer } from 'keyerext'
 import { NavigationProvider } from './contexts/NavigationContext'
+import { ExtensionProvider } from './contexts/ExtensionContext'
 import { registerExtensions } from './extensions'
 import { configManager } from './utils/config'
 import { KeyerInstance } from './keyer'
+import { commandManager } from './managers/CommandManager'
 
 function AppContent() {
   const { currentPage, stack, push } = useNavigation()
@@ -66,15 +68,28 @@ function AppContent() {
 
   return (
     <>
-      {stack.map(item => (
-        <div
-          className="main"
-          key={item.pageName}
-          style={{ display: item === currentPage ? 'flex' : 'none' }}
-        >
-          {item.element}
-        </div>
-      ))}
+      {stack.map(item => {
+        // 获取扩展元数据
+        const meta = item.extensionName 
+          ? commandManager.getAllExtensions().find(e => e.name === item.extensionName)
+          : undefined
+
+        return (
+          <div
+            className="main"
+            key={item.pageName}
+            style={{ display: item === currentPage ? 'flex' : 'none' }}
+          >
+            {meta ? (
+              <ExtensionProvider meta={meta}>
+                {item.element}
+              </ExtensionProvider>
+            ) : (
+              item.element
+            )}
+          </div>
+        )
+      })}
     </>
   )
 }

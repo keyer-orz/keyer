@@ -1,6 +1,11 @@
 import { IExtension, ICommand } from 'keyerext'
 import { ExtensionPackageInfo } from './ipc'
 
+// 扩展属性
+export type Command = ICommand & {
+  dir: string
+};
+
 export class ExtensionMeta {
     // 基础信息
     name: string                    // 扩展名称
@@ -26,8 +31,8 @@ export class ExtensionMeta {
     }
 
     // 方法：获取所有命令（静态 + 动态）
-    allCommands(): ICommand[] {
-        const allCommands: ICommand[] = []
+    allCommands(): Command[] {
+        const allCommands: Command[] = []
 
         // 1. 静态命令（package.json 中记录的）
         if (this.pkg.commands) {
@@ -36,7 +41,8 @@ export class ExtensionMeta {
                     ...cmd,
                     id: `${this.name}#${cmd.name}`,
                     extTitle: this.title,
-                    type: cmd.type || 'Command'
+                    type: cmd.type || 'Command',
+                    dir: this.pkg.dir
                 })
             })
         }
@@ -51,7 +57,8 @@ export class ExtensionMeta {
                             ...cmd,
                             id: `${this.name}#${cmd.name}`,
                             extTitle: this.title,
-                            type: cmd.type || 'Command'
+                            type: cmd.type || 'Command',
+                            dir: this.pkg.dir
                         })
                     })
                 }

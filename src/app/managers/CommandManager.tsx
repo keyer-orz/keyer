@@ -1,10 +1,9 @@
 import { ReactElement } from 'react'
-import { ICommand } from 'keyerext'
-import { ExtensionMeta } from '@/shared/extension'
+import { Command, ExtensionMeta } from '@/shared/extension'
 import { configManager } from '../utils/config'
 class CommandManager {
   private extensions: Map<string, ExtensionMeta> = new Map()
-  private commands: ICommand[] = []
+  private commands: Command[] = []
 
   register(meta: ExtensionMeta) {
     this.extensions.set(meta.name, meta)
@@ -22,7 +21,7 @@ class CommandManager {
     return Array.from(this.extensions.values())
   }
 
-  getAllCommands(): ICommand[] {
+  getAllCommands(): Command[] {
     return this.commands.filter(cmd => !configManager.getCmdConfig(cmd.id!).disabled)
   }
 
@@ -35,7 +34,7 @@ class CommandManager {
     )
   }
 
-  search(query: string): ICommand[] {
+  search(query: string): Command[] {
     const filtered = this.commands.filter(cmd => !configManager.getCmdConfig(cmd.id!).disabled)
     if (!query || query.trim() === '') {
       return filtered.filter(cmd => cmd.id != "@system#main")
@@ -52,7 +51,7 @@ class CommandManager {
     }).filter(cmd => cmd.id != "@system#main")
   }
 
-  execute(commandName: string): { element: ReactElement; windowSize?: { width: number; height: number } } | null {
+  execute(commandName: string): { element: ReactElement; windowSize?: { width: number; height: number }; extensionName: string } | null {
     const [extId, cmdName] = commandName.split('#')
     const commandInfo = this.commands.find(it => it.id === commandName)
     console.log('Command info:', commandInfo)
@@ -73,7 +72,8 @@ class CommandManager {
       }
       return {
         element,
-        windowSize: commandInfo.windowSize
+        windowSize: commandInfo.windowSize,
+        extensionName: extId
       }
     } catch (error) {
       console.error(`Error executing command "${commandName}":`, error)

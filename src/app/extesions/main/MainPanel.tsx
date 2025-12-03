@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, type ListGroup, type ICommand } from 'keyerext'
+import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
+import { Command } from '@/shared/extension'
 
 export default function MainPanel() {
     const [searchText, setSearchText] = useState('')
-    const [commands, setCommands] = useState<ICommand[]>([])
+    const [commands, setCommands] = useState<Command[]>([])
     const [previewItems, setPreviewItems] = useState<React.ReactElement[]>([])
     const [selectedId, setSelectedId] = useState<string | undefined>(undefined)
     const inputRef = useRef<InputRef>(null)
@@ -28,7 +29,7 @@ export default function MainPanel() {
 
 
     // Handle command execution
-    const handleExecuteCommand = (_id: string, cmd: ICommand) => {
+    const handleExecuteCommand = (_id: string, cmd: Command) => {
         console.log('Executing command:', cmd.id)
         push(cmd.id!)
     }
@@ -39,12 +40,12 @@ export default function MainPanel() {
     }
 
     // Convert ICommand to ListItem format
-    const items: ListItem<ICommand>[] = commands.map(cmd => ({
+    const items: ListItem<Command>[] = commands.map(cmd => ({
         id: cmd.id!,
         data: cmd
     }))
 
-    const renderItem = (item: ListItem<ICommand>) => {
+    const renderItem = (item: ListItem<Command>) => {
         const cmd = item.data
         return (
             <HStack spacing={12}>

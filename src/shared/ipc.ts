@@ -1,4 +1,4 @@
-import { ICommand } from "keyerext"
+import { Command } from "./extension"
 
 export interface ExtensionPackageInfo {
   name: string
@@ -8,7 +8,7 @@ export interface ExtensionPackageInfo {
   version?: string
   main: string
   dir: string
-  commands?: ICommand[]
+  commands?: Command[]
 }
 
 export interface ExecResult {
