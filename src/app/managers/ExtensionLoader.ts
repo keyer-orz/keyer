@@ -1,4 +1,5 @@
-import { ExtensionMeta, IExtension } from 'keyerext'
+import { IExtension } from 'keyerext'
+import { ExtensionMeta } from '@/shared/extension'
 import * as path from 'path'
 import * as fs from 'fs'
 import Module from 'module'
@@ -90,25 +91,7 @@ export class ExtensionLoader {
       extension.dir = pkgInfo.dir
 
       // 3. 构造 ExtensionMeta
-      const meta: ExtensionMeta = {
-        name: pkgInfo.name,
-        title: pkgInfo.title || pkgInfo.name,
-        desc: pkgInfo.desc,
-        icon: pkgInfo.icon,
-        version: pkgInfo.version,
-        type: 'local',
-        main: pkgInfo.main,
-        ext: extension,
-        commands: pkgInfo.commands?.map(cmd => ({
-          id: '', // 将由 CommandManager 填充
-          name: cmd.name,
-          title: cmd.title,
-          desc: cmd.desc || '',
-          icon: cmd.icon || '📦',
-          extTitle: pkgInfo.title || pkgInfo.name,
-          type: cmd.type || 'Command'
-        }))
-      }
+      const meta = new ExtensionMeta(pkgInfo, extension, 'local')
 
       return meta
     } catch (error) {

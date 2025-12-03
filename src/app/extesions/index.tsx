@@ -1,4 +1,5 @@
-import { IExtension, ExtensionMeta, WindowSize } from "keyerext";
+import { IExtension, WindowSize } from "keyerext";
+import { ExtensionMeta } from '@/shared/extension';
 import UIDemo from "./ui/ui";
 import Main from "./main/ui";
 import Setting from "./setting/ui";
@@ -17,43 +18,50 @@ class Ext implements IExtension {
     }
 }
 
-export default {
-    name: '@system',
-    title: 'Keyer',
-    type: 'app',
-    ext: new Ext(),
-    commands: [
-        {
-            name: "main",
-            title: "Main Page",
-            desc: "Open the main page",
-            icon: "🏠"
-        },
-        {
-            name: "setting",
-            title: "Setting",
-            desc: "Open the setting page",
-            icon: "⚙️",
-            windowSize: WindowSize.Large
-        },
-        {
-            name: 'ui',
-            title: 'UI Components Demo',
-            desc: 'Showcase all UI components',
-            icon: '🎨'
-        },
-        {
-            name: 'store',
-            title: 'Extensions Store',
-            desc: 'Browse and install extensions',
-            icon: '🏪',
-        },
-        {
-            name: 'create_ext',
-            title: 'Create Extension',
-            desc: 'Create a new extension from template',
-            icon: '✨',
-            windowSize: WindowSize.Normal
-        }
-    ]
-} as ExtensionMeta;
+export default new ExtensionMeta(
+    {
+        name: '@system',
+        title: 'Keyer',
+        desc: 'System built-in extensions',
+        icon: '⚙️',
+        version: '1.0.0',
+        main: '',
+        dir: '',
+        commands: [
+            {
+                name: "main",
+                title: "Main Page",
+                desc: "Open the main page",
+                icon: "🏠"
+            },
+            {
+                name: "setting",
+                title: "Setting",
+                desc: "Open the setting page",
+                icon: "⚙️",
+                windowSize: WindowSize.Large
+            },
+            {
+                name: 'ui',
+                title: 'UI Components Demo',
+                desc: 'Showcase all UI components',
+                icon: '🎨'
+            },
+            {
+                name: 'store',
+                title: 'Extensions Store',
+                desc: 'Browse and install extensions',
+                icon: '🏪',
+            },
+            {
+                name: 'create_ext',
+                title: 'Create Extension',
+                desc: 'Create a new extension from template',
+                icon: '✨',
+                windowSize: WindowSize.Normal
+            }
+        ]
+    },
+    new Ext(),
+    'app'
+);

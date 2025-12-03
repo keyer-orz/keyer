@@ -1,3 +1,5 @@
+import { ICommand } from "keyerext"
+
 export interface ExtensionPackageInfo {
   name: string
   title?: string
@@ -6,13 +8,7 @@ export interface ExtensionPackageInfo {
   version?: string
   main: string
   dir: string
-  commands?: Array<{
-    name: string
-    title?: string
-    desc?: string
-    icon?: string
-    type?: string
-  }>
+  commands?: ICommand[]
 }
 
 export interface ExecResult {

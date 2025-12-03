@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, type ListGroup } from 'keyerext'
+import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, type ListGroup, type ICommand } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
-import type { ICommand } from 'keyerext'
 
 export default function Main() {
     const [searchText, setSearchText] = useState('')

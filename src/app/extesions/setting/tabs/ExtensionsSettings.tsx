@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { VStack, HStack, Text, Input, Image, Checkbox } from 'keyerext'
+import { VStack, HStack, Text, Input, Image, Checkbox, ICommand } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { configManager } from '@/app/utils/config'
 import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
-import { ExtensionMeta, ICommand } from 'keyerext'
+import { ExtensionMeta } from '@/shared/extension'
 import { VscDiffRemoved, VscDiffAdded } from "react-icons/vsc";
 import { api } from '@/app/api'
 
@@ -27,48 +27,34 @@ export function ExtensionsSettings() {
   const [cmdDisabled, setCmdDisabled] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    // 从 commandManager 获取所有命令
-    const allCommands = commandManager.getAllCommands()
+    // 从 commandManager 获取所有扩展和命令
+    const allExtensions = commandManager.getAllExtensions()
 
-    // 按扩展分组
-    const extensionMap = new Map<string, ExtensionItem>()
+    // 构建扩展项列表
+    const extensionItems: ExtensionItem[] = allExtensions.map(meta => ({
+      meta,
+      commands: meta.allCommands()
+    }))
 
-    allCommands.forEach(cmd => {
-      if (!cmd.id) return
-
-      const [extName] = cmd.id.split('#')
-
-      if (!extensionMap.has(extName)) {
-        extensionMap.set(extName, {
-          meta: {
-            name: extName,
-            title: cmd.extTitle || extName,
-            type: 'local',
-            main: '',
-            version: '1.0.0'
-          },
-          commands: []
-        })
-      }
-
-      extensionMap.get(extName)!.commands.push(cmd)
-    })
-
-    setExtensions(Array.from(extensionMap.values()))
+    setExtensions(extensionItems)
 
     // 加载所有命令的快捷键配置和禁用状态
     const allConfigs = configManager.getAllCmdConfigs()
     const shortcuts: Record<string, string> = {}
     const disabled: Record<string, boolean> = {}
-    allCommands.forEach(cmd => {
-      if (cmd.id) {
-        if (allConfigs[cmd.id]?.shortcut) {
-          shortcuts[cmd.id] = allConfigs[cmd.id].shortcut!
+    
+    // 遍历所有扩展的命令
+    extensionItems.forEach(item => {
+      item.commands.forEach(cmd => {
+        if (cmd.id) {
+          if (allConfigs[cmd.id]?.shortcut) {
+            shortcuts[cmd.id] = allConfigs[cmd.id].shortcut!
+          }
+          if (allConfigs[cmd.id]?.disabled) {
+            disabled[cmd.id] = true
+          }
         }
-        if (allConfigs[cmd.id]?.disabled) {
-          disabled[cmd.id] = true
-        }
-      }
+      })
     })
     setCmdShortcuts(shortcuts)
     setCmdDisabled(disabled)

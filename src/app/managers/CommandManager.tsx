@@ -1,5 +1,6 @@
 import { ReactElement } from 'react'
-import { ExtensionMeta, ICommand } from 'keyerext'
+import { ICommand } from 'keyerext'
+import { ExtensionMeta } from '@/shared/extension'
 import { configManager } from '../utils/config'
 class CommandManager {
   private extensions: Map<string, ExtensionMeta> = new Map()
@@ -7,34 +8,18 @@ class CommandManager {
 
   register(meta: ExtensionMeta) {
     this.extensions.set(meta.name, meta)
+  }
 
-    // 1. 静态命令
-    if (meta.commands) {
-      meta.commands.map(item => {
-        item.id = `${meta.name}#${item.name}`
-        item.extTitle = meta.title
-        item.type = item.type || 'Command'
-        return item
-      })
-        .forEach(item => this.commands.push(item))
-    }
+  reloadCommands() {
+    this.commands = []
+    this.extensions.forEach(meta => {
+      const commands = meta.allCommands()
+      commands.forEach(cmd => this.commands.push(cmd))
+    })
+  }
 
-    // 2. 动态命令（load）
-    if (meta.ext && typeof meta.ext.load === 'function') {
-      try {
-        const loaded = meta.ext.load()
-        if (Array.isArray(loaded)) {
-          loaded.map(item => {
-            item.id = `${meta.name}#${item.name}`
-            item.extTitle = meta.title
-            item.type = item.type || 'Command'
-            return item
-          }).forEach(item => this.commands.push(item))
-        }
-      } catch (e) {
-        // 可选：日志输出
-      }
-    }
+  getAllExtensions(): ExtensionMeta[] {
+    return Array.from(this.extensions.values())
   }
 
   getAllCommands(): ICommand[] {

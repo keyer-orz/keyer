@@ -33,5 +33,7 @@ export async function registerExtensions() {
     console.error('❌ Failed to load local extensions:', error)
   }
 
+  // 3. 重新加载所有命令
+  commandManager.reloadCommands()
   console.log('✅ Extension registration complete')
 }
