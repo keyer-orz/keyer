@@ -31,6 +31,9 @@ export default defineConfig({
       renderer: {}
     })
   ],
+  optimizeDeps: {
+    include: ['keyerext']
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')

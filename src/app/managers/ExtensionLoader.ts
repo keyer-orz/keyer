@@ -4,7 +4,6 @@ import * as path from 'path'
 import * as fs from 'fs'
 import Module from 'module'
 import React from 'react'
-import * as Keyerext from 'keyerext'
 import Log from '../utils/log'
 import { api } from '../api'
 import { ExtensionPackageInfo } from '../../shared/ipc'
@@ -67,12 +66,14 @@ export class ExtensionLoader {
       pluginModule.paths = (Module as any)._nodeModulePaths(path.dirname(mainPath))
       pluginModule.filename = mainPath
 
+      // 加载 keyerext (CommonJS)
+      const Keyerext = require('keyerext')
+      
       // 覆盖 require 方法来拦截特定模块
       pluginModule.require = function (id: string) {
         if (id === 'react') return React
         if (id === 'react/jsx-runtime') return (global as any).ReactJSXRuntime || require('react/jsx-runtime')
         if (id === 'keyerext') return Keyerext
-
         // 其他模块使用默认加载方式
         return (Module as any)._load(id, pluginModule, false)
       } as any
