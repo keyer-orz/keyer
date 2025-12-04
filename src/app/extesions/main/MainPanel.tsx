@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { Command } from '@/shared/extension'
+import { ExtensionProvider } from '@/app/contexts/ExtensionContext'
 
 export default function MainPanel() {
     const [searchText, setSearchText] = useState('')
@@ -49,10 +50,12 @@ export default function MainPanel() {
         const cmd = item.data
         return (
             <HStack spacing={12}>
-                <Image src={cmd.icon || "👵"} width={32} height={32}/>
+                <ExtensionProvider meta={cmd.ctx}>
+                    <Image src={cmd.icon || "👵"} width={32} height={32} />
+                </ExtensionProvider>
                 <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
                     <Text color="title" size="medium">{cmd.title}</Text>
-                  <Text color="subtitle" style={{ flex: 1 }} size="small">{cmd.extTitle}</Text>
+                    <Text color="subtitle" style={{ flex: 1 }} size="small">{cmd.extTitle}</Text>
                     <Text color="subtitle" size="small">{cmd.type}</Text>
                 </HStack>
             </HStack>

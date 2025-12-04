@@ -1,6 +1,7 @@
 import { ReactElement } from 'react'
 import { Command, ExtensionMeta } from '@/shared/extension'
 import { configManager } from '../utils/config'
+import { IExtensionMeta } from 'keyerext/dist'
 class CommandManager {
   private extensions: Map<string, ExtensionMeta> = new Map()
   private commands: Command[] = []
@@ -51,7 +52,7 @@ class CommandManager {
     }).filter(cmd => cmd.id != "@system#main")
   }
 
-  execute(commandName: string): { element: ReactElement; windowSize?: { width: number; height: number }; extensionName: string } | null {
+  execute(commandName: string): { element: ReactElement; windowSize?: { width: number; height: number }; ctx: IExtensionMeta } | null {
     const [extId, cmdName] = commandName.split('#')
     const commandInfo = this.commands.find(it => it.id === commandName)
     console.log('Command info:', commandInfo)
@@ -73,7 +74,7 @@ class CommandManager {
       return {
         element,
         windowSize: commandInfo.windowSize,
-        extensionName: extId
+        ctx: commandInfo.ctx,
       }
     } catch (error) {
       console.error(`Error executing command "${commandName}":`, error)

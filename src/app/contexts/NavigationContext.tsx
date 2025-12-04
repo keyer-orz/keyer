@@ -40,7 +40,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         pageName: page,
         element: result.element,
         windowSize: result.windowSize,
-        extensionName: result.extensionName
+        ctx: result.ctx,
       }]
 
       // 有页面时显示窗口并调整尺寸
@@ -170,7 +170,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         const targetSize = result.windowSize || { width: 800, height: 500 }
         api.window.resize(targetSize)
         api.window.show()
-        return [{ pageName, element: result.element, windowSize: result.windowSize, extensionName: result.extensionName }]
+        return [{ pageName, element: result.element, windowSize: result.windowSize, ctx: result.ctx }]
       })
     }
     const handler = (_event: any, pageName: string) => handleNavigate(pageName)

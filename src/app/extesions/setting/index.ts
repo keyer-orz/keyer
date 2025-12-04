@@ -9,7 +9,9 @@ export default {
         desc: "Open the setting page",
         icon: "⚙️",
         windowSize: WindowSize.Large,
-        dir: "",
+        ctx: {
+            dir: "",
+        }
     },
     ext: SettingPanel
 } as AppExt

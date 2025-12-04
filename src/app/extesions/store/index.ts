@@ -7,7 +7,9 @@ export default {
         title: 'Extensions Store',
         desc: 'Browse and install extensions',
         icon: '🏪',
-        dir: "",
+        ctx: {
+            dir: "",
+        }
     },
     ext: StorePanel
 } as AppExt

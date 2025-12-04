@@ -7,7 +7,9 @@ export default {
         title: "Main Page",
         desc: "Open the main page",
         icon: "🏠",
-        dir: "",
+        ctx: {
+            dir: "",
+        }
     },
     ext: MainPanel
 } as AppExt

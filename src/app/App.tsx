@@ -69,24 +69,15 @@ function AppContent() {
   return (
     <>
       {stack.map(item => {
-        // 获取扩展元数据
-        const meta = item.extensionName 
-          ? commandManager.getAllExtensions().find(e => e.name === item.extensionName)
-          : undefined
-
         return (
           <div
             className="main"
             key={item.pageName}
             style={{ display: item === currentPage ? 'flex' : 'none' }}
           >
-            {meta ? (
-              <ExtensionProvider meta={meta}>
-                {item.element}
-              </ExtensionProvider>
-            ) : (
-              item.element
-            )}
+            <ExtensionProvider meta={item.ctx!}>
+              {item.element}
+            </ExtensionProvider>
           </div>
         )
       })}

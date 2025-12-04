@@ -9,7 +9,9 @@ export default {
         desc: 'Create a new extension from template',
         icon: '✨',
         windowSize: WindowSize.Normal,
-        dir: ""
+        ctx: {
+            dir: "",
+        }
     },
     ext: CreateExtPanel
 } as AppExt

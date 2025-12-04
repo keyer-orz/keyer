@@ -9,7 +9,9 @@ export default {
         desc: 'UI demo panel',
         icon: '✨',
         windowSize: WindowSize.Normal,
-        dir: "",
+        ctx: {
+            dir: "",
+        }
     },
     ext: UIDemo
 } as AppExt

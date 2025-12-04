@@ -1,9 +1,13 @@
-import { IExtension, ICommand } from 'keyerext'
+import { IExtension, ICommand, IExtensionMeta } from 'keyerext'
 import { ExtensionPackageInfo } from './ipc'
+
+export type Context = {
+    dir: string // ext dir
+}
 
 // 扩展属性
 export type Command = ICommand & {
-  dir: string
+  ctx: IExtensionMeta
 };
 
 export class ExtensionMeta {
@@ -42,7 +46,9 @@ export class ExtensionMeta {
                     id: `${this.name}#${cmd.name}`,
                     extTitle: this.title,
                     type: cmd.type || 'Command',
-                    dir: this.pkg.dir
+                    ctx: {
+                        dir: this.pkg.dir
+                    }
                 })
             })
         }
@@ -58,7 +64,9 @@ export class ExtensionMeta {
                             id: `${this.name}#${cmd.name}`,
                             extTitle: this.title,
                             type: cmd.type || 'Command',
-                            dir: this.pkg.dir
+                            ctx: {
+                                dir: this.pkg.dir
+                            }
                         })
                     })
                 }
