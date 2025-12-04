@@ -6,7 +6,6 @@ import { ExtensionProvider } from './contexts/ExtensionContext'
 import { registerExtensions } from './extensions'
 import { configManager } from './utils/config'
 import { KeyerInstance } from './keyer'
-import { commandManager } from './managers/CommandManager'
 
 function AppContent() {
   const { currentPage, stack, push } = useNavigation()
