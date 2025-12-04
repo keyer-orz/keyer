@@ -7,9 +7,11 @@ import { ExtensionPackageInfo, ExtensionCreateOptions } from '@/shared/ipc'
 export const extensionsHandler: APIType['extensions'] = {
   scan: async () => {
     try {
-      const extensions = await extensionManager.scanExtensions(process.env.APP_ROOT)
-      console.log(`📦 Scanned ${extensions.length} extensions`)
-      return extensions
+      const exts:ExtensionPackageInfo[] = []
+      exts.push(...await extensionManager.scanExtensions(process.env.APP_ROOT))
+      exts.push(extensionManager.readExtensionPackage(process.env.APP_ROOT || '', 'example')!)
+      console.log(`📦 Scanned ${exts.length} extensions`)
+      return exts
     } catch (error) {
       console.error('❌ Failed to scan extensions:', error)
       return []
@@ -35,19 +37,12 @@ export const extensionsHandler: APIType['extensions'] = {
  * 负责扫描扩展目录，读取扩展元数据
  */
 export class ExtensionManager {
-  private extensionsCache: ExtensionPackageInfo[] | null = null
-
   /**
    * 扫描并获取所有扩展的元数据
    * @param devDir 开发目录（可选），如果未提供则使用 userData
    * @returns 扩展包信息列表
    */
   async scanExtensions(devDir?: string): Promise<ExtensionPackageInfo[]> {
-    // 如果已经扫描过，直接返回缓存
-    if (this.extensionsCache) {
-      console.log('📦 Using cached extensions')
-      return this.extensionsCache
-    }
 
     const extensions: ExtensionPackageInfo[] = []
     const baseDir = devDir || app.getPath('userData')
@@ -87,9 +82,6 @@ export class ExtensionManager {
           console.error(`❌ Failed to load extension "${folderName}":`, error)
         }
       }
-
-      // 缓存结果
-      this.extensionsCache = extensions
     } catch (error) {
       console.error('❌ Failed to scan extensions directory:', error)
     }
@@ -103,7 +95,7 @@ export class ExtensionManager {
    * @param folderName 扩展文件夹名称
    * @returns 扩展包信息，失败返回 null
    */
-  private readExtensionPackage(
+  readExtensionPackage(
     extensionsDir: string,
     folderName: string
   ): ExtensionPackageInfo | null {
@@ -150,7 +142,6 @@ export class ExtensionManager {
    * 清除缓存，强制重新扫描
    */
   clearCache(): void {
-    this.extensionsCache = null
     console.log('🗑️  Extension cache cleared')
   }
 

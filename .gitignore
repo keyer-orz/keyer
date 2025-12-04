@@ -39,4 +39,3 @@ Thumbs.db
 # keyer files
 extensions/**
 !extensions/README.md
-!extensions/demo/assets/**
