@@ -18,7 +18,7 @@ export class ExtensionLoader {
     const extensions: ExtensionMeta[] = []
 
     try {
-      // 从主进程获取扩展元数据列表
+      // 从主进程获取所有扩展元数据列表（包括内置和用户安装的）
       const packageInfoList = await api.extensions.scan()
       Log.log(`📦 Received ${packageInfoList.length} extension packages from main process`)
 
@@ -39,6 +39,24 @@ export class ExtensionLoader {
     }
 
     return extensions
+  }
+
+  /**
+   * 验证插件目录的合法性
+   * @param extPath 插件目录路径
+   * @returns 验证结果和错误信息
+   */
+  async validateExtension(extPath: string): Promise<{ valid: boolean; error?: string; info?: ExtensionPackageInfo }> {
+    return api.extensions.validateExtension(extPath)
+  }
+
+  /**
+   * 安装用户插件
+   * @param extPath 插件目录路径
+   * @returns 是否安装成功
+   */
+  async installUserExtension(extPath: string): Promise<boolean> {
+    return api.extensions.installUserExtension(extPath)
   }
 
   /**

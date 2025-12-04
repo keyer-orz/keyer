@@ -24,6 +24,12 @@ export interface ExtensionCreateOptions {
   targetDir: string
 }
 
+export interface ExtensionValidateResult {
+  valid: boolean
+  error?: string
+  info?: ExtensionPackageInfo
+}
+
 export interface APIType {
   app: {
     getVersion: () => Promise<string>
@@ -42,6 +48,9 @@ export interface APIType {
   extensions: {
     scan: () => Promise<ExtensionPackageInfo[]>
     create: (options: ExtensionCreateOptions) => Promise<void>
+    validateExtension: (path: string) => Promise<ExtensionValidateResult>
+    installUserExtension: (path: string) => Promise<boolean>
+    uninstallUserExtension: (path: string) => Promise<boolean>
   }
   shortcuts: {
     updateGlobal: (shortcut: string) => Promise<boolean>

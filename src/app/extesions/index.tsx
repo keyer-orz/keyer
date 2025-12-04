@@ -5,6 +5,7 @@ import Store from './store'
 import Main from './main'
 import CreateExt from './create-ext'
 import UIDemo from './ui'
+import Install from './install'
 
 class Ext implements IExtension {
     run(name: string): React.ReactElement | null {
@@ -18,7 +19,8 @@ const exts = [
     Setting,
     Store,
     CreateExt,
-    UIDemo
+    UIDemo,
+    Install
 ]
 
 export default new ExtensionMeta(

@@ -11,13 +11,15 @@ export interface AppConfig {
   theme: string
   globalShortcut: string
   cmds?: Record<string, CmdConfig>  // 命令配置，key 是 cmd.id
+  userExts?: string[]  // 用户安装的插件路径列表
 }
 
 // 默认配置
 const defaultConfig: AppConfig = {
   theme: 'light',
   globalShortcut: 'Shift+Space',
-  cmds: {}
+  cmds: {},
+  userExts: []
 }
 
 // 创建配置存储实例

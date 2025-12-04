@@ -3,14 +3,13 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { app } from 'electron'
 import { ExtensionPackageInfo, ExtensionCreateOptions } from '@/shared/ipc'
+import { store } from './shared'
 
 export const extensionsHandler: APIType['extensions'] = {
   scan: async () => {
     try {
-      const exts:ExtensionPackageInfo[] = []
-      exts.push(...await extensionManager.scanExtensions(process.env.APP_ROOT))
-      exts.push(extensionManager.readExtensionPackage(process.env.APP_ROOT || '', 'example')!)
-      console.log(`📦 Scanned ${exts.length} extensions`)
+      const exts = await extensionManager.scanExtensions(process.env.APP_ROOT)
+      console.log(`📦 Scanned ${exts.length} extensions (built-in + user)`)
       return exts
     } catch (error) {
       console.error('❌ Failed to scan extensions:', error)
@@ -26,6 +25,18 @@ export const extensionsHandler: APIType['extensions'] = {
       console.error('❌ Failed to create extension:', error)
       throw error
     }
+  },
+
+  validateExtension: async (extPath) => {
+    return extensionManager.validateExtension(extPath)
+  },
+
+  installUserExtension: async (extPath) => {
+    return extensionManager.installUserExtension(extPath)
+  },
+
+  uninstallUserExtension: async (extPath) => {
+    return extensionManager.uninstallUserExtension(extPath)
   }
 }
 
@@ -84,6 +95,28 @@ export class ExtensionManager {
       }
     } catch (error) {
       console.error('❌ Failed to scan extensions directory:', error)
+    }
+
+    // 如果是开发模式，添加 example 扩展
+    if (devDir) {
+      const exampleExt = this.readExtensionPackage(devDir, 'example')
+      if (exampleExt) {
+        extensions.push(exampleExt)
+      }
+    }
+
+    // 扫描用户安装的扩展
+    const userExtPaths = this.getUserExtensions()
+    for (const extPath of userExtPaths) {
+      try {
+        const userExtInfo = this.scanPath(extPath)
+        if (userExtInfo) {
+          extensions.push(userExtInfo)
+          console.log('✅ Loaded user extension:', userExtInfo.name)
+        }
+      } catch (error) {
+        console.error(`❌ Failed to scan user extension at "${extPath}":`, error)
+      }
     }
 
     return extensions
@@ -207,6 +240,125 @@ export class ExtensionManager {
         
         fs.writeFileSync(targetPath, content)
       }
+    }
+  }
+
+  /**
+   * 获取用户安装的插件路径列表
+   */
+  getUserExtensions(): string[] {
+    try {
+      return (store.get('userExts') as string[]) || []
+    } catch (error) {
+      console.error('❌ Failed to get user extensions:', error)
+      return []
+    }
+  }
+
+  /**
+   * 扫描指定路径的插件
+   */
+  scanPath(extPath: string): ExtensionPackageInfo | null {
+    try {
+      const folderName = path.basename(extPath)
+      const parentDir = path.dirname(extPath)
+      return this.readExtensionPackage(parentDir, folderName)
+    } catch (error) {
+      console.error(`❌ Failed to scan path "${extPath}":`, error)
+      return null
+    }
+  }
+
+  /**
+   * 验证插件目录的合法性
+   */
+  validateExtension(extPath: string): { valid: boolean; error?: string; info?: ExtensionPackageInfo } {
+    try {
+      if (!fs.existsSync(extPath)) {
+        return { valid: false, error: '目录不存在' }
+      }
+
+      const stats = fs.statSync(extPath)
+      if (!stats.isDirectory()) {
+        return { valid: false, error: '不是有效的目录' }
+      }
+
+      const packagePath = path.join(extPath, 'package.json')
+      if (!fs.existsSync(packagePath)) {
+        return { valid: false, error: '缺少 package.json 文件' }
+      }
+
+      const packageContent = fs.readFileSync(packagePath, 'utf-8')
+      const pkg = JSON.parse(packageContent)
+
+      if (!pkg.name) {
+        return { valid: false, error: 'package.json 缺少 name 字段' }
+      }
+      if (!pkg.main) {
+        return { valid: false, error: 'package.json 缺少 main 字段' }
+      }
+
+      const mainPath = path.join(extPath, pkg.main)
+      if (!fs.existsSync(mainPath)) {
+        return { valid: false, error: `主文件不存在: ${pkg.main}` }
+      }
+
+      const info = this.scanPath(extPath)
+      if (!info) {
+        return { valid: false, error: '无法读取插件信息' }
+      }
+
+      return { valid: true, info }
+    } catch (error) {
+      return {
+        valid: false,
+        error: error instanceof Error ? error.message : '未知错误'
+      }
+    }
+  }
+
+  /**
+   * 安装用户插件
+   */
+  installUserExtension(extPath: string): boolean {
+    try {
+      const validation = this.validateExtension(extPath)
+      if (!validation.valid) {
+        throw new Error(validation.error)
+      }
+
+      const userExts = (store.get('userExts') as string[]) || []
+
+      if (userExts.includes(extPath)) {
+        console.log(`⚠️  Extension already installed: ${extPath}`)
+        return true
+      }
+
+      userExts.push(extPath)
+      store.set('userExts', userExts)
+
+      console.log(`✅ Extension installed: ${extPath}`)
+      return true
+    } catch (error) {
+      console.error(`❌ Failed to install extension "${extPath}":`, error)
+      return false
+    }
+  }
+
+  /**
+   * 卸载用户插件
+   */
+  uninstallUserExtension(extPath: string): boolean {
+    try {
+      const userExts = (store.get('userExts') as string[]) || []
+      const filtered = userExts.filter((p: string) => p !== extPath)
+      store.set('userExts', filtered)
+
+      console.log(`✅ Extension uninstalled: ${extPath}`)
+      return true
+    } catch (error) {
+      console.error(`❌ Failed to uninstall extension "${extPath}":`, error)
+      return false
     }
   }
 }
