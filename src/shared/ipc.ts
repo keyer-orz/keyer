@@ -1,4 +1,5 @@
 import { Command } from "./extension"
+import type { IMainAPI, ExecResult } from '../../keyerext/src/keyer'
 
 export interface ExtensionPackageInfo {
   name: string
@@ -11,11 +12,7 @@ export interface ExtensionPackageInfo {
   commands?: Command[]
 }
 
-export interface ExecResult {
-  success: boolean
-  output?: string
-  error?: string
-}
+export type { ExecResult }
 
 export interface ExtensionCreateOptions {
   name: string
@@ -30,36 +27,22 @@ export interface ExtensionValidateResult {
   info?: ExtensionPackageInfo
 }
 
-export interface APIType {
-  app: {
-    getVersion: () => Promise<string>
-    getName: () => Promise<string>
-  }
-  file: {
-    read: (path: string) => Promise<string>
-    write: (path: string, content: string) => Promise<void>
-    selectDirectory: () => Promise<string | undefined>
-  }
-  window: {
-    show: () => Promise<void>
-    hide: () => Promise<void>
-    resize: (size: { width: number; height: number }) => Promise<void>
-  }
-  extensions: {
-    scan: () => Promise<ExtensionPackageInfo[]>
-    create: (options: ExtensionCreateOptions) => Promise<void>
-    validateExtension: (path: string) => Promise<ExtensionValidateResult>
-    installUserExtension: (path: string) => Promise<boolean>
-    uninstallUserExtension: (name: string) => Promise<boolean>
-    downloadAndInstall: (url: string, name: string) => Promise<boolean>
-    getInstalledExtensions: () => Promise<ExtensionPackageInfo[]>
-  }
-  shortcuts: {
-    updateGlobal: (shortcut: string) => Promise<boolean>
-    updateCommand: (cmdId: string, shortcut: string | undefined) => Promise<boolean>
-  }
-  exec: {
-    terminal: (cmd: string, cwd?: string) => Promise<ExecResult>
-    window: (cmd: string) => Promise<ExecResult>
-  }
+export interface IAppAPI {
+  getVersion: () => Promise<string>
+  getName: () => Promise<string>
+}
+
+export interface IExtensionsAPI {
+  scan: () => Promise<ExtensionPackageInfo[]>
+  create: (options: ExtensionCreateOptions) => Promise<void>
+  validateExtension: (path: string) => Promise<ExtensionValidateResult>
+  installUserExtension: (path: string) => Promise<boolean>
+  uninstallUserExtension: (name: string) => Promise<boolean>
+  downloadAndInstall: (url: string, name: string) => Promise<boolean>
+  getInstalledExtensions: () => Promise<ExtensionPackageInfo[]>
+}
+
+export interface APIType extends IMainAPI {
+  app: IAppAPI
+  extensions: IExtensionsAPI
 }

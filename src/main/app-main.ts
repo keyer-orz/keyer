@@ -11,12 +11,13 @@ import { extensionsHandler } from './extensions-module'
 import { shortcutsHandler } from './shortcuts-module'
 import { execHandler } from './exec-module'
 import { registerAppIconProtocol } from './app-icon'
+import type { APIType } from '../shared/ipc'
 
 // 设置应用根目录
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 process.env.APP_ROOT = path.join(__dirname, '..')
 
-const modules = {
+const modules: APIType = {
   app: appHandler,
   file: fileHandler,
   window: windowHandler,

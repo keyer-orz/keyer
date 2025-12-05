@@ -6,7 +6,7 @@
  */
 
 import { clipboard, nativeImage } from 'electron'
-import type { IKeyer, ClipboardData, ExecOptions, ExecResult } from 'keyerext'
+import type { IKeyer, ClipboardData } from 'keyerext'
 import { api } from '../api'
 
 /**
@@ -81,41 +81,35 @@ const clipboardImpl = {
 }
 
 /**
- * 应用控制实现
+ * 创建主进程 API 代理
+ * 所有调用都会通过 IPC 转发到主进程
  */
-const appImpl = {
-  async hide(): Promise<void> {
-    // 通过清空导航栈来隐藏应用
+const mainAPI = {
+  window: {
+    show: () => api.window.show(),
+    hide: () => api.window.hide(),
+    resize: (size: { width: number; height: number }) => api.window.resize(size)
   },
-
-  async show(): Promise<void> {
+  file: {
+    read: (path: string) => api.file.read(path),
+    write: (path: string, content: string) => api.file.write(path, content),
+    selectDirectory: () => api.file.selectDirectory()
   },
-
-  /**
-   * 获取应用图标（返回 base64 PNG）
-   * @param appPath 应用路径（.app）
-   * @returns base64 PNG 字符串
-   */
+  shortcuts: {
+    updateGlobal: (shortcut: string) => api.shortcuts.updateGlobal(shortcut),
+    updateCommand: (cmdId: string, shortcut: string | undefined) => api.shortcuts.updateCommand(cmdId, shortcut)
+  },
+  exec: {
+    terminal: (cmd: string, cwd?: string) => api.exec.terminal(cmd, cwd),
+    window: (cmd: string, cwd?: string) => api.exec.window(cmd, cwd)
+  }
 }
 
 /**
  * Keyer 实例
+ * 组合主进程 API 和渲染进程 API
  */
 export const KeyerInstance: IKeyer = {
-  /**
-   * 执行命令
-   * @param cmd 要执行的命令
-   * @param mode 执行模式: terminal(系统终端) 或 window(新窗口)
-   * @returns 执行结果的 Promise
-   */
-  async exec(cmd: string, opt?: ExecOptions): Promise<ExecResult> {
-    if (opt?.mode === 'terminal') {
-      return await api.exec.terminal(cmd, opt.cwd)
-    } else {
-      return await api.exec.window(cmd)
-    }
-  },
-
-  clipboard: clipboardImpl,
-  app: appImpl
+  ...mainAPI,
+  clipboard: clipboardImpl
 }
