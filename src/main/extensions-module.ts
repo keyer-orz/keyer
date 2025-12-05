@@ -35,8 +35,16 @@ export const extensionsHandler: APIType['extensions'] = {
     return extensionManager.installUserExtension(extPath)
   },
 
-  uninstallUserExtension: async (extPath) => {
-    return extensionManager.uninstallUserExtension(extPath)
+  uninstallUserExtension: async (name) => {
+    return extensionManager.uninstallUserExtension(name)
+  },
+
+  downloadAndInstall: async (url, name) => {
+    return extensionManager.downloadAndInstall(url, name)
+  },
+
+  getInstalledExtensions: async () => {
+    return extensionManager.getInstalledExtensions()
   }
 }
 
@@ -348,17 +356,199 @@ export class ExtensionManager {
   /**
    * 卸载用户插件
    */
-  uninstallUserExtension(extPath: string): boolean {
+  uninstallUserExtension(name: string): boolean {
     try {
+      const userDataDir = app.getPath('userData')
+      const extDir = path.join(userDataDir, 'extensions', name)
+
+      // 删除扩展目录
+      if (fs.existsSync(extDir)) {
+        fs.rmSync(extDir, { recursive: true, force: true })
+        console.log(`✅ Extension directory deleted: ${extDir}`)
+      }
+
+      // 从 userExts 中移除（如果存在）
       const userExts = (store.get('userExts') as string[]) || []
-      const filtered = userExts.filter((p: string) => p !== extPath)
+      const filtered = userExts.filter((p: string) => !p.includes(name))
       store.set('userExts', filtered)
 
-      console.log(`✅ Extension uninstalled: ${extPath}`)
+      console.log(`✅ Extension uninstalled: ${name}`)
       return true
     } catch (error) {
-      console.error(`❌ Failed to uninstall extension "${extPath}":`, error)
+      console.error(`❌ Failed to uninstall extension "${name}":`, error)
       return false
+    }
+  }
+
+  /**
+   * 从 URL 下载并安装扩展
+   */
+  async downloadAndInstall(url: string, name: string): Promise<boolean> {
+    const { net } = require('electron')
+    const { createWriteStream } = require('fs')
+    const tar = require('tar')
+
+    try {
+      const userDataDir = app.getPath('userData')
+      const extensionsDir = path.join(userDataDir, 'extensions')
+      const extDir = path.join(extensionsDir, name)
+      const tarPath = path.join(extensionsDir, `${name}.tar.gz`)
+
+      // 创建 extensions 目录
+      if (!fs.existsSync(extensionsDir)) {
+        fs.mkdirSync(extensionsDir, { recursive: true })
+      }
+
+      // 如果已存在，先删除
+      if (fs.existsSync(extDir)) {
+        fs.rmSync(extDir, { recursive: true, force: true })
+      }
+
+      console.log(`📥 Downloading extension from: ${url}`)
+
+      // 使用 Electron net 模块下载（支持系统代理，更可靠）
+      await new Promise<void>((resolve, reject) => {
+        const request = net.request({
+          url: url,
+          method: 'GET',
+          redirect: 'follow' // 自动跟随重定向
+        })
+
+        request.on('response', (response: any) => {
+          console.log(`📊 Response status: ${response.statusCode}`)
+          
+          if (response.statusCode !== 200) {
+            reject(new Error(`HTTP ${response.statusCode}`))
+            return
+          }
+
+          const fileStream = createWriteStream(tarPath)
+          let downloadedBytes = 0
+          const totalBytes = parseInt(response.headers['content-length'] || '0', 10)
+
+          response.on('data', (chunk: Buffer) => {
+            downloadedBytes += chunk.length
+            fileStream.write(chunk)
+            if (totalBytes > 0) {
+              const progress = ((downloadedBytes / totalBytes) * 100).toFixed(1)
+              console.log(`⬇️  Downloading: ${progress}% (${downloadedBytes}/${totalBytes} bytes)`)
+            }
+          })
+
+          response.on('end', () => {
+            fileStream.end()
+            console.log(`✅ Download complete: ${downloadedBytes} bytes`)
+            resolve()
+          })
+
+          response.on('error', (err: Error) => {
+            fileStream.close()
+            if (fs.existsSync(tarPath)) {
+              fs.unlinkSync(tarPath)
+            }
+            reject(err)
+          })
+        })
+
+        request.on('error', (err: Error) => {
+          console.error(`❌ Request error:`, err)
+          reject(err)
+        })
+
+        request.end()
+      })
+
+      console.log(`📦 Extracting to: ${extensionsDir}`)
+
+      // 解压文件到临时目录
+      const tempDir = path.join(extensionsDir, `${name}_temp`)
+      if (fs.existsSync(tempDir)) {
+        fs.rmSync(tempDir, { recursive: true, force: true })
+      }
+      fs.mkdirSync(tempDir, { recursive: true })
+
+      await tar.extract({
+        file: tarPath,
+        cwd: tempDir
+      })
+
+      // 删除临时 tar 文件
+      fs.unlinkSync(tarPath)
+
+      // 检查解压后的目录结构
+      const tempContents = fs.readdirSync(tempDir)
+      console.log(`📂 Extracted contents:`, tempContents)
+
+      let sourceDir = tempDir
+      
+      // 如果解压后只有一个目录，使用该目录
+      if (tempContents.length === 1 && fs.statSync(path.join(tempDir, tempContents[0])).isDirectory()) {
+        sourceDir = path.join(tempDir, tempContents[0])
+        console.log(`📁 Using subdirectory: ${sourceDir}`)
+      }
+
+      // 移动到最终位置
+      if (fs.existsSync(extDir)) {
+        fs.rmSync(extDir, { recursive: true, force: true })
+      }
+      fs.renameSync(sourceDir, extDir)
+
+      // 清理临时目录
+      if (fs.existsSync(tempDir)) {
+        fs.rmSync(tempDir, { recursive: true, force: true })
+      }
+
+      // 验证安装
+      const validation = this.validateExtension(extDir)
+      if (!validation.valid) {
+        throw new Error(validation.error)
+      }
+
+      console.log(`✅ Extension installed successfully: ${name}`)
+      return true
+    } catch (error) {
+      console.error(`❌ Failed to download and install extension "${name}":`, error)
+      return false
+    }
+  }
+
+  /**
+   * 获取已安装的扩展列表
+   */
+  getInstalledExtensions(): ExtensionPackageInfo[] {
+    try {
+      const userDataDir = app.getPath('userData')
+      const extensionsDir = path.join(userDataDir, 'extensions')
+
+      if (!fs.existsSync(extensionsDir)) {
+        return []
+      }
+
+      const extensions: ExtensionPackageInfo[] = []
+      const folders = fs.readdirSync(extensionsDir)
+        .filter((dirent: string) => {
+          try {
+            return fs.statSync(path.join(extensionsDir, dirent)).isDirectory()
+          } catch (err) {
+            return false
+          }
+        })
+
+      for (const folderName of folders) {
+        try {
+          const extInfo = this.readExtensionPackage(extensionsDir, folderName)
+          if (extInfo) {
+            extensions.push(extInfo)
+          }
+        } catch (error) {
+          console.error(`❌ Failed to read extension "${folderName}":`, error)
+        }
+      }
+
+      return extensions
+    } catch (error) {
+      console.error('❌ Failed to get installed extensions:', error)
+      return []
     }
   }
 }

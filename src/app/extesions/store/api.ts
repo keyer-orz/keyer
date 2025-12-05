@@ -1,41 +1,94 @@
 import type { StoreExtension, ExtensionStatus } from './types'
+import { api } from '@/app/api'
 
 export const fetchStoreData = async (): Promise<StoreExtension[]> => {
-    // 开发环境使用本地测试数据，生产环境使用远程 API
-    const isDev = process.env.NODE_ENV === 'development'
-    const url = isDev
-        ? '/store-demo.json'
-        : 'https://keyer-orz.github.io/store/app.json'
-
-    await new Promise(resolve => setTimeout(resolve, 500)) // 模拟网络延迟
+    const url = 'https://keyer-orz.github.io/store/app.json?t=' + Date.now()
     const response = await fetch(url)
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
     }
-    const data = await response.json()
-    return data.extensions || []
+    const datas = Object.values(await response.json()) as StoreExtension[]
+    return datas.map(e=>{
+        e.downloadUrl = `${e.repo}/releases/download/${e.version}/release.tar.gz`
+        return e as StoreExtension
+    }) || []
 }
 
-export const checkExtensionStatus = (_extension: StoreExtension): ExtensionStatus => {
-    // TODO: 实现检查本地已安装插件的逻辑
-    // 这里需要与 CommandManager 或 ExtensionLoader 集成
-    return {
-        isInstalled: false,
-        canUpgrade: false
+export const checkExtensionStatus = async (extension: StoreExtension): Promise<ExtensionStatus> => {
+    try {
+        const installed = await api.extensions.getInstalledExtensions()
+        const found = installed.find(ext => ext.name === extension.name)
+        
+        if (!found) {
+            return {
+                isInstalled: false,
+                canUpgrade: false
+            }
+        }
+
+        const canUpgrade = found.version !== extension.version
+        
+        return {
+            isInstalled: true,
+            canUpgrade,
+            installedVersion: found.version
+        }
+    } catch (error) {
+        console.error('Failed to check extension status:', error)
+        return {
+            isInstalled: false,
+            canUpgrade: false
+        }
     }
 }
 
-export const handleInstall = async (extension: StoreExtension) => {
-    console.log('Installing:', extension.name)
-    // TODO: 实现安装逻辑
+export const handleInstall = async (extension: StoreExtension): Promise<boolean> => {
+    try {
+        if (!extension.downloadUrl) {
+            throw new Error('Download URL not available')
+        }
+        
+        console.log('Installing:', extension.name, 'from', extension.downloadUrl)
+        const success = await api.extensions.downloadAndInstall(extension.downloadUrl, extension.name)
+        
+        if (success) {
+            console.log('✅ Extension installed successfully')
+        }
+        
+        return success
+    } catch (error) {
+        console.error('❌ Failed to install extension:', error)
+        throw error
+    }
 }
 
-export const handleUpgrade = async (extension: StoreExtension) => {
-    console.log('Upgrading:', extension.name)
-    // TODO: 实现升级逻辑
+export const handleUpgrade = async (extension: StoreExtension): Promise<boolean> => {
+    try {
+        console.log('Upgrading:', extension.name)
+        
+        // 先卸载旧版本
+        await api.extensions.uninstallUserExtension(extension.name)
+        
+        // 安装新版本
+        return await handleInstall(extension)
+    } catch (error) {
+        console.error('❌ Failed to upgrade extension:', error)
+        throw error
+    }
 }
 
-export const handleUninstall = async (extension: StoreExtension) => {
-    console.log('Uninstalling:', extension.name)
-    // TODO: 实现卸载逻辑
+export const handleUninstall = async (extension: StoreExtension): Promise<boolean> => {
+    try {
+        console.log('Uninstalling:', extension.name)
+        const success = await api.extensions.uninstallUserExtension(extension.name)
+        
+        if (success) {
+            console.log('✅ Extension uninstalled successfully')
+        }
+        
+        return success
+    } catch (error) {
+        console.error('❌ Failed to uninstall extension:', error)
+        throw error
+    }
 }

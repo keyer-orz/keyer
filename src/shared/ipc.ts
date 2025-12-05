@@ -50,7 +50,9 @@ export interface APIType {
     create: (options: ExtensionCreateOptions) => Promise<void>
     validateExtension: (path: string) => Promise<ExtensionValidateResult>
     installUserExtension: (path: string) => Promise<boolean>
-    uninstallUserExtension: (path: string) => Promise<boolean>
+    uninstallUserExtension: (name: string) => Promise<boolean>
+    downloadAndInstall: (url: string, name: string) => Promise<boolean>
+    getInstalledExtensions: () => Promise<ExtensionPackageInfo[]>
   }
   shortcuts: {
     updateGlobal: (shortcut: string) => Promise<boolean>

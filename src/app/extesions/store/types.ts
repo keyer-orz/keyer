@@ -6,6 +6,7 @@ export interface StoreExtension {
     author: string
     icon?: string
     tags?: string[]
+    repo?: string
     downloadUrl?: string
 }
 
