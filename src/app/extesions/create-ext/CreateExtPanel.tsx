@@ -7,7 +7,7 @@ import {
   Button, 
   useNavigation 
 } from 'keyerext'
-import { api } from '../../api'
+import { Keyer } from '@/app/keyer'
 
 interface ExtensionFormData {
   name: string
@@ -32,7 +32,7 @@ export default function CreateExtPanel() {
 
   const selectTargetDirectory = async () => {
     try {
-      const result = await api.file.selectDirectory()
+      const result = await Keyer.file.selectDirectory()
       if (result) {
         setFormData(prev => ({ ...prev, targetDir: result }))
       }
@@ -57,7 +57,7 @@ export default function CreateExtPanel() {
     setIsCreating(true)
     
     try {
-      await api.extensions.create({
+      await Keyer.extensions.create({
         name: formData.name,
         title: formData.title,
         desc: formData.desc,

@@ -4,26 +4,24 @@ import path from 'node:path'
 import Store from 'electron-store'
 import { createMainWindow, clearMainWindow } from './window-module'
 import { registerShortcuts, unregisterAllShortcuts } from './shortcuts-module'
-import { appHandler } from './app-module'
 import { fileHandler } from './file-module'
 import { windowHandler } from './window-module'
 import { extensionsHandler } from './extensions-module'
 import { shortcutsHandler } from './shortcuts-module'
 import { execHandler } from './exec-module'
 import { registerAppIconProtocol } from './app-icon'
-import type { APIType } from '../shared/ipc'
+import { _IMainAPI } from '@/shared/main-api'
 
 // 设置应用根目录
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 process.env.APP_ROOT = path.join(__dirname, '..')
 
-const modules: APIType = {
-  app: appHandler,
+const modules: _IMainAPI = {
   file: fileHandler,
   window: windowHandler,
-  extensions: extensionsHandler,
   shortcuts: shortcutsHandler,
   exec: execHandler,
+  extensions: extensionsHandler,
 }
 
 export function registerIPC() {

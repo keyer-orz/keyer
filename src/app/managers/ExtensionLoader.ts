@@ -5,8 +5,8 @@ import * as fs from 'fs'
 import Module from 'module'
 import React from 'react'
 import Log from '../utils/log'
-import { api } from '../api'
-import { ExtensionPackageInfo } from '../../shared/ipc'
+import { Keyer } from '@/app/keyer'
+import { ExtensionPackageInfo } from '@/shared/main-api'
 import { ExtensionStore } from './ExtensionStore'
 
 export class ExtensionLoader {
@@ -19,7 +19,7 @@ export class ExtensionLoader {
 
     try {
       // 从主进程获取所有扩展元数据列表（包括内置和用户安装的）
-      const packageInfoList = await api.extensions.scan()
+      const packageInfoList = await Keyer.extensions.scan()
       Log.log(`📦 Received ${packageInfoList.length} extension packages from main process`)
 
       // 遍历每个扩展，加载实例
@@ -47,7 +47,7 @@ export class ExtensionLoader {
    * @returns 验证结果和错误信息
    */
   async validateExtension(extPath: string): Promise<{ valid: boolean; error?: string; info?: ExtensionPackageInfo }> {
-    return api.extensions.validateExtension(extPath)
+    return Keyer.extensions.validateExtension(extPath)
   }
 
   /**
@@ -56,7 +56,7 @@ export class ExtensionLoader {
    * @returns 是否安装成功
    */
   async installUserExtension(extPath: string): Promise<boolean> {
-    return api.extensions.installUserExtension(extPath)
+    return Keyer.extensions.installUserExtension(extPath)
   }
 
   /**

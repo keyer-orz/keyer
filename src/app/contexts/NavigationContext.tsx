@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, ReactNode } from 'react'
 import { NavigationContext, PageStackItem } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
-import { api } from '../api'
+import { Keyer } from '@/app/keyer'
 import { ipcRenderer } from 'electron'
 
 /**
@@ -47,8 +47,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       if (newStack.length > 0) {
         // 总是调整窗口尺寸：使用配置的尺寸或默认尺寸
         const targetSize = result.windowSize || { width: 800, height: 500 }
-        api.window.resize(targetSize)
-        api.window.show()
+        Keyer.window.resize(targetSize)
+        Keyer.window.show()
       }
 
       return newStack
@@ -68,11 +68,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
       // 没有页面时隐藏窗口
       if (newStack.length === 0) {
-        api.window.hide()
+        Keyer.window.hide()
       } else {
         const targetSize = newStack[newStack.length - 1]?.windowSize || { width: 800, height: 500 }
-        api.window.resize(targetSize)
-        api.window.show()
+        Keyer.window.resize(targetSize)
+        Keyer.window.show()
       }
 
       return newStack
@@ -157,8 +157,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
           console.log('♻️  Reuse existing page:', pageName)
           // 显示窗口（可能是隐藏状态），并确保尺寸正确
           const targetSize = prev[0].windowSize || { width: 800, height: 500 }
-          api.window.resize(targetSize)
-          api.window.show()
+          Keyer.window.resize(targetSize)
+          Keyer.window.show()
           return prev
         }
         // 否则，创建新页面并替换整个栈
@@ -168,8 +168,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
         }
         // 总是调整窗口尺寸：使用配置的尺寸或默认尺寸
         const targetSize = result.windowSize || { width: 800, height: 500 }
-        api.window.resize(targetSize)
-        api.window.show()
+        Keyer.window.resize(targetSize)
+        Keyer.window.show()
         return [{ pageName, element: result.element, windowSize: result.windowSize, ctx: result.ctx }]
       })
     }

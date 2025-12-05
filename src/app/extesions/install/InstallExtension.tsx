@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { VStack, HStack, Text, Button, Loading, useNavigation } from 'keyerext'
-import { api } from '@/app/api'
+import { Keyer } from '@/app/keyer'
 import { extensionLoader } from '@/app/managers/ExtensionLoader'
 
 export function InstallExtension() {
@@ -15,7 +15,7 @@ export function InstallExtension() {
   } | null>(null)
 
   const handleSelectFolder = async () => {
-    const path = await api.file.selectDirectory()
+    const path = await Keyer.file.selectDirectory()
     if (path) {
       setSelectedPath(path)
       setValidation(null)

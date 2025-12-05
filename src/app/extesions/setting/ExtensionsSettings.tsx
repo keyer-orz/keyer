@@ -66,7 +66,7 @@ export function ExtensionsSettings() {
   const handleDisabledChange = async (cmdId: string, checked: boolean) => {
     setCmdDisabled(prev => ({ ...prev, [cmdId]: !checked }))
     configManager.setCmdConfig(cmdId, { disabled: !checked })
-    await api.shortcuts.updateCommand(cmdId, !checked ? undefined : cmdShortcuts[cmdId] || '')
+    await Keyer.shortcuts.updateCommand(cmdId, !checked ? undefined : cmdShortcuts[cmdId] || '')
   }
 
   const toggleExtension = (extName: string) => {
@@ -90,7 +90,7 @@ export function ExtensionsSettings() {
     configManager.setCmdConfig(cmdId, { shortcut: newShortcut })
 
     // 通知主进程更新快捷键注册
-    const success = await api.shortcuts.updateCommand(cmdId, newShortcut || undefined)
+    const success = await Keyer.shortcuts.updateCommand(cmdId, newShortcut || undefined)
 
     if (!success) {
       console.error(`Failed to update shortcut for ${cmdId}`)

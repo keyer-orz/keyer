@@ -36,15 +36,11 @@ export default class Ext implements IExtension {
             Keyer.clipboard.writeText("hello")
         }
         if (name == 'cmd-window') {
-            Keyer.exec('ping www.baidu.com', {
-                mode: 'window'
-            })
+            Keyer.exec.window('ping www.baidu.com')
             return null
         }
         if (name == 'cmd-shell') {
-            Keyer.exec('ping www.baidu.com', {
-                mode: 'terminal'
-            })
+            Keyer.exec.terminal('ping www.baidu.com')
             return null
         }
         if (name == 'context') {

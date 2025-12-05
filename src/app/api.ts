@@ -1,6 +1,6 @@
-// renderer/api.ts
+// renderer/Keyer.ts
 import { ipcRenderer } from 'electron'
-import type { APIType } from "../shared/ipc"
+import { _IMainAPI } from '@/shared/main-api'
 
 // 支持嵌套 namespace 的 Proxy
 function wrapAPI<T>(path: string[] = []): T {
@@ -16,4 +16,4 @@ function wrapAPI<T>(path: string[] = []): T {
 }
 
 // 生成统一 api 对象
-export const api = wrapAPI<APIType>()
+export const MainAPI = wrapAPI<_IMainAPI>()

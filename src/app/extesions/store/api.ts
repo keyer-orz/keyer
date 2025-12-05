@@ -1,5 +1,5 @@
 import type { StoreExtension, ExtensionStatus } from './types'
-import { api } from '@/app/api'
+import { Keyer } from '@/app/keyer'
 
 export const fetchStoreData = async (): Promise<StoreExtension[]> => {
     const url = 'https://keyer-orz.github.io/store/app.json?t=' + Date.now()
@@ -16,7 +16,7 @@ export const fetchStoreData = async (): Promise<StoreExtension[]> => {
 
 export const checkExtensionStatus = async (extension: StoreExtension): Promise<ExtensionStatus> => {
     try {
-        const installed = await api.extensions.getInstalledExtensions()
+        const installed = await Keyer.extensions.getInstalledExtensions()
         const found = installed.find(ext => ext.name === extension.name)
         
         if (!found) {
@@ -49,7 +49,7 @@ export const handleInstall = async (extension: StoreExtension): Promise<boolean>
         }
         
         console.log('Installing:', extension.name, 'from', extension.downloadUrl)
-        const success = await api.extensions.downloadAndInstall(extension.downloadUrl, extension.name)
+        const success = await Keyer.extensions.downloadAndInstall(extension.downloadUrl, extension.name)
         
         if (success) {
             console.log('✅ Extension installed successfully')
@@ -67,7 +67,7 @@ export const handleUpgrade = async (extension: StoreExtension): Promise<boolean>
         console.log('Upgrading:', extension.name)
         
         // 先卸载旧版本
-        await api.extensions.uninstallUserExtension(extension.name)
+        await Keyer.extensions.uninstallUserExtension(extension.name)
         
         // 安装新版本
         return await handleInstall(extension)
@@ -80,7 +80,7 @@ export const handleUpgrade = async (extension: StoreExtension): Promise<boolean>
 export const handleUninstall = async (extension: StoreExtension): Promise<boolean> => {
     try {
         console.log('Uninstalling:', extension.name)
-        const success = await api.extensions.uninstallUserExtension(extension.name)
+        const success = await Keyer.extensions.uninstallUserExtension(extension.name)
         
         if (success) {
             console.log('✅ Extension uninstalled successfully')

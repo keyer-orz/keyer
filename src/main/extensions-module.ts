@@ -1,11 +1,11 @@
-import { APIType } from '@/shared/ipc'
 import * as path from 'path'
 import * as fs from 'fs'
 import { app } from 'electron'
 import { ExtensionPackageInfo, ExtensionCreateOptions } from '@/shared/ipc'
 import { store } from './shared'
+import { _IMainAPI } from '@/shared/main-api'
 
-export const extensionsHandler: APIType['extensions'] = {
+export const extensionsHandler: _IMainAPI['extensions'] = {
   scan: async () => {
     try {
       const exts = await extensionManager.scanExtensions(process.env.APP_ROOT)

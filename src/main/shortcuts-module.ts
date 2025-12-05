@@ -1,10 +1,10 @@
-import { APIType } from '@/shared/ipc'
 import { globalShortcut } from 'electron'
 import { sendToMainWindow } from './window-module'
 import { store } from './shared'
+import { _IMainAPI } from '@/shared/main-api'
 
 
-export const shortcutsHandler: APIType['shortcuts'] = {
+export const shortcutsHandler: _IMainAPI['shortcuts'] = {
   updateGlobal: async (shortcut: string) => {
     return updateGlobalShortcut(shortcut)
   },

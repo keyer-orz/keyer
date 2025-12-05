@@ -4,112 +4,46 @@
  * 实现 keyerext 中声明的 IKeyer 接口
  * 提供剪贴板操作、应用控制等核心能力
  */
+import { ipcRenderer } from 'electron';
 
-import { clipboard, nativeImage } from 'electron'
-import type { IKeyer, ClipboardData } from 'keyerext'
-import { api } from '../api'
+import { _IMainAPI } from '@/shared/main-api'
+import { _IRenderAPI } from '@/shared/render-api';
 
-/**
- * 剪贴板操作实现
- */
-const clipboardImpl = {
-  async read(): Promise<ClipboardData> {
-    const data: ClipboardData = {}
+import { clipboardImpl } from './clipboard';
 
-    // 读取文本
-    const text = clipboard.readText()
-    if (text) {
-      data.text = text
+// 支持嵌套 namespace 的 Proxy
+function wrapAPI<T>(path: string[] = []): T {
+  return new Proxy(function () { } as any, {
+    get(_, prop: string) {
+      return wrapAPI([...path, prop.toString()])
+    },
+    apply(_, __, args: any[]) {
+      const channel = path.join(".")
+      return ipcRenderer.invoke(channel, ...args)
     }
-
-    // 读取 HTML
-    const html = clipboard.readHTML()
-    if (html) {
-      data.html = html
-    }
-
-    // 读取图片
-    const image = clipboard.readImage()
-    if (!image.isEmpty()) {
-      data.image = image.toDataURL()
-    }
-
-    return data
-  },
-
-  async readText(): Promise<string> {
-    return clipboard.readText()
-  },
-
-  async readImage(): Promise<string | null> {
-    const image = clipboard.readImage()
-    if (image.isEmpty()) {
-      return null
-    }
-    return image.toDataURL()
-  },
-
-  async writeText(text: string): Promise<void> {
-    clipboard.writeText(text)
-  },
-
-  async writeImage(image: string | Buffer): Promise<void> {
-    let nImage: Electron.NativeImage
-
-    if (typeof image === 'string') {
-      // Base64 或 Data URL
-      if (image.startsWith('data:')) {
-        nImage = nativeImage.createFromDataURL(image)
-      } else {
-        nImage = nativeImage.createFromBuffer(Buffer.from(image, 'base64'))
-      }
-    } else {
-      // Buffer
-      nImage = nativeImage.createFromBuffer(image)
-    }
-
-    clipboard.writeImage(nImage)
-  },
-
-  async writeHtml(html: string): Promise<void> {
-    clipboard.writeHTML(html)
-  },
-
-  async clear(): Promise<void> {
-    clipboard.clear()
-  }
+  }) as T
 }
 
-/**
- * 创建主进程 API 代理
- * 所有调用都会通过 IPC 转发到主进程
- */
-const mainAPI = {
-  window: {
-    show: () => api.window.show(),
-    hide: () => api.window.hide(),
-    resize: (size: { width: number; height: number }) => api.window.resize(size)
-  },
-  file: {
-    read: (path: string) => api.file.read(path),
-    write: (path: string, content: string) => api.file.write(path, content),
-    selectDirectory: () => api.file.selectDirectory()
-  },
-  shortcuts: {
-    updateGlobal: (shortcut: string) => api.shortcuts.updateGlobal(shortcut),
-    updateCommand: (cmdId: string, shortcut: string | undefined) => api.shortcuts.updateCommand(cmdId, shortcut)
-  },
-  exec: {
-    terminal: (cmd: string, cwd?: string) => api.exec.terminal(cmd, cwd),
-    window: (cmd: string, cwd?: string) => api.exec.window(cmd, cwd)
-  }
-}
-
-/**
- * Keyer 实例
- * 组合主进程 API 和渲染进程 API
- */
-export const KeyerInstance: IKeyer = {
-  ...mainAPI,
+// 生成统一 api 对象
+const MainAPI = wrapAPI<_IMainAPI>()
+const RenderAPI = {
   clipboard: clipboardImpl
 }
+
+/**
+* Keyer 实例
+* 组合主进程 API 和渲染进程 API
+*
+* 注意：不能使用对象展开 {...MainAPI}，因为 MainAPI 是 Proxy 对象，
+* 展开运算符不会触发 Proxy 的 get trap，会得到空对象
+*/
+export const Keyer: _IMainAPI & _IRenderAPI = new Proxy(RenderAPI as any, {
+  get(target, prop) {
+    // 优先从 RenderAPI 获取
+    if (prop in target) {
+      return target[prop]
+    }
+    // 其他属性从 MainAPI (Proxy) 获取
+    return MainAPI[prop as keyof _IMainAPI]
+  }
+})

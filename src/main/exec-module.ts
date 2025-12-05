@@ -1,8 +1,9 @@
-import { APIType, ExecResult } from '@/shared/ipc'
+import { _IMainAPI } from '@/shared/main-api'
 import { BrowserWindow, ipcMain } from 'electron'
+import { ExecResult } from 'keyerext'
 import { exec, spawn, ChildProcess } from 'node:child_process'
 
-export const execHandler: APIType['exec'] = {
+export const execHandler: _IMainAPI['exec'] = {
   terminal: async (cmd: string, cwd?: string): Promise<ExecResult> => {
     return executeInTerminal(cmd, cwd)
   },

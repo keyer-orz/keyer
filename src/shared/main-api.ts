@@ -1,5 +1,5 @@
+import { IMainAPI } from "keyerext";
 import { Command } from "./extension"
-import type { IMainAPI, ExecResult } from '../../keyerext/src/keyer'
 
 export interface ExtensionPackageInfo {
   name: string
@@ -11,8 +11,6 @@ export interface ExtensionPackageInfo {
   dir: string
   commands?: Command[]
 }
-
-export type { ExecResult }
 
 export interface ExtensionCreateOptions {
   name: string
@@ -27,11 +25,6 @@ export interface ExtensionValidateResult {
   info?: ExtensionPackageInfo
 }
 
-export interface IAppAPI {
-  getVersion: () => Promise<string>
-  getName: () => Promise<string>
-}
-
 export interface IExtensionsAPI {
   scan: () => Promise<ExtensionPackageInfo[]>
   create: (options: ExtensionCreateOptions) => Promise<void>
@@ -42,7 +35,6 @@ export interface IExtensionsAPI {
   getInstalledExtensions: () => Promise<ExtensionPackageInfo[]>
 }
 
-export interface APIType extends IMainAPI {
-  app: IAppAPI
-  extensions: IExtensionsAPI
+export interface _IMainAPI extends IMainAPI {
+    extensions: IExtensionsAPI
 }

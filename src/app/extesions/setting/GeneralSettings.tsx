@@ -4,7 +4,7 @@ import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
 import { ThemeSwitcher } from '@/app/components/ThemeSwitcher'
 import { configManager } from '@/app/utils/config'
 import { getAppVersion, getAppName, getAppDescription } from '@/app/utils/app'
-import { api } from '@/app/api'
+import { Keyer } from '@/app/keyer'
 
 export function GeneralSettings() {
   const [shortcut, setShortcut] = useState('')
@@ -19,7 +19,7 @@ export function GeneralSettings() {
     setShortcut(newShortcut)
     configManager.set('globalShortcut', newShortcut)
     // 通知主线程刷新快捷键注册
-    api.shortcuts.updateGlobal(newShortcut)
+    Keyer.shortcuts.updateGlobal(newShortcut)
   }
 
   return (

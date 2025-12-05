@@ -1,9 +1,9 @@
-import { APIType } from '@/shared/ipc'
 import { BrowserWindow } from 'electron'
 import { VITE_DEV_SERVER_URL } from './shared'
 import path from 'node:path'
+import { _IMainAPI } from '@/shared/main-api'
 
-export const windowHandler: APIType['window'] = {
+export const windowHandler: _IMainAPI['window'] = {
   show: async () => {
     const mainWindow = getMainWindow()
     if (mainWindow) {

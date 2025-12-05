@@ -5,7 +5,7 @@ import { NavigationProvider } from './contexts/NavigationContext'
 import { ExtensionProvider } from './contexts/ExtensionContext'
 import { registerExtensions } from './extensions'
 import { configManager } from './utils/config'
-import { KeyerInstance } from './keyer'
+import { Keyer } from '@/app/keyer'
 
 function AppContent() {
   const { currentPage, stack, push } = useNavigation()
@@ -19,7 +19,7 @@ function AppContent() {
       hasRegistered.current = true
 
       // 1. 注入 Keyer 核心能力
-      setKeyer(KeyerInstance)
+      setKeyer(Keyer)
       console.log('✅ Keyer instance injected')
 
       // 2. 恢复保存的主题

@@ -1,8 +1,8 @@
-import { APIType } from '@/shared/ipc'
+import { _IMainAPI } from '@/shared/main-api'
 import fs from 'fs/promises'
 import path from 'path'
 
-export const fileHandler: APIType['file'] = {
+export const fileHandler: _IMainAPI['file'] = {
   read: async (filePath: string) => {
     try {
       const content = await fs.readFile(filePath, 'utf-8')
