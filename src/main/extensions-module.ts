@@ -1,7 +1,7 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import { app } from 'electron'
-import { ExtensionPackageInfo, ExtensionCreateOptions } from '@/shared/ipc'
+import { ExtensionPackageInfo, ExtensionCreateOptions } from '@/shared/main-api'
 import { store } from './shared'
 import { _IMainAPI } from '@/shared/main-api'
 

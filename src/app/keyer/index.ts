@@ -33,9 +33,6 @@ const RenderAPI = {
 /**
 * Keyer 实例
 * 组合主进程 API 和渲染进程 API
-*
-* 注意：不能使用对象展开 {...MainAPI}，因为 MainAPI 是 Proxy 对象，
-* 展开运算符不会触发 Proxy 的 get trap，会得到空对象
 */
 export const Keyer: _IMainAPI & _IRenderAPI = new Proxy(RenderAPI as any, {
   get(target, prop) {

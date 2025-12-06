@@ -1,11 +1,10 @@
 import { useEffect, useState, useRef } from 'react'
 import './styles/App.css'
-import { useNavigation, setKeyer } from 'keyerext'
+import { useNavigation } from 'keyerext'
 import { NavigationProvider } from './contexts/NavigationContext'
 import { ExtensionProvider } from './contexts/ExtensionContext'
 import { registerExtensions } from './extensions'
 import { configManager } from './utils/config'
-import { Keyer } from '@/app/keyer'
 
 function AppContent() {
   const { currentPage, stack, push } = useNavigation()
@@ -17,10 +16,6 @@ function AppContent() {
   useEffect(() => {
     if (!hasRegistered.current) {
       hasRegistered.current = true
-
-      // 1. 注入 Keyer 核心能力
-      setKeyer(Keyer)
-      console.log('✅ Keyer instance injected')
 
       // 2. 恢复保存的主题
       const savedTheme = configManager.get('theme')
