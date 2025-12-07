@@ -5,7 +5,7 @@ import { configManager } from '@/app/utils/config'
 import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
 import { Command, ExtensionMeta } from '@/shared/extension'
 import { VscDiffRemoved, VscDiffAdded } from "react-icons/vsc";
-import { api } from '@/app/api'
+import { Keyer } from '@/app/keyer'
 
 interface ExtensionItem {
   meta: ExtensionMeta

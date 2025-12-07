@@ -1,4 +1,4 @@
-import { IExtension, ICommand, IExtensionMeta } from 'keyerext'
+import { IExtension, ICommand, ExtensionContextType } from 'keyerext'
 import { ExtensionPackageInfo } from './main-api'
 
 export type Context = {
@@ -7,7 +7,7 @@ export type Context = {
 
 // 扩展属性
 export type Command = ICommand & {
-  ctx: IExtensionMeta
+  ctx: ExtensionContextType
 };
 
 export class ExtensionMeta {

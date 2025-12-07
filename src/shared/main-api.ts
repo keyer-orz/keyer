@@ -25,16 +25,14 @@ export interface ExtensionValidateResult {
   info?: ExtensionPackageInfo
 }
 
-export interface IExtensionsAPI {
-  scan: () => Promise<ExtensionPackageInfo[]>
-  create: (options: ExtensionCreateOptions) => Promise<void>
-  validateExtension: (path: string) => Promise<ExtensionValidateResult>
-  installUserExtension: (path: string) => Promise<boolean>
-  uninstallUserExtension: (name: string) => Promise<boolean>
-  downloadAndInstall: (url: string, name: string) => Promise<boolean>
-  getInstalledExtensions: () => Promise<ExtensionPackageInfo[]>
-}
-
 export interface _IMainAPI extends IMainAPI {
-    extensions: IExtensionsAPI
+  extensions: {
+    scan: () => Promise<ExtensionPackageInfo[]>
+    create: (options: ExtensionCreateOptions) => Promise<void>
+    validateExtension: (path: string) => Promise<ExtensionValidateResult>
+    installUserExtension: (path: string) => Promise<boolean>
+    uninstallUserExtension: (name: string) => Promise<boolean>
+    downloadAndInstall: (url: string, name: string) => Promise<boolean>
+    getInstalledExtensions: () => Promise<ExtensionPackageInfo[]>
+  }
 }

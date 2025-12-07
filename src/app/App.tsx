@@ -69,7 +69,7 @@ function AppContent() {
             key={item.pageName}
             style={{ display: item === currentPage ? 'flex' : 'none' }}
           >
-            <ExtensionProvider meta={item.ctx!}>
+            <ExtensionProvider ctx={item.ctx!}>
               {item.element}
             </ExtensionProvider>
           </div>

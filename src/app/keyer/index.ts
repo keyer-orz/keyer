@@ -36,11 +36,9 @@ const RenderAPI = {
 */
 export const Keyer: _IMainAPI & _IRenderAPI = new Proxy(RenderAPI as any, {
   get(target, prop) {
-    // 优先从 RenderAPI 获取
     if (prop in target) {
       return target[prop]
     }
-    // 其他属性从 MainAPI (Proxy) 获取
     return MainAPI[prop as keyof _IMainAPI]
   }
 })

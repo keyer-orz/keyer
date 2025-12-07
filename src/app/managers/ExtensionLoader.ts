@@ -77,9 +77,7 @@ async function loadLocalExtensions(): Promise<ExtensionMeta[]> {
  * @param pkgInfo 从主进程扫描得到的扩展包信息
  * @returns 扩展元数据，如果加载失败返回 null
  */
-async function loadExtension(
-  pkgInfo: ExtensionPackageInfo
-): Promise<ExtensionMeta | null> {
+async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<ExtensionMeta | null> {
   try {
     // 构建扩展文件的完整路径
     const mainPath = path.join(pkgInfo.dir, pkgInfo.main)

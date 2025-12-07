@@ -1,18 +1,14 @@
 import { ReactNode } from 'react'
-import { ExtensionContext, ExtensionContextType, IExtensionMeta } from 'keyerext'
+import { ExtensionContext, ExtensionContextType } from 'keyerext'
 
 interface ExtensionProviderProps {
-  meta: IExtensionMeta
+  ctx: ExtensionContextType
   children: ReactNode
 }
 
-export function ExtensionProvider({ meta, children }: ExtensionProviderProps) {
-  const contextValue: ExtensionContextType = {
-    meta,
-  }
-
+export function ExtensionProvider({ ctx, children }: ExtensionProviderProps) {
   return (
-    <ExtensionContext.Provider value={contextValue}>
+    <ExtensionContext.Provider value={ctx}>
       {children}
     </ExtensionContext.Provider>
   )

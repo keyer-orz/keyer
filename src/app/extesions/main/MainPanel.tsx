@@ -50,7 +50,7 @@ export default function MainPanel() {
         const cmd = item.data
         return (
             <HStack spacing={12}>
-                <ExtensionProvider meta={cmd.ctx}>
+                <ExtensionProvider ctx={cmd.ctx}>
                     <Image src={cmd.icon || "👵"} width={32} height={32} />
                 </ExtensionProvider>
                 <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
