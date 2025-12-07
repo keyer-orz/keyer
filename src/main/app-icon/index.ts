@@ -10,7 +10,6 @@ export function registerAppIconProtocol() {
   protocol.registerBufferProtocol('asset', async (request, callback) => {
     try {
       const assertPath = decodeURIComponent(request.url.replace('asset://', ''))
-      console.log(`assertPath:${assertPath}`)
       if (fs.existsSync(assertPath)) {
         const buffer = fs.readFileSync(assertPath)
         callback({ mimeType: 'image/png', data: buffer })

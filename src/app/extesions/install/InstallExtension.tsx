@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { VStack, HStack, Text, Button, Loading, useNavigation } from 'keyerext'
 import { Keyer } from '@/app/keyer'
-import { extensionLoader } from '@/app/managers/ExtensionLoader'
 
 export function InstallExtension() {
   const { pop } = useNavigation()
@@ -27,7 +26,7 @@ export function InstallExtension() {
 
     setValidating(true)
     try {
-      const result = await extensionLoader.validateExtension(selectedPath)
+      const result = await Keyer.extensions.validateExtension(selectedPath)
       setValidation(result)
     } catch (error) {
       setValidation({
@@ -44,7 +43,7 @@ export function InstallExtension() {
 
     setInstalling(true)
     try {
-      const success = await extensionLoader.installUserExtension(selectedPath)
+      const success = await Keyer.extensions.installUserExtension(selectedPath)
       if (success) {
         alert('插件安装成功！请重启应用以加载新插件。')
         pop()

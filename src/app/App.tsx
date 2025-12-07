@@ -3,7 +3,7 @@ import './styles/App.css'
 import { useNavigation } from 'keyerext'
 import { NavigationProvider } from './contexts/NavigationContext'
 import { ExtensionProvider } from './contexts/ExtensionContext'
-import { registerExtensions } from './extensions'
+import { registerExtensions } from './managers/ExtensionLoader'
 import { configManager } from './utils/config'
 
 function AppContent() {

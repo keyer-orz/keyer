@@ -29,7 +29,7 @@ export function useStore() {
             // 检查已安装插件状态
             const status: Record<string, ExtensionStatus> = {}
             for (const ext of extensions) {
-                status[ext.name] = checkExtensionStatus(ext)
+                status[ext.name] = await checkExtensionStatus(ext)
             }
             
             setState(prev => ({
