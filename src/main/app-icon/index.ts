@@ -6,7 +6,7 @@ import { getAppIcon } from './mac-icon-reader'
 /**
  * 注册 keyer-app:// 协议用于访问应用图标（带缓存）
  */
-export function registerAppIconProtocol() {
+export function registerAppProtocol() {
   protocol.registerBufferProtocol('asset', async (request, callback) => {
     try {
       const assertPath = decodeURIComponent(request.url.replace('asset://', ''))
@@ -63,24 +63,4 @@ export function registerAppIconProtocol() {
       callback({ error: -2 })
     }
   })
-}
-
-/**
- * 清理图标缓存
- */
-export function clearAppIconCache(): void {
-  const cacheDir = path.join(app.getPath('userData'), 'img-cache')
-  
-  try {
-    if (fs.existsSync(cacheDir)) {
-      const files = fs.readdirSync(cacheDir)
-      for (const file of files) {
-        fs.unlinkSync(path.join(cacheDir, file))
-      }
-      console.log('[AppIcon] Cache cleared')
-    }
-  } catch (error) {
-    console.error('[AppIcon] Error clearing cache:', error)
-    throw error
-  }
 }

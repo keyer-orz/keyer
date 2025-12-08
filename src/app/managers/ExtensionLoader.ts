@@ -1,5 +1,5 @@
 import { IExtension } from 'keyerext'
-import { ExtensionMeta } from '@/shared/extension'
+import { Extension } from '@/shared/extension'
 import * as path from 'path'
 import * as fs from 'fs'
 import Module from 'module'
@@ -44,8 +44,8 @@ export async function registerExtensions() {
  * 从主进程扫描并加载所有本地扩展
  * @returns 已加载的扩展列表
  */
-async function loadLocalExtensions(): Promise<ExtensionMeta[]> {
-  const extensions: ExtensionMeta[] = []
+async function loadLocalExtensions(): Promise<Extension[]> {
+  const extensions: Extension[] = []
 
   try {
     // 从主进程获取所有扩展元数据列表（包括内置和用户安装的）
@@ -77,7 +77,7 @@ async function loadLocalExtensions(): Promise<ExtensionMeta[]> {
  * @param pkgInfo 从主进程扫描得到的扩展包信息
  * @returns 扩展元数据，如果加载失败返回 null
  */
-async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<ExtensionMeta | null> {
+async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension | null> {
   try {
     // 构建扩展文件的完整路径
     const mainPath = path.join(pkgInfo.dir, pkgInfo.main)
@@ -124,16 +124,12 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<ExtensionMe
       pluginModule._compile(pluginCode, mainPath)
 
       const ExtensionClass = pluginModule.exports.default
+      
       const extension: IExtension = new ExtensionClass()
-
-      // 注入扩展存储和目录信息
       const store = new ExtensionStore(pkgInfo.name)
       extension.store = store
 
-      // 构造 ExtensionMeta
-      const meta = new ExtensionMeta(pkgInfo, extension)
-
-      return meta
+      return new Extension(pkgInfo, extension)
     } finally {
       // 恢复原始的 _load 方法
       ; (Module as any)._load = originalLoad

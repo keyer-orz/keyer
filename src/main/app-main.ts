@@ -8,7 +8,7 @@ import { fileHandler } from './file-module'
 import { windowHandler } from './window-module'
 import { shortcutsHandler } from './shortcuts-module'
 import { execHandler } from './exec-module'
-import { registerAppIconProtocol } from './app-icon'
+import { registerAppProtocol } from './app-icon'
 import { _IMainAPI } from '@/shared/main-api'
 import { pathHandler } from './path-module'
 
@@ -37,7 +37,7 @@ export function registerIPC() {
 }
 
 export function registerCustomProtocols() {
-  registerAppIconProtocol()
+  registerAppProtocol()
 }
 
 // 应用生命周期事件
@@ -63,19 +63,13 @@ app.on('will-quit', () => {
 app.whenReady().then(() => {
   // 初始化 electron-store 以供渲染进程使用
   Store.initRenderer()
-
   // 注册自定义协议
   registerCustomProtocols()
-
   // 注册新的模块化 IPC 处理器
   registerIPC()
-
   // 创建主窗口
   createMainWindow()
-
   // 注册全局快捷键
   registerShortcuts()
-
-  console.log('user data:', app.getPath('userData'))
 })
 

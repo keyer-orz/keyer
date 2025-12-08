@@ -1,12 +1,12 @@
 import { ReactElement } from 'react'
-import { Command, ExtensionMeta } from '@/shared/extension'
+import { Command, Extension } from '@/shared/extension'
 import { configManager } from '../utils/config'
 import { ExtensionContextType } from 'keyerext'
 class CommandManager {
-  private extensions: Map<string, ExtensionMeta> = new Map()
+  private extensions: Map<string, Extension> = new Map()
   private commands: Command[] = []
 
-  register(meta: ExtensionMeta) {
+  register(meta: Extension) {
     this.extensions.set(meta.name, meta)
   }
 
@@ -18,7 +18,7 @@ class CommandManager {
     })
   }
 
-  getAllExtensions(): ExtensionMeta[] {
+  getAllExtensions(): Extension[] {
     return Array.from(this.extensions.values())
   }
 

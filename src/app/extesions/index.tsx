@@ -1,5 +1,5 @@
 import { IExtension } from "keyerext";
-import { ExtensionMeta } from '@/shared/extension';
+import { Extension } from '@/shared/extension';
 import Setting from './setting'
 import Store from './store'
 import Main from './main'
@@ -23,7 +23,7 @@ const exts = [
     Install
 ]
 
-export default new ExtensionMeta(
+export default new Extension(
     {
         name: '@system',
         title: 'Keyer',
