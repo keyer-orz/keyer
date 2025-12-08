@@ -10,6 +10,7 @@ import { shortcutsHandler } from './shortcuts-module'
 import { execHandler } from './exec-module'
 import { registerAppIconProtocol } from './app-icon'
 import { _IMainAPI } from '@/shared/main-api'
+import { pathHandler } from './path-module'
 
 // 设置应用根目录
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -20,6 +21,7 @@ const modules: _IMainAPI = {
   window: windowHandler,
   shortcuts: shortcutsHandler,
   exec: execHandler,
+  path: pathHandler,
 }
 
 export function registerIPC() {

@@ -31,9 +31,9 @@ export default new ExtensionMeta(
         icon: '⚙️',
         version: '1.0.0',
         main: '',
-        dir: '',
+        dir: "",
+        type: 'app',
         commands: exts.map(e => e.cmd)
     },
-    new Ext(),
-    'app'
+    new Ext()
 );

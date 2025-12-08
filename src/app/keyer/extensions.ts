@@ -3,24 +3,6 @@
  */
 
 import { _IRenderAPI } from '@/shared/render-api'
-import Store from 'electron-store'
-
-// 动态导入模块
-let electron: any
-let fs: any
-let path: any
-let tar: any
-let store: Store
-
-try {
-  electron = window.require('electron')
-  fs = window.require('fs')
-  path = window.require('path')
-  tar = window.require('tar')
-  store = new Store()
-} catch (e) {
-  console.warn('Extension module is only available in renderer process')
-}
 
 export const extensionsImpl: _IRenderAPI['extensions'] = {
   scan: async () => {
@@ -51,21 +33,30 @@ import type {
   ExtensionValidateResult,
 } from '@/shared/render-api'
 import { DownloadOptions } from 'keyerext'
+import { Keyer } from '@/app/keyer'
+import path from 'path'
+import * as fs from 'fs';
+import { store } from '@/main/shared'
+
+let electron: any
+try {
+  electron = window.require('electron')
+} catch (e) {
+  console.warn('net module is only available in renderer process')
+}
+
+const net = electron ? (electron.net || electron.remote?.net) : null
 
 /**
  * 扫描所有扩展
  */
 async function scan(): Promise<ExtensionPackageInfo[]> {
-  if (!electron || !fs || !path) {
-    throw new Error('Extension module is only available in renderer process')
-  }
-
-  const { app } = electron.remote || electron
   const extensions: ExtensionPackageInfo[] = []
   
   // 扫描 userData/extensions
   {
-    const exts = await scanExtensions(path.join(app.getPath('userData'), 'extensions'))
+    const exts = await scanExtensions(Keyer.path.userData('extensions'))
+    exts.map(e=> e.type = 'store')
     extensions.push(...exts)
   }
   
@@ -74,6 +65,7 @@ async function scan(): Promise<ExtensionPackageInfo[]> {
     const appRoot = process.env.APP_ROOT || ""
     if (appRoot) {
       const exts = await scanExtensions(path.join(appRoot, 'extensions'))
+      exts.map(e=> e.type = 'dev')
       extensions.push(...exts)
     }
   }
@@ -85,6 +77,7 @@ async function scan(): Promise<ExtensionPackageInfo[]> {
       try {
         const userExtInfo = readExtensionPackage(extPath)
         if (userExtInfo) {
+          userExtInfo.type = 'local'
           extensions.push(userExtInfo)
         }
       } catch (error) {
@@ -95,8 +88,10 @@ async function scan(): Promise<ExtensionPackageInfo[]> {
   
   // 示例扩展
   {
-    const exampleExt = readExtensionPackage(path.join(app.getAppPath(), 'example'))
+    const appRoot = process.env.APP_ROOT || ""
+    const exampleExt = readExtensionPackage(path.join(appRoot, 'example'))
     if (exampleExt) {
+      exampleExt.type = 'dev'
       extensions.push(exampleExt)
     }
   }
@@ -184,11 +179,6 @@ function readExtensionPackage(extDir: string): ExtensionPackageInfo | null {
  * 创建新扩展
  */
 async function createExtension(options: ExtensionCreateOptions): Promise<void> {
-  if (!electron || !fs || !path) {
-    throw new Error('Extension module is only available in renderer process')
-  }
-
-  const { app } = electron.remote || electron
   const { name, title, desc, targetDir } = options
 
   const extDir = path.join(targetDir, name)
@@ -196,10 +186,10 @@ async function createExtension(options: ExtensionCreateOptions): Promise<void> {
     throw new Error(`Extension directory already exists: ${extDir}`)
   }
 
-  const appRoot = process.env.APP_ROOT || app.getAppPath()
+  const appRoot = process.env.APP_ROOT || Keyer.path.appPath()
   const templateDir = process.env.APP_ROOT
     ? path.join(appRoot, 'templates', 'extension')
-    : path.join(app.getAppPath(), '..', 'templates', 'extension')
+    : path.join(Keyer.path.appPath(), '..', 'templates', 'extension')
 
   if (!fs.existsSync(templateDir)) {
     throw new Error(`Template directory not found: ${templateDir}`)
@@ -322,13 +312,8 @@ function installUserExtension(extPath: string): boolean {
  * 卸载用户扩展
  */
 function uninstallUserExtension(name: string): boolean {
-  if (!electron || !fs || !path) {
-    throw new Error('Extension module is only available in renderer process')
-  }
-
   try {
-    const { app } = electron.remote || electron
-    const userDataDir = app.getPath('userData')
+    const userDataDir = Keyer.path.userData()
     const extDir = path.join(userDataDir, 'extensions', name)
 
     if (fs.existsSync(extDir)) {
@@ -356,15 +341,10 @@ async function downloadAndInstall(
   name: string,
   options: DownloadOptions = {}
 ): Promise<boolean> {
-  if (!electron || !fs || !path || !tar) {
-    throw new Error('Extension download module is only available in renderer process')
-  }
-
-  const { app, net } = electron.remote || electron
   const { onProgress } = options
 
   try {
-    const userDataDir = app.getPath('userData')
+    const userDataDir = Keyer.path.userData()
     const extensionsDir = path.join(userDataDir, 'extensions')
     const extDir = path.join(extensionsDir, name)
     const tarPath = path.join(extensionsDir, `${name}.tar.gz`)
@@ -448,10 +428,10 @@ async function downloadAndInstall(
     }
     fs.mkdirSync(tempDir, { recursive: true })
 
-    await tar.extract({
-      file: tarPath,
-      cwd: tempDir
-    })
+    // await tar.extract({
+    //   file: tarPath,
+    //   cwd: tempDir
+    // })
 
     // 删除临时 tar 文件
     fs.unlinkSync(tarPath)

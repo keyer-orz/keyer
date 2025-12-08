@@ -6,7 +6,7 @@ import Module from 'module'
 import React from 'react'
 import Log from '../utils/log'
 import { Keyer } from '@/app/keyer'
-import { ExtensionPackageInfo } from '@/shared/main-api'
+import { ExtensionPackageInfo } from '@/shared/render-api'
 import { ExtensionStore } from './ExtensionStore'
 import { commandManager } from './CommandManager'
 import SystemExts from '@/app/extesions'
@@ -129,10 +129,9 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<ExtensionMe
       // 注入扩展存储和目录信息
       const store = new ExtensionStore(pkgInfo.name)
       extension.store = store
-      extension.dir = pkgInfo.dir
 
       // 构造 ExtensionMeta
-      const meta = new ExtensionMeta(pkgInfo, extension, 'local')
+      const meta = new ExtensionMeta(pkgInfo, extension)
 
       return meta
     } finally {

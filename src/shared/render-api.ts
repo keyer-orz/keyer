@@ -9,6 +9,7 @@ export interface ExtensionPackageInfo {
   version?: string
   main: string
   dir: string
+  type?: "store" | "local" | "app" | "dev"
   commands?: Command[]
 }
 

@@ -14,8 +14,6 @@ export class ExtensionMeta {
     // 基础信息
     name: string                    // 扩展名称
     title: string                   // 展示名称
-    type: 'store' | 'local' | 'app' // 插件类型
-
     // 包信息（来自 package.json）
     pkg: ExtensionPackageInfo
 
@@ -25,11 +23,9 @@ export class ExtensionMeta {
     constructor(
         pkg: ExtensionPackageInfo,
         ext?: IExtension,
-        type: 'store' | 'local' | 'app' = 'local'
     ) {
         this.name = pkg.name
         this.title = pkg.title || pkg.name
-        this.type = type
         this.pkg = pkg
         this.ext = ext
     }
