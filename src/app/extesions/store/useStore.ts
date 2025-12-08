@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { StoreExtension, ExtensionStatus, StoreState } from './types'
-import { fetchStoreData as fetchStoreDataAPI, checkExtensionStatus } from './api'
+import { fetchStoreData as fetchStoreDataAPI } from './api'
 
 export function useStore() {
     const [state, setState] = useState<StoreState>({
@@ -28,9 +28,6 @@ export function useStore() {
             
             // 检查已安装插件状态
             const status: Record<string, ExtensionStatus> = {}
-            for (const ext of extensions) {
-                status[ext.name] = await checkExtensionStatus(ext)
-            }
             
             setState(prev => ({
                 ...prev,

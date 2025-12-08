@@ -1,5 +1,5 @@
 import { IExtension, ICommand, ExtensionContextType } from 'keyerext'
-import { ExtensionPackageInfo } from './main-api'
+import { ExtensionPackageInfo } from './render-api'
 
 export type Context = {
     dir: string // ext dir

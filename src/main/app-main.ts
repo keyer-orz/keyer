@@ -6,7 +6,6 @@ import { createMainWindow, clearMainWindow } from './window-module'
 import { registerShortcuts, unregisterAllShortcuts } from './shortcuts-module'
 import { fileHandler } from './file-module'
 import { windowHandler } from './window-module'
-import { extensionsHandler } from './extensions-module'
 import { shortcutsHandler } from './shortcuts-module'
 import { execHandler } from './exec-module'
 import { registerAppIconProtocol } from './app-icon'
@@ -21,7 +20,6 @@ const modules: _IMainAPI = {
   window: windowHandler,
   shortcuts: shortcutsHandler,
   exec: execHandler,
-  extensions: extensionsHandler,
 }
 
 export function registerIPC() {

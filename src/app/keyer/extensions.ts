@@ -1,16 +1,33 @@
-import * as path from 'path'
-import * as fs from 'fs'
-import { app } from 'electron'
-import { ExtensionPackageInfo, ExtensionCreateOptions } from '@/shared/main-api'
-import { store } from './shared'
-import { _IMainAPI } from '@/shared/main-api'
+/**
+ * 渲染进程扩展管理模块
+ */
 
-export const extensionsHandler: _IMainAPI['extensions'] = {
+import { _IRenderAPI } from '@/shared/render-api'
+import Store from 'electron-store'
+
+// 动态导入模块
+let electron: any
+let fs: any
+let path: any
+let tar: any
+let store: Store
+
+try {
+  electron = window.require('electron')
+  fs = window.require('fs')
+  path = window.require('path')
+  tar = window.require('tar')
+  store = new Store()
+} catch (e) {
+  console.warn('Extension module is only available in renderer process')
+}
+
+export const extensionsImpl: _IRenderAPI['extensions'] = {
   scan: async () => {
-    return await scan()
+    return scan()
   },
   create: async (options) => {
-    await createExtension(options)
+    return createExtension(options)
   },
   validateExtension: async (extPath) => {
     return validateExtension(extPath)
@@ -21,91 +38,97 @@ export const extensionsHandler: _IMainAPI['extensions'] = {
   uninstallUserExtension: async (name) => {
     return uninstallUserExtension(name)
   },
-  downloadAndInstall: async (url, name) => {
-    return downloadAndInstall(url, name)
+  downloadAndInstall: async (url, name, options = {}) => {
+    return downloadAndInstall(url, name, options)
   },
-  getInstalledExtensions: async () => {
-    return getInstalledExtensions()
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+import type { 
+  ExtensionPackageInfo, 
+  ExtensionCreateOptions, 
+  ExtensionValidateResult,
+} from '@/shared/render-api'
+import { DownloadOptions } from 'keyerext'
+
+/**
+ * 扫描所有扩展
+ */
 async function scan(): Promise<ExtensionPackageInfo[]> {
+  if (!electron || !fs || !path) {
+    throw new Error('Extension module is only available in renderer process')
+  }
+
+  const { app } = electron.remote || electron
   const extensions: ExtensionPackageInfo[] = []
+  
+  // 扫描 userData/extensions
   {
-    let exts = await scanExtensions(path.join(app.getPath('userData'), 'extensions'))
+    const exts = await scanExtensions(path.join(app.getPath('userData'), 'extensions'))
     extensions.push(...exts)
   }
+  
+  // 扫描开发目录 extensions
   {
-    let exts = await scanExtensions(path.join(process.env.APP_ROOT || "", 'extensions'))
-    extensions.push(...exts)
+    const appRoot = process.env.APP_ROOT || ""
+    if (appRoot) {
+      const exts = await scanExtensions(path.join(appRoot, 'extensions'))
+      extensions.push(...exts)
+    }
   }
+  
+  // 扫描用户自定义路径
   {
-    let exts = []
-    console.log("load user exts")
     const userExts = (store.get('userExts') as string[]) || []
-    if (userExts.length > 0) {
-      for (const extPath of userExts) {
-        console.log("load user ext:", extPath)
-        try {
-          const userExtInfo = readExtensionPackage(extPath)
-          if (userExtInfo) {
-            exts.push(userExtInfo)
-          }
-        } catch (error) {
-          console.error(`❌ Failed to load user extension "${extPath}":`, error)
+    for (const extPath of userExts) {
+      try {
+        const userExtInfo = readExtensionPackage(extPath)
+        if (userExtInfo) {
+          extensions.push(userExtInfo)
         }
+      } catch (error) {
+        console.error(`❌ Failed to load user extension "${extPath}":`, error)
       }
     }
-    extensions.push(...exts)
   }
+  
+  // 示例扩展
   {
     const exampleExt = readExtensionPackage(path.join(app.getAppPath(), 'example'))
     if (exampleExt) {
       extensions.push(exampleExt)
     }
   }
+  
   return extensions
 }
 
 /**
- * 扫描并获取所有扩展的元数据
- * @param devDir 开发目录（可选），如果未提供则使用 userData
- * @returns 扩展包信息列表
+ * 扫描指定目录下的扩展
  */
 async function scanExtensions(dir: string): Promise<ExtensionPackageInfo[]> {
   const extensions: ExtensionPackageInfo[] = []
-  const extensionsDir = dir
-
-  console.log('📂 Scanning extensions directory:', extensionsDir)
-
+  
   try {
-    // 检查目录是否存在
-    if (!fs.existsSync(extensionsDir)) {
-      console.warn('⚠️  Extensions directory not found:', extensionsDir)
+    if (!fs.existsSync(dir)) {
       return []
     }
 
-    // 读取所有子文件夹
-    const folders = fs.readdirSync(extensionsDir)
-      .filter(dirent => {
+    const folders = fs.readdirSync(dir)
+      .filter((dirent: string) => {
         try {
-          return fs.statSync(path.join(extensionsDir, dirent)).isDirectory()
+          return fs.statSync(path.join(dir, dirent)).isDirectory()
         } catch (err) {
           return false
         }
       })
-      .map(dirent => dirent)
-
-    console.log('📁 Found extension folders:', folders)
 
     for (const folderName of folders) {
       try {
-        const extInfo = readExtensionPackage(path.join(extensionsDir, folderName))
+        const extInfo = readExtensionPackage(path.join(dir, folderName))
         if (extInfo) {
           extensions.push(extInfo)
-          console.log('✅ Loaded extension metadata:', extInfo.name)
         }
       } catch (error) {
         console.error(`❌ Failed to load extension "${folderName}":`, error)
@@ -114,95 +137,83 @@ async function scanExtensions(dir: string): Promise<ExtensionPackageInfo[]> {
   } catch (error) {
     console.error('❌ Failed to scan extensions directory:', error)
   }
+  
   return extensions
 }
 
 /**
- * 读取单个扩展的 package.json
- * @param extensionsDir 扩展目录
- * @param folderName 扩展文件夹名称
- * @returns 扩展包信息，失败返回 null
+ * 读取扩展的 package.json
  */
-function readExtensionPackage(
-  extensionsDir: string
-): ExtensionPackageInfo | null {
-  const extDir = extensionsDir
+function readExtensionPackage(extDir: string): ExtensionPackageInfo | null {
   const packagePath = path.join(extDir, 'package.json')
 
-  // 检查 package.json 是否存在
   if (!fs.existsSync(packagePath)) {
-    console.warn(`⚠️  package.json not found in "${extDir}"`)
     return null
   }
 
-  // 读取并解析 package.json
-  const packageContent = fs.readFileSync(packagePath, 'utf-8')
-  const pkg = JSON.parse(packageContent)
+  try {
+    const packageContent = fs.readFileSync(packagePath, 'utf-8')
+    const pkg = JSON.parse(packageContent)
 
-  // 验证必需字段
-  if (!pkg.name || !pkg.main) {
-    console.warn(`⚠️  Extension "${extDir}" missing required fields (name or main)`)
+    if (!pkg.name || !pkg.main) {
+      return null
+    }
+
+    const mainPath = path.join(extDir, pkg.main)
+    if (!fs.existsSync(mainPath)) {
+      return null
+    }
+
+    return {
+      name: pkg.name,
+      title: pkg.title || pkg.name,
+      desc: pkg.desc,
+      icon: pkg.icon,
+      version: pkg.version,
+      main: pkg.main,
+      dir: extDir,
+      commands: pkg.commands
+    }
+  } catch (error) {
+    console.error(`❌ Failed to read package.json:`, error)
     return null
-  }
-
-  // 检查 main 文件是否存在
-  const mainPath = path.join(extDir, pkg.main)
-  if (!fs.existsSync(mainPath)) {
-    console.warn(`⚠️  Main file not found: ${mainPath}`)
-    return null
-  }
-
-  // 返回扩展信息（包含完整目录路径和相对main文件路径）
-  return {
-    name: pkg.name,
-    title: pkg.title || pkg.name,
-    desc: pkg.desc,
-    icon: pkg.icon,
-    version: pkg.version,
-    main: pkg.main, // 相对于扩展目录的路径：main.js
-    dir: extDir, // 扩展的完整目录路径
-    commands: pkg.commands
   }
 }
 
 /**
  * 创建新扩展
- * @param options 扩展创建选项
  */
 async function createExtension(options: ExtensionCreateOptions): Promise<void> {
+  if (!electron || !fs || !path) {
+    throw new Error('Extension module is only available in renderer process')
+  }
+
+  const { app } = electron.remote || electron
   const { name, title, desc, targetDir } = options
 
-  // 创建扩展目录
   const extDir = path.join(targetDir, name)
   if (fs.existsSync(extDir)) {
     throw new Error(`Extension directory already exists: ${extDir}`)
   }
 
-  // 获取模板路径
   const appRoot = process.env.APP_ROOT || app.getAppPath()
   const templateDir = process.env.APP_ROOT
-    ? path.join(appRoot, 'templates', 'extension')  // 开发模式
-    : path.join(app.getAppPath(), '..', 'templates', 'extension')  // 打包模式
+    ? path.join(appRoot, 'templates', 'extension')
+    : path.join(app.getAppPath(), '..', 'templates', 'extension')
 
   if (!fs.existsSync(templateDir)) {
     throw new Error(`Template directory not found: ${templateDir}`)
   }
 
-  // 创建目标目录
   fs.mkdirSync(extDir, { recursive: true })
 
-  // 递归复制模板文件并替换占位符
-  copyTemplateFiles(templateDir, extDir, {
-    name,
-    title,
-    desc,
-  })
+  copyTemplateFiles(templateDir, extDir, { name, title, desc })
 
   console.log(`✨ Extension "${name}" created successfully at ${extDir}`)
 }
 
 /**
- * 复制模板文件并替换占位符
+ * 复制模板文件
  */
 function copyTemplateFiles(sourceDir: string, targetDir: string, replacements: Record<string, string>) {
   const files = fs.readdirSync(sourceDir, { withFileTypes: true })
@@ -212,14 +223,11 @@ function copyTemplateFiles(sourceDir: string, targetDir: string, replacements: R
     const targetPath = path.join(targetDir, file.name)
 
     if (file.isDirectory()) {
-      // 创建目录并递归处理
       fs.mkdirSync(targetPath, { recursive: true })
       copyTemplateFiles(sourcePath, targetPath, replacements)
     } else {
-      // 复制文件并替换占位符
       let content = fs.readFileSync(sourcePath, 'utf-8')
 
-      // 替换所有占位符
       for (const [key, value] of Object.entries(replacements)) {
         const regex = new RegExp(`\\$\\{${key}\\}`, 'g')
         content = content.replace(regex, value)
@@ -231,9 +239,13 @@ function copyTemplateFiles(sourceDir: string, targetDir: string, replacements: R
 }
 
 /**
- * 验证插件目录的合法性
+ * 验证扩展
  */
-function validateExtension(extPath: string): { valid: boolean; error?: string; info?: ExtensionPackageInfo } {
+function validateExtension(extPath: string): ExtensionValidateResult {
+  if (!fs || !path) {
+    return { valid: false, error: 'Extension module is only available in renderer process' }
+  }
+
   try {
     if (!fs.existsSync(extPath)) {
       return { valid: false, error: '目录不存在' }
@@ -279,7 +291,7 @@ function validateExtension(extPath: string): { valid: boolean; error?: string; i
 }
 
 /**
- * 安装用户插件
+ * 安装用户扩展
  */
 function installUserExtension(extPath: string): boolean {
   try {
@@ -307,20 +319,23 @@ function installUserExtension(extPath: string): boolean {
 }
 
 /**
- * 卸载用户插件
+ * 卸载用户扩展
  */
 function uninstallUserExtension(name: string): boolean {
+  if (!electron || !fs || !path) {
+    throw new Error('Extension module is only available in renderer process')
+  }
+
   try {
+    const { app } = electron.remote || electron
     const userDataDir = app.getPath('userData')
     const extDir = path.join(userDataDir, 'extensions', name)
 
-    // 删除扩展目录
     if (fs.existsSync(extDir)) {
       fs.rmSync(extDir, { recursive: true, force: true })
       console.log(`✅ Extension directory deleted: ${extDir}`)
     }
 
-    // 从 userExts 中移除（如果存在）
     const userExts = (store.get('userExts') as string[]) || []
     const filtered = userExts.filter((p: string) => !p.includes(name))
     store.set('userExts', filtered)
@@ -336,10 +351,17 @@ function uninstallUserExtension(name: string): boolean {
 /**
  * 从 URL 下载并安装扩展
  */
-async function downloadAndInstall(url: string, name: string): Promise<boolean> {
-  const { net } = require('electron')
-  const { createWriteStream } = require('fs')
-  const tar = require('tar')
+async function downloadAndInstall(
+  url: string,
+  name: string,
+  options: DownloadOptions = {}
+): Promise<boolean> {
+  if (!electron || !fs || !path || !tar) {
+    throw new Error('Extension download module is only available in renderer process')
+  }
+
+  const { app, net } = electron.remote || electron
+  const { onProgress } = options
 
   try {
     const userDataDir = app.getPath('userData')
@@ -359,12 +381,12 @@ async function downloadAndInstall(url: string, name: string): Promise<boolean> {
 
     console.log(`📥 Downloading extension from: ${url}`)
 
-    // 使用 Electron net 模块下载（支持系统代理，更可靠）
+    // 使用 Electron net 模块下载
     await new Promise<void>((resolve, reject) => {
       const request = net.request({
         url: url,
         method: 'GET',
-        redirect: 'follow' // 自动跟随重定向
+        redirect: 'follow'
       })
 
       request.on('response', (response: any) => {
@@ -375,16 +397,22 @@ async function downloadAndInstall(url: string, name: string): Promise<boolean> {
           return
         }
 
-        const fileStream = createWriteStream(tarPath)
+        const fileStream = fs.createWriteStream(tarPath)
         let downloadedBytes = 0
         const totalBytes = parseInt(response.headers['content-length'] || '0', 10)
 
         response.on('data', (chunk: Buffer) => {
           downloadedBytes += chunk.length
           fileStream.write(chunk)
+
           if (totalBytes > 0) {
-            const progress = ((downloadedBytes / totalBytes) * 100).toFixed(1)
-            console.log(`⬇️  Downloading: ${progress}% (${downloadedBytes}/${totalBytes} bytes)`)
+            const progress = (downloadedBytes / totalBytes) * 100
+            console.log(`⬇️  Downloading: ${progress.toFixed(1)}% (${downloadedBytes}/${totalBytes} bytes)`)
+
+            // 触发进度回调
+            if (onProgress) {
+              onProgress(downloadedBytes, totalBytes, Math.round(progress * 100) / 100)
+            }
           }
         })
 
@@ -451,56 +479,28 @@ async function downloadAndInstall(url: string, name: string): Promise<boolean> {
       fs.rmSync(tempDir, { recursive: true, force: true })
     }
 
-    // 验证安装
-    const validation = validateExtension(extDir)
-    if (!validation.valid) {
-      throw new Error(validation.error)
+    // 验证安装 - 检查 package.json
+    const packagePath = path.join(extDir, 'package.json')
+    if (!fs.existsSync(packagePath)) {
+      throw new Error('Invalid extension: missing package.json')
+    }
+
+    const packageContent = fs.readFileSync(packagePath, 'utf-8')
+    const pkg = JSON.parse(packageContent)
+
+    if (!pkg.name || !pkg.main) {
+      throw new Error('Invalid extension: missing required fields (name or main)')
+    }
+
+    const mainPath = path.join(extDir, pkg.main)
+    if (!fs.existsSync(mainPath)) {
+      throw new Error(`Invalid extension: main file not found (${pkg.main})`)
     }
 
     console.log(`✅ Extension installed successfully: ${name}`)
     return true
   } catch (error) {
     console.error(`❌ Failed to download and install extension "${name}":`, error)
-    return false
-  }
-}
-
-/**
- * 获取已安装的扩展列表
- */
-function getInstalledExtensions(): ExtensionPackageInfo[] {
-  try {
-    const userDataDir = app.getPath('userData')
-    const extensionsDir = path.join(userDataDir, 'extensions')
-
-    if (!fs.existsSync(extensionsDir)) {
-      return []
-    }
-
-    const extensions: ExtensionPackageInfo[] = []
-    const folders = fs.readdirSync(extensionsDir)
-      .filter((dirent: string) => {
-        try {
-          return fs.statSync(path.join(extensionsDir, dirent)).isDirectory()
-        } catch (err) {
-          return false
-        }
-      })
-
-    for (const folderName of folders) {
-      try {
-        const extInfo = readExtensionPackage(path.join(extensionsDir, folderName))
-        if (extInfo) {
-          extensions.push(extInfo)
-        }
-      } catch (error) {
-        console.error(`❌ Failed to read extension "${folderName}":`, error)
-      }
-    }
-
-    return extensions
-  } catch (error) {
-    console.error('❌ Failed to get installed extensions:', error)
-    return []
+    throw error
   }
 }

@@ -1,4 +1,4 @@
-import type { StoreExtension, ExtensionStatus } from './types'
+import type { StoreExtension } from './types'
 import { Keyer } from '@/app/keyer'
 
 export const fetchStoreData = async (): Promise<StoreExtension[]> => {
@@ -12,34 +12,6 @@ export const fetchStoreData = async (): Promise<StoreExtension[]> => {
         e.downloadUrl = `${e.repo}/releases/download/${e.version}/release.tar.gz`
         return e as StoreExtension
     }) || []
-}
-
-export const checkExtensionStatus = async (extension: StoreExtension): Promise<ExtensionStatus> => {
-    try {
-        const installed = await Keyer.extensions.getInstalledExtensions()
-        const found = installed.find(ext => ext.name === extension.name)
-        
-        if (!found) {
-            return {
-                isInstalled: false,
-                canUpgrade: false
-            }
-        }
-
-        const canUpgrade = found.version !== extension.version
-        
-        return {
-            isInstalled: true,
-            canUpgrade,
-            installedVersion: found.version
-        }
-    } catch (error) {
-        console.error('Failed to check extension status:', error)
-        return {
-            isInstalled: false,
-            canUpgrade: false
-        }
-    }
 }
 
 export const handleInstall = async (extension: StoreExtension): Promise<boolean> => {
