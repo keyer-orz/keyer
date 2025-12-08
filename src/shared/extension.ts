@@ -13,10 +13,8 @@ export type Command = ICommand & {
 export class ExtensionMeta {
     // 基础信息
     name: string                    // 扩展名称
-    title: string                   // 展示名称
     // 包信息（来自 package.json）
     pkg: ExtensionPackageInfo
-
     // 扩展实例（加载后的运行时实例）
     ext?: IExtension
 
@@ -25,7 +23,6 @@ export class ExtensionMeta {
         ext?: IExtension,
     ) {
         this.name = pkg.name
-        this.title = pkg.title || pkg.name
         this.pkg = pkg
         this.ext = ext
     }
@@ -40,7 +37,6 @@ export class ExtensionMeta {
                 allCommands.push({
                     ...cmd,
                     id: `${this.name}#${cmd.name}`,
-                    extTitle: this.title,
                     type: cmd.type || 'Command',
                     ctx: {
                         dir: this.pkg.dir
@@ -58,7 +54,6 @@ export class ExtensionMeta {
                         allCommands.push({
                             ...cmd,
                             id: `${this.name}#${cmd.name}`,
-                            extTitle: this.title,
                             type: cmd.type || 'Command',
                             ctx: {
                                 dir: this.pkg.dir

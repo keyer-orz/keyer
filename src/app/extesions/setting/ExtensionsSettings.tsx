@@ -103,7 +103,7 @@ export function ExtensionsSettings() {
 
     const query = searchQuery.toLowerCase()
     const nameMatch = ext.meta.name.toLowerCase().includes(query)
-    const titleMatch = ext.meta.title?.toLowerCase().includes(query)
+    const titleMatch = ext.meta.pkg.title?.toLowerCase().includes(query)
     const commandMatch = ext.commands.some(cmd =>
       cmd.title?.toLowerCase().includes(query) ||
       cmd.name?.toLowerCase().includes(query)
@@ -166,14 +166,14 @@ export function ExtensionsSettings() {
               <div style={{ flex: 2, display: 'flex', alignItems: 'center' }}>
                 {expandedExtensions.has(ext.meta.name) ? <VscDiffRemoved /> : <VscDiffAdded />}
                 <VStack spacing={2} style={{ alignItems: 'flex-start', marginLeft:12 }}>
-                  <Text color="title" size="small">{ext.meta.title || ext.meta.name}</Text>
+                  <Text color="title" size="small">{ext.meta.pkg.title || ext.meta.name}</Text>
                   <Text color="subtitle" size="small" style={{ fontSize: '12px' }}>
                     {ext.commands.length} command{ext.commands.length !== 1 ? 's' : ''}
                   </Text>
                 </VStack>
               </div>
               <div style={contentStyle}>
-                <Text color="subtitle" size="small">{ext.meta.type}</Text>
+                <Text color="subtitle" size="small">{ext.meta.pkg.type}</Text>
               </div>
               <div style={contentStyle}>
                 <Text color="subtitle" size="small">-</Text>
