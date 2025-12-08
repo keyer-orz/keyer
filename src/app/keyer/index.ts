@@ -10,6 +10,7 @@ import { _IMainAPI } from '@/shared/main-api'
 import { _IRenderAPI } from '@/shared/render-api';
 
 import { clipboardImpl } from './clipboard';
+import { netImpl } from './net';
 
 // 支持嵌套 namespace 的 Proxy
 function wrapAPI<T>(path: string[] = []): T {
@@ -26,8 +27,9 @@ function wrapAPI<T>(path: string[] = []): T {
 
 // 生成统一 api 对象
 const MainAPI = wrapAPI<_IMainAPI>()
-const RenderAPI = {
-  clipboard: clipboardImpl
+const RenderAPI: _IRenderAPI = {
+  clipboard: clipboardImpl,
+  net: netImpl
 }
 
 /**
