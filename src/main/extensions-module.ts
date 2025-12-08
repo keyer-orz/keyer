@@ -7,29 +7,23 @@ import { _IMainAPI } from '@/shared/main-api'
 
 export const extensionsHandler: _IMainAPI['extensions'] = {
   scan: async () => {
-    return await scanExtensions(process.env.APP_ROOT)
+    return await scan()
   },
-
   create: async (options) => {
     await createExtension(options)
   },
-
   validateExtension: async (extPath) => {
     return validateExtension(extPath)
   },
-
   installUserExtension: async (extPath) => {
     return installUserExtension(extPath)
   },
-
   uninstallUserExtension: async (name) => {
     return uninstallUserExtension(name)
   },
-
   downloadAndInstall: async (url, name) => {
     return downloadAndInstall(url, name)
   },
-
   getInstalledExtensions: async () => {
     return getInstalledExtensions()
   }
@@ -37,17 +31,52 @@ export const extensionsHandler: _IMainAPI['extensions'] = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+async function scan(): Promise<ExtensionPackageInfo[]> {
+  const extensions: ExtensionPackageInfo[] = []
+  {
+    let exts = await scanExtensions(path.join(app.getPath('userData'), 'extensions'))
+    extensions.push(...exts)
+  }
+  {
+    let exts = await scanExtensions(path.join(process.env.APP_ROOT || "", 'extensions'))
+    extensions.push(...exts)
+  }
+  {
+    let exts = []
+    console.log("load user exts")
+    const userExts = (store.get('userExts') as string[]) || []
+    if (userExts.length > 0) {
+      for (const extPath of userExts) {
+        console.log("load user ext:", extPath)
+        try {
+          const userExtInfo = readExtensionPackage(extPath)
+          if (userExtInfo) {
+            exts.push(userExtInfo)
+          }
+        } catch (error) {
+          console.error(`❌ Failed to load user extension "${extPath}":`, error)
+        }
+      }
+    }
+    extensions.push(...exts)
+  }
+  {
+    const exampleExt = readExtensionPackage(path.join(app.getAppPath(), 'example'))
+    if (exampleExt) {
+      extensions.push(exampleExt)
+    }
+  }
+  return extensions
+}
 
 /**
  * 扫描并获取所有扩展的元数据
  * @param devDir 开发目录（可选），如果未提供则使用 userData
  * @returns 扩展包信息列表
  */
-async function scanExtensions(devDir?: string): Promise<ExtensionPackageInfo[]> {
-
+async function scanExtensions(dir: string): Promise<ExtensionPackageInfo[]> {
   const extensions: ExtensionPackageInfo[] = []
-  const baseDir = devDir || app.getPath('userData')
-  const extensionsDir = path.join(baseDir, 'extensions')
+  const extensionsDir = dir
 
   console.log('📂 Scanning extensions directory:', extensionsDir)
 
@@ -71,10 +100,9 @@ async function scanExtensions(devDir?: string): Promise<ExtensionPackageInfo[]> 
 
     console.log('📁 Found extension folders:', folders)
 
-    // 遍历每个文件夹，读取 package.json
     for (const folderName of folders) {
       try {
-        const extInfo = readExtensionPackage(extensionsDir, folderName)
+        const extInfo = readExtensionPackage(path.join(extensionsDir, folderName))
         if (extInfo) {
           extensions.push(extInfo)
           console.log('✅ Loaded extension metadata:', extInfo.name)
@@ -86,29 +114,6 @@ async function scanExtensions(devDir?: string): Promise<ExtensionPackageInfo[]> 
   } catch (error) {
     console.error('❌ Failed to scan extensions directory:', error)
   }
-
-  // 如果是开发模式，添加 example 扩展
-  if (devDir) {
-    const exampleExt = readExtensionPackage(devDir, 'example')
-    if (exampleExt) {
-      extensions.push(exampleExt)
-    }
-  }
-
-  // 扫描用户安装的扩展
-  const userExtPaths = getUserExtensions()
-  for (const extPath of userExtPaths) {
-    try {
-      const userExtInfo = scanPath(extPath)
-      if (userExtInfo) {
-        extensions.push(userExtInfo)
-        console.log('✅ Loaded user extension:', userExtInfo.name)
-      }
-    } catch (error) {
-      console.error(`❌ Failed to scan user extension at "${extPath}":`, error)
-    }
-  }
-
   return extensions
 }
 
@@ -119,15 +124,14 @@ async function scanExtensions(devDir?: string): Promise<ExtensionPackageInfo[]> 
  * @returns 扩展包信息，失败返回 null
  */
 function readExtensionPackage(
-  extensionsDir: string,
-  folderName: string
+  extensionsDir: string
 ): ExtensionPackageInfo | null {
-  const extDir = path.join(extensionsDir, folderName)
+  const extDir = extensionsDir
   const packagePath = path.join(extDir, 'package.json')
 
   // 检查 package.json 是否存在
   if (!fs.existsSync(packagePath)) {
-    console.warn(`⚠️  package.json not found in "${folderName}"`)
+    console.warn(`⚠️  package.json not found in "${extDir}"`)
     return null
   }
 
@@ -137,7 +141,7 @@ function readExtensionPackage(
 
   // 验证必需字段
   if (!pkg.name || !pkg.main) {
-    console.warn(`⚠️  Extension "${folderName}" missing required fields (name or main)`)
+    console.warn(`⚠️  Extension "${extDir}" missing required fields (name or main)`)
     return null
   }
 
@@ -227,32 +231,6 @@ function copyTemplateFiles(sourceDir: string, targetDir: string, replacements: R
 }
 
 /**
- * 获取用户安装的插件路径列表
- */
-function getUserExtensions(): string[] {
-  try {
-    return (store.get('userExts') as string[]) || []
-  } catch (error) {
-    console.error('❌ Failed to get user extensions:', error)
-    return []
-  }
-}
-
-/**
- * 扫描指定路径的插件
- */
-function scanPath(extPath: string): ExtensionPackageInfo | null {
-  try {
-    const folderName = path.basename(extPath)
-    const parentDir = path.dirname(extPath)
-    return readExtensionPackage(parentDir, folderName)
-  } catch (error) {
-    console.error(`❌ Failed to scan path "${extPath}":`, error)
-    return null
-  }
-}
-
-/**
  * 验证插件目录的合法性
  */
 function validateExtension(extPath: string): { valid: boolean; error?: string; info?: ExtensionPackageInfo } {
@@ -286,7 +264,7 @@ function validateExtension(extPath: string): { valid: boolean; error?: string; i
       return { valid: false, error: `主文件不存在: ${pkg.main}` }
     }
 
-    const info = scanPath(extPath)
+    const info = readExtensionPackage(extPath)
     if (!info) {
       return { valid: false, error: '无法读取插件信息' }
     }
@@ -511,7 +489,7 @@ function getInstalledExtensions(): ExtensionPackageInfo[] {
 
     for (const folderName of folders) {
       try {
-        const extInfo = readExtensionPackage(extensionsDir, folderName)
+        const extInfo = readExtensionPackage(path.join(extensionsDir, folderName))
         if (extInfo) {
           extensions.push(extInfo)
         }

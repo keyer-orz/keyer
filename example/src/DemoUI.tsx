@@ -7,7 +7,7 @@ import { VStack, HStack, Text, useExtensionContext } from 'keyerext'
  */
 export function DemoUI() {
   // 获取扩展上下文
-  const { meta } = useExtensionContext()
+  const { dir } = useExtensionContext()
 
   return (
     <VStack spacing={16} style={{ padding: '20px', alignItems: 'flex-start' }}>
@@ -18,7 +18,7 @@ export function DemoUI() {
       <VStack spacing={8} style={{ alignItems: 'flex-start' }}>
         <HStack spacing={8}>
           <Text color="subtitle">扩展dir：</Text>
-          <Text color="title">{meta.dir}</Text>
+          <Text color="title">{dir}</Text>
         </HStack>
  
       </VStack>
