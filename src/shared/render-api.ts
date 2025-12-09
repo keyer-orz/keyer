@@ -34,9 +34,10 @@ export interface _IRenderAPI extends IRenderAPI {
   extensions: {
     scan: () => Promise<ExtensionPackageInfo[]>
     create: (options: ExtensionCreateOptions) => Promise<void>
-    validateExtension: (path: string) => Promise<ExtensionValidateResult>
-    installUserExtension: (path: string) => Promise<boolean>
-    uninstallUserExtension: (name: string) => Promise<boolean>
-    downloadAndInstall: (url: string, name: string, options?: ExtensionDownloadOptions) => Promise<boolean>
+    validateExtension: (extPath: string) => Promise<ExtensionValidateResult>
+    installUserExtension: (extPath: string) => Promise<boolean>
+    uninstallUserExtension: (extPath: string) => Promise<boolean>
+    install: (url: string, name: string, options?: ExtensionDownloadOptions) => Promise<boolean>
+    uninstall: (name: string) => Promise<boolean>
   }
 }

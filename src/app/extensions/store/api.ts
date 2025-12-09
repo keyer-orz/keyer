@@ -21,7 +21,7 @@ export const handleInstall = async (extension: StoreExtension): Promise<boolean>
         }
         
         console.log('Installing:', extension.name, 'from', extension.downloadUrl)
-        const success = await Keyer.extensions.downloadAndInstall(extension.downloadUrl, extension.name)
+        const success = await Keyer.extensions.install(extension.downloadUrl, extension.name)
         
         if (success) {
             console.log('✅ Extension installed successfully')

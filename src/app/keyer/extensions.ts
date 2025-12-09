@@ -17,50 +17,53 @@ export const extensionsImpl: _IRenderAPI['extensions'] = {
   installUserExtension: async (extPath) => {
     return installUserExtension(extPath)
   },
-  uninstallUserExtension: async (name) => {
-    return uninstallUserExtension(name)
+  uninstallUserExtension: async (extPath) => {
+    return uninstallUserExtension(extPath)
   },
-  downloadAndInstall: async (url, name) => {
-    return downloadAndInstall(url, name)
+  install: async (url, name) => {
+    return install(url, name)
   },
+  uninstall: async (name) => {
+    return uninstall(name)
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-import type { 
-  ExtensionPackageInfo, 
-  ExtensionCreateOptions, 
+import type {
+  ExtensionPackageInfo,
+  ExtensionCreateOptions,
   ExtensionValidateResult,
-  ExtensionDownloadOptions,
 } from '@/shared/render-api'
 import { Keyer } from '@/app/keyer'
 import path from 'path'
 import * as fs from 'fs';
 import { store } from '@/main/shared'
+import { configManager } from '../utils/config'
 
 /**
  * 扫描所有扩展
  */
 async function scan(): Promise<ExtensionPackageInfo[]> {
   const extensions: ExtensionPackageInfo[] = []
-  
+
   // 扫描 userData/extensions
   {
     const exts = await scanExtensions(await Keyer.path.userData('extensions'))
-    exts.map(e=> e.type = 'store')
+    exts.map(e => e.type = 'store')
     extensions.push(...exts)
   }
-  
+
   // 扫描开发目录 extensions
   {
     const appRoot = process.env.APP_ROOT || ""
     if (appRoot) {
-      const exts = await scanExtensions(path.join(appRoot, 'extensions'))
-      exts.map(e=> e.type = 'dev')
+      const exts = await scanExtensions(await Keyer.path.appPath('extensions'))
+      exts.map(e => e.type = 'dev')
       extensions.push(...exts)
     }
   }
-  
+
   // 扫描用户自定义路径
   {
     const userExts = (store.get('userExts') as string[]) || []
@@ -76,7 +79,7 @@ async function scan(): Promise<ExtensionPackageInfo[]> {
       }
     }
   }
-  
+
   // 示例扩展
   {
     const appRoot = process.env.APP_ROOT || ""
@@ -86,7 +89,7 @@ async function scan(): Promise<ExtensionPackageInfo[]> {
       extensions.push(exampleExt)
     }
   }
-  
+
   return extensions
 }
 
@@ -123,7 +126,7 @@ async function scanExtensions(dir: string): Promise<ExtensionPackageInfo[]> {
   } catch (error) {
     console.error('❌ Failed to scan extensions directory:', error)
   }
-  
+
   return extensions
 }
 
@@ -299,10 +302,15 @@ function installUserExtension(extPath: string): boolean {
   }
 }
 
+async function uninstallUserExtension(extPath: string): Promise<boolean> {
+  configManager.set('userExts', (store.get('userExts') as string[]).filter((p: string) => p !== extPath))
+  return Promise.resolve(true)
+}
+
 /**
- * 卸载用户扩展
+ * 卸载扩展
  */
-async function uninstallUserExtension(name: string): Promise<boolean> {
+async function uninstall(name: string): Promise<boolean> {
   try {
     const extDir = await Keyer.path.userData('extensions', name)
     console.log('extDir:', extDir)
@@ -326,7 +334,7 @@ async function uninstallUserExtension(name: string): Promise<boolean> {
 /**
  * 从 URL 下载并安装扩展
  */
-async function downloadAndInstall(
+async function install(
   url: string,
   name: string,
 ): Promise<boolean> {
@@ -348,7 +356,7 @@ async function downloadAndInstall(
 
     console.log(`📥 Downloading extension from: ${url}`)
     await Keyer.net.download(url, tarPath)
-    
+
     console.log(`📦 Extracting to: ${extDir}`)
 
     await Keyer.file.extract(tarPath, extDir)
