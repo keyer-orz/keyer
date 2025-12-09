@@ -60,7 +60,6 @@ export default function StorePanel() {
             {/* Extension Details Drawer */}
             <ExtensionDetail
                 extension={selectedExtension}
-                extensionStatus={extensionStatus}
                 onClose={() => setSelectedExtension(null)}
             />
         </VStack>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import type { StoreExtension, ExtensionStatus, StoreState } from './types'
 import { fetchStoreData as fetchStoreDataAPI } from './api'
+import { Keyer } from '@/app/keyer'
+import { commandManager } from '@/app/managers/CommandManager'
 
 export function useStore() {
     const [state, setState] = useState<StoreState>({

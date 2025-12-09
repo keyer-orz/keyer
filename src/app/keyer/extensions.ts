@@ -20,8 +20,8 @@ export const extensionsImpl: _IRenderAPI['extensions'] = {
   uninstallUserExtension: async (name) => {
     return uninstallUserExtension(name)
   },
-  downloadAndInstall: async (url, name, options = {}) => {
-    return downloadAndInstall(url, name, options)
+  downloadAndInstall: async (url, name) => {
+    return downloadAndInstall(url, name)
   },
 }
 
@@ -31,21 +31,12 @@ import type {
   ExtensionPackageInfo, 
   ExtensionCreateOptions, 
   ExtensionValidateResult,
+  ExtensionDownloadOptions,
 } from '@/shared/render-api'
-import { DownloadOptions } from 'keyerext'
 import { Keyer } from '@/app/keyer'
 import path from 'path'
 import * as fs from 'fs';
 import { store } from '@/main/shared'
-
-let electron: any
-try {
-  electron = window.require('electron')
-} catch (e) {
-  console.warn('net module is only available in renderer process')
-}
-
-const net = electron ? (electron.net || electron.remote?.net) : null
 
 /**
  * 扫描所有扩展
@@ -55,7 +46,7 @@ async function scan(): Promise<ExtensionPackageInfo[]> {
   
   // 扫描 userData/extensions
   {
-    const exts = await scanExtensions(Keyer.path.userData('extensions'))
+    const exts = await scanExtensions(await Keyer.path.userData('extensions'))
     exts.map(e=> e.type = 'store')
     extensions.push(...exts)
   }
@@ -104,7 +95,7 @@ async function scan(): Promise<ExtensionPackageInfo[]> {
  */
 async function scanExtensions(dir: string): Promise<ExtensionPackageInfo[]> {
   const extensions: ExtensionPackageInfo[] = []
-  
+  console.log('scanning extensions in:', dir)
   try {
     if (!fs.existsSync(dir)) {
       return []
@@ -186,10 +177,10 @@ async function createExtension(options: ExtensionCreateOptions): Promise<void> {
     throw new Error(`Extension directory already exists: ${extDir}`)
   }
 
-  const appRoot = process.env.APP_ROOT || Keyer.path.appPath()
+  const appRoot = process.env.APP_ROOT || await Keyer.path.appPath()
   const templateDir = process.env.APP_ROOT
     ? path.join(appRoot, 'templates', 'extension')
-    : path.join(Keyer.path.appPath(), '..', 'templates', 'extension')
+    : path.join(await Keyer.path.appPath(), '..', 'templates', 'extension')
 
   if (!fs.existsSync(templateDir)) {
     throw new Error(`Template directory not found: ${templateDir}`)
@@ -311,11 +302,10 @@ function installUserExtension(extPath: string): boolean {
 /**
  * 卸载用户扩展
  */
-function uninstallUserExtension(name: string): boolean {
+async function uninstallUserExtension(name: string): Promise<boolean> {
   try {
-    const userDataDir = Keyer.path.userData()
-    const extDir = path.join(userDataDir, 'extensions', name)
-
+    const extDir = await Keyer.path.userData('extensions', name)
+    console.log('extDir:', extDir)
     if (fs.existsSync(extDir)) {
       fs.rmSync(extDir, { recursive: true, force: true })
       console.log(`✅ Extension directory deleted: ${extDir}`)
@@ -339,12 +329,9 @@ function uninstallUserExtension(name: string): boolean {
 async function downloadAndInstall(
   url: string,
   name: string,
-  options: DownloadOptions = {}
 ): Promise<boolean> {
-  const { onProgress } = options
-
   try {
-    const userDataDir = Keyer.path.userData()
+    const userDataDir = await Keyer.path.userData()
     const extensionsDir = path.join(userDataDir, 'extensions')
     const extDir = path.join(extensionsDir, name)
     const tarPath = path.join(extensionsDir, `${name}.tar.gz`)
@@ -360,122 +347,14 @@ async function downloadAndInstall(
     }
 
     console.log(`📥 Downloading extension from: ${url}`)
+    await Keyer.net.download(url, tarPath)
+    
+    console.log(`📦 Extracting to: ${extDir}`)
 
-    // 使用 Electron net 模块下载
-    await new Promise<void>((resolve, reject) => {
-      const request = net.request({
-        url: url,
-        method: 'GET',
-        redirect: 'follow'
-      })
-
-      request.on('response', (response: any) => {
-        console.log(`📊 Response status: ${response.statusCode}`)
-
-        if (response.statusCode !== 200) {
-          reject(new Error(`HTTP ${response.statusCode}`))
-          return
-        }
-
-        const fileStream = fs.createWriteStream(tarPath)
-        let downloadedBytes = 0
-        const totalBytes = parseInt(response.headers['content-length'] || '0', 10)
-
-        response.on('data', (chunk: Buffer) => {
-          downloadedBytes += chunk.length
-          fileStream.write(chunk)
-
-          if (totalBytes > 0) {
-            const progress = (downloadedBytes / totalBytes) * 100
-            console.log(`⬇️  Downloading: ${progress.toFixed(1)}% (${downloadedBytes}/${totalBytes} bytes)`)
-
-            // 触发进度回调
-            if (onProgress) {
-              onProgress(downloadedBytes, totalBytes, Math.round(progress * 100) / 100)
-            }
-          }
-        })
-
-        response.on('end', () => {
-          fileStream.end()
-          console.log(`✅ Download complete: ${downloadedBytes} bytes`)
-          resolve()
-        })
-
-        response.on('error', (err: Error) => {
-          fileStream.close()
-          if (fs.existsSync(tarPath)) {
-            fs.unlinkSync(tarPath)
-          }
-          reject(err)
-        })
-      })
-
-      request.on('error', (err: Error) => {
-        console.error(`❌ Request error:`, err)
-        reject(err)
-      })
-
-      request.end()
-    })
-
-    console.log(`📦 Extracting to: ${extensionsDir}`)
-
-    // 解压文件到临时目录
-    const tempDir = path.join(extensionsDir, `${name}_temp`)
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true, force: true })
-    }
-    fs.mkdirSync(tempDir, { recursive: true })
-
-    // await tar.extract({
-    //   file: tarPath,
-    //   cwd: tempDir
-    // })
+    await Keyer.file.extract(tarPath, extDir)
 
     // 删除临时 tar 文件
     fs.unlinkSync(tarPath)
-
-    // 检查解压后的目录结构
-    const tempContents = fs.readdirSync(tempDir)
-    console.log(`📂 Extracted contents:`, tempContents)
-
-    let sourceDir = tempDir
-
-    // 如果解压后只有一个目录，使用该目录
-    if (tempContents.length === 1 && fs.statSync(path.join(tempDir, tempContents[0])).isDirectory()) {
-      sourceDir = path.join(tempDir, tempContents[0])
-      console.log(`📁 Using subdirectory: ${sourceDir}`)
-    }
-
-    // 移动到最终位置
-    if (fs.existsSync(extDir)) {
-      fs.rmSync(extDir, { recursive: true, force: true })
-    }
-    fs.renameSync(sourceDir, extDir)
-
-    // 清理临时目录
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true, force: true })
-    }
-
-    // 验证安装 - 检查 package.json
-    const packagePath = path.join(extDir, 'package.json')
-    if (!fs.existsSync(packagePath)) {
-      throw new Error('Invalid extension: missing package.json')
-    }
-
-    const packageContent = fs.readFileSync(packagePath, 'utf-8')
-    const pkg = JSON.parse(packageContent)
-
-    if (!pkg.name || !pkg.main) {
-      throw new Error('Invalid extension: missing required fields (name or main)')
-    }
-
-    const mainPath = path.join(extDir, pkg.main)
-    if (!fs.existsSync(mainPath)) {
-      throw new Error(`Invalid extension: main file not found (${pkg.main})`)
-    }
 
     console.log(`✅ Extension installed successfully: ${name}`)
     return true

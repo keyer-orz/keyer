@@ -1,18 +1,26 @@
 import { VStack, HStack, Text, Drawer, Button } from 'keyerext'
 import type { StoreExtension, ExtensionStatus } from './types'
 import { handleInstall, handleUpgrade, handleUninstall } from './api'
+import { commandManager } from '@/app/managers/CommandManager'
 
 interface ExtensionDetailProps {
     extension: StoreExtension | null
-    extensionStatus: Record<string, ExtensionStatus>
     onClose: () => void
 }
 
-export function ExtensionDetail({ extension, extensionStatus, onClose }: ExtensionDetailProps) {
+export function ExtensionDetail({ extension, onClose }: ExtensionDetailProps) {
     const renderActionButton = (ext: StoreExtension) => {
-        const status = extensionStatus[ext.name]
-        if (!status) return null
-
+        console.log(extension?.name)
+        const localExt = commandManager.getExtension(extension?.name || '')
+        console.log(localExt)
+        const status:ExtensionStatus = {
+            isInstalled: false,
+            canUpgrade: false,
+        }
+        if (localExt) {
+            status.isInstalled = true
+            status.canUpgrade = localExt.pkg.version !== ext.version
+        }
         if (status.isInstalled) {
             if (status.canUpgrade) {
                 return (

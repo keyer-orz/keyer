@@ -1,43 +1,20 @@
-/**
- * 渲染进程网络模块
- * 使用 Electron net 模块实现 HTTP 请求和文件下载
- */
+import { _IMainAPI } from '@/shared/main-api'
+import { NetRequestOptions, NetResponse, DownloadOptions } from 'keyerext'
+import { net } from 'electron'
+import fs from 'fs'
+import path from 'path'
 
-import { _IRenderAPI } from '@/shared/render-api'
-
-// 动态导入 electron，避免在主进程中加载
-let electron: any
-try {
-  electron = window.require('electron')
-} catch (e) {
-  console.warn('net module is only available in renderer process')
-}
-
-export const netImpl: _IRenderAPI['net'] = {
-  request: async (url, options = {}) => {
-    return makeRequest(url, options)
+export const netHandler: _IMainAPI['net'] = {
+  request: async <T = any>(url: string, options: NetRequestOptions = {}): Promise<NetResponse<T>> => {
+    return makeRequest<T>(url, options)
   },
 
-  download: async (url, savePath, options = {}) => {
+  download: async (url: string, savePath: string, options: DownloadOptions = {}): Promise<boolean> => {
     return downloadFile(url, savePath, options)
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-interface NetRequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
-  headers?: Record<string, string>
-  body?: string | Record<string, any>
-  timeout?: number
-}
-
-interface NetResponse<T = any> {
-  status: number
-  statusText: string
-  headers: Record<string, string>
-  data: T
-}
 
 /**
  * 发起 HTTP 请求
@@ -46,12 +23,6 @@ async function makeRequest<T = any>(
   url: string,
   options: NetRequestOptions = {}
 ): Promise<NetResponse<T>> {
-  if (!electron) {
-    throw new Error('net module is only available in renderer process')
-  }
-
-  const { net } = electron
-
   const {
     method = 'GET',
     headers = {},
@@ -166,12 +137,6 @@ async function makeRequest<T = any>(
   })
 }
 
-interface DownloadOptions {
-  headers?: Record<string, string>
-  timeout?: number
-  onProgress?: (downloaded: number, total: number, progress: number) => void
-}
-
 /**
  * 下载文件到指定路径
  */
@@ -180,18 +145,9 @@ async function downloadFile(
   savePath: string,
   options: DownloadOptions = {}
 ): Promise<boolean> {
-  if (!electron) {
-    throw new Error('net module is only available in renderer process')
-  }
-
-  const { net } = electron
-  const fs = window.require('fs')
-  const path = window.require('path')
-
   const {
     headers = {},
-    timeout = 60000,
-    onProgress
+    timeout = 60000
   } = options
 
   return new Promise((resolve, reject) => {
@@ -234,18 +190,9 @@ async function downloadFile(
       }
 
       const fileStream = fs.createWriteStream(savePath)
-      let downloadedBytes = 0
-      const totalBytes = parseInt(response.headers['content-length'] || '0', 10)
 
       response.on('data', (chunk: Buffer) => {
-        downloadedBytes += chunk.length
         fileStream.write(chunk)
-
-        // 触发进度回调
-        if (onProgress && totalBytes > 0) {
-          const progress = (downloadedBytes / totalBytes) * 100
-          onProgress(downloadedBytes, totalBytes, Math.round(progress * 100) / 100)
-        }
       })
 
       response.on('end', () => {

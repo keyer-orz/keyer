@@ -32,6 +32,26 @@ export const fileHandler: _IMainAPI['file'] = {
       properties: ['openDirectory']
     })
     return result.canceled ? undefined : result.filePaths[0]
+  },
+
+  extract: async (archivePath: string, targetPath: string) => {
+    try {
+      const tar = await import('tar')
+      
+      // 确保目标目录存在
+      await fs.mkdir(targetPath, { recursive: true })
+      
+      // 解压缩文件
+      await tar.extract({
+        file: archivePath,
+        cwd: targetPath,
+      })
+      
+      return true
+    } catch (error) {
+      console.error(`Failed to extract ${archivePath}:`, error)
+      return false
+    }
   }
 }
 

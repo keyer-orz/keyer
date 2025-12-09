@@ -26,6 +26,11 @@ class CommandManager {
     })
   }
 
+  getExtension(name: string): Extension | undefined {
+    console.log(this.extensions)
+    return this.extensions.get(name)
+  }
+  
   getAllExtensions(): Extension[] {
     return Array.from(this.extensions.values())
   }
