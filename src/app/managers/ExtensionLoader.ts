@@ -9,7 +9,7 @@ import { Keyer } from '@/app/keyer'
 import { ExtensionPackageInfo } from '@/shared/render-api'
 import { ExtensionStore } from './ExtensionStore'
 import { commandManager } from './CommandManager'
-import SystemExts from '@/app/extesions'
+import SystemExts from '@/app/extensions'
 import { configManager } from '../utils/config'
 
 /**
