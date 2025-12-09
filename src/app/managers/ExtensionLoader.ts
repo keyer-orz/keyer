@@ -10,6 +10,7 @@ import { ExtensionPackageInfo } from '@/shared/render-api'
 import { ExtensionStore } from './ExtensionStore'
 import { commandManager } from './CommandManager'
 import SystemExts from '@/app/extesions'
+import { configManager } from '../utils/config'
 
 /**
  * 注册所有扩展
@@ -19,12 +20,13 @@ import SystemExts from '@/app/extesions'
 export async function registerExtensions() {
   console.log('🚀 Registering extensions...')
 
+  //1. 注册App内插件
   commandManager.register(SystemExts)
 
-  // 2. 从主进程扫描并加载本地扩展
+  // 2. 加载本地扩展
   try {
     const localExtensions = await loadLocalExtensions()
-
+    
     // 注册每个本地扩展
     for (const ext of localExtensions) {
       commandManager.register(ext)
@@ -79,6 +81,11 @@ async function loadLocalExtensions(): Promise<Extension[]> {
  */
 async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension | null> {
   try {
+    const extConfig = configManager.getExtesionConfig(pkgInfo.name)
+    if (extConfig.disabled) {
+      return new Extension(pkgInfo, undefined)
+    }
+
     // 构建扩展文件的完整路径
     const mainPath = path.join(pkgInfo.dir, pkgInfo.main)
 
@@ -124,12 +131,14 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension |
       pluginModule._compile(pluginCode, mainPath)
 
       const ExtensionClass = pluginModule.exports.default
-      
+
       const extension: IExtension = new ExtensionClass()
       const store = new ExtensionStore(pkgInfo.name)
       extension.store = store
-
-      return new Extension(pkgInfo, extension)
+      
+      const ext = new Extension(pkgInfo, extension)
+      ext.config = extConfig
+      return ext
     } finally {
       // 恢复原始的 _load 方法
       ; (Module as any)._load = originalLoad

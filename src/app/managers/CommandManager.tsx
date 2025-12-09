@@ -1,7 +1,7 @@
 import { ReactElement } from 'react'
 import { Command, Extension } from '@/shared/extension'
 import { configManager } from '../utils/config'
-import { ExtensionContextType } from 'keyerext'
+import { ExtensionContextType, Keyer } from 'keyerext'
 class CommandManager {
   private extensions: Map<string, Extension> = new Map()
   private commands: Command[] = []
@@ -13,8 +13,16 @@ class CommandManager {
   reloadCommands() {
     this.commands = []
     this.extensions.forEach(meta => {
+      if (meta.config?.disabled) {
+        return
+      }
       const commands = meta.allCommands()
       commands.forEach(cmd => this.commands.push(cmd))
+      meta.config?.commands && Object.entries(meta.config.commands).forEach(([cmdId, cmdConfig]) => {
+        if (!cmdConfig.disabled && (cmdConfig.shortcut?.length || 0) > 0) {
+          Keyer.shortcuts.registerCommand(cmdId, cmdConfig.shortcut || '')
+        }
+      })
     })
   }
 

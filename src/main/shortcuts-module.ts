@@ -11,30 +11,18 @@ export const shortcutsHandler: _IMainAPI['shortcuts'] = {
 
   updateCommand: async (cmdId: string, shortcut: string | undefined) => {
     return updateCommandShortcut(cmdId, shortcut)
-  }
+  },
+
+  registerGlobal: async (shortcut: string) => {
+    return registerMainShortcut(shortcut)
+  },
+
+  registerCommand: async (cmdId: string, shortcut: string | undefined) => {
+    return registerCommandShortcut(cmdId, shortcut!)
+  },
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-/**
- * 注册所有全局快捷键
- */
-export function registerShortcuts(): void {
-  // 1. 注册主窗口快捷键
-  const mainShortcut = store.get('globalShortcut') as string
-  if (mainShortcut) {
-    registerMainShortcut(mainShortcut)
-  }
-
-  // 2. 注册命令快捷键
-  const cmds = store.get('cmds') as Record<string, { disabled?: boolean; shortcut?: string }> || {}
-  Object.entries(cmds).forEach(([cmdId, config]) => {
-    if (config.shortcut && !config.disabled) {
-      registerCommandShortcut(cmdId, config.shortcut)
-    }
-  })
-}
-
 /**
  * 注册主窗口快捷键
  */

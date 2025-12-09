@@ -3,10 +3,9 @@ import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import Store from 'electron-store'
 import { createMainWindow, clearMainWindow } from './window-module'
-import { registerShortcuts, unregisterAllShortcuts } from './shortcuts-module'
 import { fileHandler } from './file-module'
 import { windowHandler } from './window-module'
-import { shortcutsHandler } from './shortcuts-module'
+import { shortcutsHandler, unregisterAllShortcuts } from './shortcuts-module'
 import { execHandler } from './exec-module'
 import { registerAppProtocol } from './app-icon'
 import { _IMainAPI } from '@/shared/main-api'
@@ -69,7 +68,5 @@ app.whenReady().then(() => {
   registerIPC()
   // 创建主窗口
   createMainWindow()
-  // 注册全局快捷键
-  registerShortcuts()
 })
 
