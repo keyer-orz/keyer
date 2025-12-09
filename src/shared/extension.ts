@@ -23,6 +23,8 @@ export class Extension {
 
     config?:ExtensionConfig
 
+    commands: Command[]
+
     constructor(
         pkg: ExtensionPackageInfo,
         ext?: IExtension,
@@ -30,10 +32,8 @@ export class Extension {
         this.name = pkg.name
         this.pkg = pkg
         this.ext = ext
-    }
 
-    allCommands(): Command[] {
-        return [...this.pkg.commands || [], ...(this.ext?.load?.() || [])].map(cmd => ({
+        this.commands = [...this.pkg.commands || [], ...(this.ext?.load?.() || [])].map(cmd => ({
             ...cmd,
             id: `${this.name}#${cmd.name}`,
             type: cmd.type || 'Command',

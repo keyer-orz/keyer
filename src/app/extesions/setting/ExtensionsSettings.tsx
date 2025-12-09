@@ -3,14 +3,10 @@ import { VStack, HStack, Text, Input, Image, Checkbox } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { configManager } from '@/app/utils/config'
 import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
-import { Command, Extension } from '@/shared/extension'
+import { Extension } from '@/shared/extension'
 import { VscDiffRemoved, VscDiffAdded } from "react-icons/vsc";
 import { Keyer } from '@/app/keyer'
-
-interface ExtensionItem {
-  meta: Extension
-  commands: Command[]
-}
+import { ExtensionProvider } from '@/app/contexts/ExtensionContext'
 
 const contentStyle: React.CSSProperties = {
   display: 'flex',
@@ -21,45 +17,14 @@ const contentStyle: React.CSSProperties = {
 
 export function ExtensionsSettings() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [extensions, setExtensions] = useState<ExtensionItem[]>([])
+  const [extensions, setExtensions] = useState<Extension[]>([])
   const [expandedExtensions, setExpandedExtensions] = useState<Set<string>>(new Set())
   const [cmdShortcuts, setCmdShortcuts] = useState<Record<string, string>>({})
   const [cmdDisabled, setCmdDisabled] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
-    // 从 commandManager 获取所有扩展和命令
     const allExtensions = commandManager.getAllExtensions()
-
-    // 构建扩展项列表
-    const extensionItems: ExtensionItem[] = allExtensions.map(meta => ({
-      meta,
-      commands: meta.allCommands()
-    }))
-
-    setExtensions(extensionItems)
-
-    // 加载所有命令的快捷键配置和禁用状态
-    const allConfigs = configManager.getAllCmdConfigs()
-    const shortcuts: Record<string, string> = {}
-    const disabled: Record<string, boolean> = {}
-    
-    // 遍历所有扩展的命令
-    extensionItems.forEach(item => {
-      item.commands.forEach(cmd => {
-        if (cmd.id) {
-          if (allConfigs[cmd.id]?.shortcut) {
-            shortcuts[cmd.id] = allConfigs[cmd.id].shortcut!
-          }
-          if (allConfigs[cmd.id]?.disabled) {
-            disabled[cmd.id] = true
-          }
-        }
-      })
-    })
-    setCmdShortcuts(shortcuts)
-    setCmdDisabled(disabled)
-  
-  
+    setExtensions(allExtensions)
   }, [])
 
   // 禁用/启用命令
@@ -102,8 +67,8 @@ export function ExtensionsSettings() {
     if (!searchQuery.trim()) return true
 
     const query = searchQuery.toLowerCase()
-    const nameMatch = ext.meta.name.toLowerCase().includes(query)
-    const titleMatch = ext.meta.pkg.title?.toLowerCase().includes(query)
+    const nameMatch = ext.name.toLowerCase().includes(query)
+    const titleMatch = ext.pkg.title?.toLowerCase().includes(query)
     const commandMatch = ext.commands.some(cmd =>
       cmd.title?.toLowerCase().includes(query) ||
       cmd.name?.toLowerCase().includes(query)
@@ -141,7 +106,7 @@ export function ExtensionsSettings() {
       <VStack spacing={0} style={{ alignItems: 'stretch', overflow: 'auto' }}>
         {filteredExtensions.map((ext) => (
           <VStack
-            key={ext.meta.name}
+            key={ext.name}
             spacing={0}
             style={{
               alignItems: 'stretch',
@@ -153,7 +118,7 @@ export function ExtensionsSettings() {
               style={{
                 padding: '12px',
                 cursor: 'pointer',
-                backgroundColor: expandedExtensions.has(ext.meta.name)
+                backgroundColor: expandedExtensions.has(ext.name)
                   ? 'var(--color-bg-hover)'
                   : 'transparent',
                 transition: 'background-color 0.15s',
@@ -161,19 +126,19 @@ export function ExtensionsSettings() {
                 alignItems: 'center',
                 gap: '8px'
               }}
-              onClick={() => toggleExtension(ext.meta.name)}
+              onClick={() => toggleExtension(ext.name)}
             >
               <div style={{ flex: 2, display: 'flex', alignItems: 'center' }}>
-                {expandedExtensions.has(ext.meta.name) ? <VscDiffRemoved /> : <VscDiffAdded />}
-                <VStack spacing={2} style={{ alignItems: 'flex-start', marginLeft:12 }}>
-                  <Text color="title" size="small">{ext.meta.pkg.title || ext.meta.name}</Text>
+                {expandedExtensions.has(ext.name) ? <VscDiffRemoved /> : <VscDiffAdded />}
+                <VStack spacing={2} style={{ alignItems: 'flex-start', marginLeft: 12 }}>
+                  <Text color="title" size="small">{ext.pkg.title || ext.name}</Text>
                   <Text color="subtitle" size="small" style={{ fontSize: '12px' }}>
                     {ext.commands.length} command{ext.commands.length !== 1 ? 's' : ''}
                   </Text>
                 </VStack>
               </div>
               <div style={contentStyle}>
-                <Text color="subtitle" size="small">{ext.meta.pkg.type}</Text>
+                <Text color="subtitle" size="small">{ext.pkg.type}</Text>
               </div>
               <div style={contentStyle}>
                 <Text color="subtitle" size="small">-</Text>
@@ -184,14 +149,14 @@ export function ExtensionsSettings() {
             </div>
 
             {/* Expanded Commands */}
-            {expandedExtensions.has(ext.meta.name) && (
+            {expandedExtensions.has(ext.name) && (
               <VStack
                 style={{
                   alignItems: 'stretch',
                   backgroundColor: 'var(--color-bg-secondary)',
                 }}
               >
-                {ext.commands.map((cmd) => (
+                {ext.commands.filter(cmd => cmd.title?.toLowerCase().includes(searchQuery)).map((cmd) => (
                   <div
                     key={cmd.id}
                     style={{
@@ -203,9 +168,12 @@ export function ExtensionsSettings() {
                     }}
                   >
                     <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Image src={cmd.icon || ""} width={32} height={32} style={{marginLeft:20}}/>
+                      <ExtensionProvider ctx={cmd.ctx!}>
+                        <Image src={cmd.icon || ""} width={32} height={32} style={{ marginLeft: 20 }} />
+                      </ExtensionProvider>
                       <VStack spacing={2} style={{ alignItems: 'flex-start' }}>
                         <Text color="title" size="small">{cmd.title || cmd.name}</Text>
+
                       </VStack>
                     </div>
                     <div style={contentStyle}>

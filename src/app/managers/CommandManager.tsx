@@ -16,7 +16,7 @@ class CommandManager {
       if (meta.config?.disabled) {
         return
       }
-      const commands = meta.allCommands()
+      const commands = meta.commands
       commands.forEach(cmd => this.commands.push(cmd))
       meta.config?.commands && Object.entries(meta.config.commands).forEach(([cmdId, cmdConfig]) => {
         if (!cmdConfig.disabled && (cmdConfig.shortcut?.length || 0) > 0) {
