@@ -22,7 +22,7 @@ export function ExtensionsSettings() {
 
   useEffect(() => {
     const allExtensions = commandManager.getAllExtensions()
-    setExtensions(allExtensions)
+    setExtensions(allExtensions.filter(e => e.name !== '@system') )
   }, [])
 
   const toggleExtension = (extName: string) => {
