@@ -3,6 +3,7 @@ import { NavigationContext, PageStackItem } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { Keyer } from '@/app/keyer'
 import { ipcRenderer } from 'electron'
+import { console } from 'inspector'
 
 /**
  * NavigationProvider 管理页面栈和导航逻辑
@@ -33,6 +34,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
       const result = commandManager.execute(page)
       if (!result) {
+        if (prev.length === 1 && prev[0].pageName === "@system#main") {
+          Keyer.window.hide()
+        }
         return prev
       }
 
@@ -162,6 +166,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
           return prev
         }
         // 否则，创建新页面并替换整个栈
+        console.log("111")
         const result = commandManager.execute(pageName)
         if (!result) {
           return []

@@ -1,4 +1,4 @@
-import { IExtension } from 'keyerext'
+import { CommandResult, IExtension } from 'keyerext'
 import { Extension } from '@/shared/extension'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -97,6 +97,30 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension |
     // 动态导入 keyerext（ESM）
     const Keyerext = await import('keyerext')
 
+    const ExtensionKeyer = new Proxy(Keyer, {
+      get(target, prop) { 
+        if (prop === 'command') {
+          return {
+            ...target.command,
+            register: async (cmd: string, handler: () => CommandResult): Promise<void> => {
+              const namespacedCmd = `${pkgInfo.name}#${cmd}`
+              return target.command.register(namespacedCmd, handler)
+            }
+          }
+        }
+        if (prop === 'store') {
+          return new ExtensionStore(pkgInfo.name)
+        }
+        return target[prop as keyof typeof Keyer]
+      }
+    })
+
+    // 创建注入了扩展专属 Keyer 的 keyerext 模块
+    const KeyerextWithExtName = {
+      ...Keyerext,
+      Keyer: ExtensionKeyer
+    }
+
     // 全局拦截 Module._load，确保扩展的所有文件都能正确加载依赖
     const originalLoad = (Module as any)._load
     const extensionDir = pkgInfo.dir
@@ -106,7 +130,7 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension |
         if (parent?.filename?.startsWith(extensionDir)) {
           if (request === 'react') return React
           if (request === 'react/jsx-runtime') return require('react/jsx-runtime')
-          if (request === 'keyerext') return Keyerext
+          if (request === 'keyerext') return KeyerextWithExtName
         }
         return originalLoad.apply(this, arguments)
       }

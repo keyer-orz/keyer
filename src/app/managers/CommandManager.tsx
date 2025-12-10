@@ -1,7 +1,7 @@
 import { ReactElement } from 'react'
 import { Command, Extension } from '@/shared/extension'
 import { configManager } from '../utils/config'
-import { ExtensionContextType, Keyer } from 'keyerext'
+import { CommandResult, ExtensionContextType, Keyer } from 'keyerext'
 class CommandManager {
   private extensions: Map<string, Extension> = new Map()
   private commands: Command[] = []
@@ -10,8 +10,20 @@ class CommandManager {
     this.extensions.set(meta.name, meta)
   }
 
+  registerCommand(cid: string, handler:() => CommandResult) {
+    this.commands.push({
+      id: cid,
+      ctx: {
+        dir: ''
+      },
+      handler,
+      title: 'xxxxx',
+      name: 'xxxxx'
+    })
+  }
+
   reloadCommands() {
-    this.commands = []
+    this.commands = this.commands.filter(c => c.handler)
     this.extensions.forEach(meta => {
       if (meta.config?.disabled) {
         return
@@ -73,6 +85,11 @@ class CommandManager {
       return null
     }
 
+    if (commandInfo.handler) {
+      commandInfo.handler()
+      return null
+    }
+
     try {
       const ext = this.extensions.get(extId)
       if (!ext?.ext) {
@@ -83,9 +100,9 @@ class CommandManager {
       if (!element) {
         return null
       }
+      // 如果 element 是字典
       return {
         element,
-        windowSize: commandInfo.windowSize,
         ctx: commandInfo.ctx,
       }
     } catch (error) {

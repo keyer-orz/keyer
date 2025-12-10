@@ -10,7 +10,9 @@ import { _IMainAPI } from '@/shared/main-api'
 import { _IRenderAPI } from '@/shared/render-api';
 
 import { clipboardImpl } from './clipboard';
+import { commandImpl } from './command';
 import { extensionsImpl } from './extensions';
+import { ExtensionStore } from '../managers/ExtensionStore';
 
 // 支持嵌套 namespace 的 Proxy
 function wrapAPI<T>(path: string[] = []): T {
@@ -29,7 +31,9 @@ function wrapAPI<T>(path: string[] = []): T {
 const MainAPI = wrapAPI<_IMainAPI>()
 const RenderAPI: _IRenderAPI = {
   clipboard: clipboardImpl,
-  extensions: extensionsImpl as any
+  command: commandImpl,
+  extensions: extensionsImpl as any,
+  store: new ExtensionStore("")
 }
 
 /**

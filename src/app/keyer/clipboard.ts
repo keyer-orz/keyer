@@ -6,6 +6,7 @@ import { IRenderAPI, ClipboardData } from "keyerext"
  */
 export const clipboardImpl: IRenderAPI["clipboard"] = {
   async read(): Promise<ClipboardData> {
+    
     const data: ClipboardData = {}
 
     // 读取文本

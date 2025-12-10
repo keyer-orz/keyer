@@ -1,7 +1,12 @@
 import { HStack, ICommand, IExtension, IExtensionStore, Text, Keyer, useExtensionContext, VStack } from "keyerext"
 import React from "react"
 import { DemoUI } from "./DemoUI";
+Keyer.command.register('hello2', () => {
+    console.log('Hello from test extension!')
+    return null
+})
 
+Keyer.store.set("11", "11")
 export default class Ext implements IExtension {
     store?: IExtensionStore;
     enabledPreview = true;

@@ -1,4 +1,4 @@
-import { IExtension, ICommand, ExtensionContextType } from 'keyerext'
+import { IExtension, ICommand, ExtensionContextType, CommandResult } from 'keyerext'
 import { ExtensionPackageInfo } from './render-api'
 import { ExtensionConfig } from '@/app/utils/config';
 
@@ -8,7 +8,9 @@ export type Context = {
 
 // 扩展属性
 export type Command = ICommand & {
-  ctx: ExtensionContextType
+    id?: string
+    ctx: ExtensionContextType
+    handler?: () => CommandResult
 };
 
 export class Extension {
@@ -19,7 +21,7 @@ export class Extension {
     // 扩展实例（加载后的运行时实例）
     ext?: IExtension
 
-    config?:ExtensionConfig
+    config?: ExtensionConfig
 
     commands: Command[]
 
