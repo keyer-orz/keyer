@@ -9,8 +9,6 @@ export type Context = {
 // 扩展属性
 export type Command = ICommand & {
   ctx: ExtensionContextType
-  shortcut?: string
-  disabled?: boolean
 };
 
 export class Extension {

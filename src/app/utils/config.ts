@@ -114,7 +114,7 @@ export class ConfigManager {
    */
   setCmdConfig(cmdId: string, config: CmdConfig): void {
     const [extName, cmdName] = cmdId.split('#')
-    this.store.set(`extensions.${extName}.commands.${cmdName}`, config)
+    this.store.set(`extensions.${extName}.commands.${cmdName}`, { ...this.getCmdConfig(cmdId), ...config })
   }
 
   /**

@@ -68,7 +68,6 @@ class CommandManager {
   execute(commandName: string): { element: ReactElement; windowSize?: { width: number; height: number }; ctx: ExtensionContextType } | null {
     const [extId, cmdName] = commandName.split('#')
     const commandInfo = this.commands.find(it => it.id === commandName)
-    console.log('Command info:', commandInfo)
     if (!commandInfo) {
       console.warn(`Command "${commandName}" not found`)
       return null

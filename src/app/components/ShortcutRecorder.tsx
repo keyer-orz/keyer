@@ -4,7 +4,7 @@ import { VscClose } from "react-icons/vsc";
 
 export interface ShortcutRecorderProps {
   value: string
-  onChange: (shortcut: string) => void
+  onChange: (shortcut: string | undefined) => void
   onClear?: () => void
   placeholder?: string
   disabled?: boolean
@@ -130,7 +130,7 @@ export function ShortcutRecorder({ value, onChange, onClear, placeholder = '--',
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onChange('')
+    onChange(undefined)
     if (onClear) onClear()
     setIsRecording(false)
     setPressedKeys(new Set())

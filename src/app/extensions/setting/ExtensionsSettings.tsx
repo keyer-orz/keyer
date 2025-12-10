@@ -19,20 +19,11 @@ export function ExtensionsSettings() {
   const [searchQuery, setSearchQuery] = useState('')
   const [extensions, setExtensions] = useState<Extension[]>([])
   const [expandedExtensions, setExpandedExtensions] = useState<Set<string>>(new Set())
-  const [cmdShortcuts, setCmdShortcuts] = useState<Record<string, string>>({})
-  const [cmdDisabled, setCmdDisabled] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     const allExtensions = commandManager.getAllExtensions()
     setExtensions(allExtensions)
   }, [])
-
-  // 禁用/启用命令
-  const handleDisabledChange = async (cmdId: string, checked: boolean) => {
-    setCmdDisabled(prev => ({ ...prev, [cmdId]: !checked }))
-    configManager.setCmdConfig(cmdId, { disabled: !checked })
-    await Keyer.shortcuts.registerCommand(cmdId, !checked ? undefined : cmdShortcuts[cmdId] || '')
-  }
 
   const toggleExtension = (extName: string) => {
     const newExpanded = new Set(expandedExtensions)
@@ -44,23 +35,24 @@ export function ExtensionsSettings() {
     setExpandedExtensions(newExpanded)
   }
 
-  const handleShortcutChange = async (cmdId: string, newShortcut: string) => {
-    // 更新本地状态
-    setCmdShortcuts(prev => ({
-      ...prev,
-      [cmdId]: newShortcut
-    }))
+  const handleDisabledChange = async (cmdId: string, checked: boolean) => {
+    configManager.setCmdConfig(cmdId, { disabled: !checked })
+    const [extName, cmdName] = cmdId.split('#')
+    const config = extensions.find(ext => ext.name === extName)?.config?.commands?.[cmdName] || {}
+    config.disabled = !checked
+    setExtensions([...extensions])
+  }
 
-    // 保存到配置
-    configManager.setCmdConfig(cmdId, { shortcut: newShortcut })
-
-    // 通知主进程更新快捷键注册
-    const success = await Keyer.shortcuts.registerCommand(cmdId, newShortcut || undefined)
-
-    if (!success) {
-      console.error(`Failed to update shortcut for ${cmdId}`)
-      // 可以在这里添加用户提示
+  const handleShortcutChange = async (cmdId: string, newShortcut: string | undefined) => {
+    const [extName, cmdName] = cmdId.split('#')
+    const config = extensions.find(ext => ext.name === extName)?.config?.commands?.[cmdName] || {}
+    if (config.shortcut) {
+      await Keyer.shortcuts.unregister(config.shortcut)
     }
+    configManager.setCmdConfig(cmdId, { shortcut: newShortcut })
+    await Keyer.shortcuts.registerCommand(cmdId, newShortcut)
+    config.shortcut = newShortcut
+    setExtensions([...extensions])
   }
 
   const filteredExtensions = extensions.filter(ext => {
@@ -180,16 +172,17 @@ export function ExtensionsSettings() {
                       <Text color="subtitle" size="small">{cmd.type}</Text>
                     </div>
                     <div style={contentStyle}>
+                      {(() => { console.log('Extension config:', ext.config?.commands, cmd.name); return null })()}
                       <ShortcutRecorder
-                        value={cmdShortcuts[cmd.id!] || ''}
+                        value={ext.config?.commands?.[cmd.name!]?.shortcut || ''}
                         onChange={(shortcut) => handleShortcutChange(cmd.id!, shortcut)}
                         placeholder="No shortcut"
-                        disabled={!!cmdDisabled[cmd.id!]}
+                        disabled={ext.config?.commands?.[cmd.name!]?.disabled || false}
                       />
                     </div>
                     <div style={contentStyle}>
                       <Checkbox
-                        checked={!cmdDisabled[cmd.id!]}
+                        checked={!ext.config?.commands?.[cmd.name!]?.disabled}
                         onChange={checked => handleDisabledChange(cmd.id!, checked)}
                       />
                     </div>
