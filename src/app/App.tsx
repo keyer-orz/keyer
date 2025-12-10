@@ -17,15 +17,13 @@ function AppContent() {
     if (!hasRegistered.current) {
       hasRegistered.current = true
 
-      // 2. 恢复保存的主题
       const savedTheme = configManager.get('theme')
       if (savedTheme) {
         document.documentElement.setAttribute('data-theme', savedTheme)
       }
 
-      Keyer.shortcuts.registerGlobal(configManager.get('globalShortcut'))
+      Keyer.shortcuts.registerApp(configManager.get('globalShortcut'))
 
-      // 3. 注册扩展
       registerExtensions().then(() => {
         console.log('✅ Extensions registered, app is ready')
         setIsReady(true)

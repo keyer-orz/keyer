@@ -19,7 +19,7 @@ export function GeneralSettings() {
     setShortcut(newShortcut)
     configManager.set('globalShortcut', newShortcut)
     // 通知主线程刷新快捷键注册
-    Keyer.shortcuts.updateGlobal(newShortcut)
+    Keyer.shortcuts.registerApp(newShortcut)
   }
 
   return (
