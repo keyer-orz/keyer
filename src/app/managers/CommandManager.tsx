@@ -17,8 +17,8 @@ class CommandManager {
         dir: ''
       },
       handler,
-      title: 'xxxxx',
-      name: 'xxxxx'
+      title:cid,
+      name: cid
     })
   }
 
@@ -86,8 +86,21 @@ class CommandManager {
     }
 
     if (commandInfo.handler) {
-      commandInfo.handler()
-      return null
+      const element = commandInfo.handler()
+      if (element === null) {
+        return null
+      }
+      if (element && typeof element === 'object' && 'windowSize' in element) {
+        return {
+          element: (element as any).element,
+          windowSize: (element as any).windowSize,
+          ctx: commandInfo.ctx,
+        }
+      }
+      return {
+        element: element as ReactElement,
+        ctx: commandInfo.ctx,
+      }
     }
 
     try {

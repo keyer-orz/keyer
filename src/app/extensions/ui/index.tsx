@@ -1,6 +1,8 @@
 import AppExt from "../types";
-import { WindowSize } from 'keyerext';
+import { WindowSize, CommandResult } from 'keyerext';
 import UIDemo from "./UIDemoPanel";
+import { Keyer } from "@/app/keyer";
+
 
 export default {
     cmd: {
@@ -15,3 +17,7 @@ export default {
     },
     ext: UIDemo
 } as AppExt
+
+Keyer.command.register('@system#uidemo', (): CommandResult => {
+    return <UIDemo />
+})
