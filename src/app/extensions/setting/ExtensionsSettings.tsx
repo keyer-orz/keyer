@@ -3,7 +3,7 @@ import { VStack, HStack, Text, Input, Image, Checkbox } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { configManager } from '@/app/utils/config'
 import { ShortcutRecorder } from '@/app/components/ShortcutRecorder'
-import { Extension } from '@/shared/extension'
+import { Extension } from '@/app/managers/Extension'
 import { VscDiffRemoved, VscDiffAdded } from "react-icons/vsc";
 import { Keyer } from '@/app/keyer'
 import { ExtensionProvider } from '@/app/contexts/ExtensionContext'
@@ -60,7 +60,7 @@ export function ExtensionsSettings() {
 
     const query = searchQuery.toLowerCase()
     const nameMatch = ext.name.toLowerCase().includes(query)
-    const titleMatch = ext.pkg.title?.toLowerCase().includes(query)
+    const titleMatch = ext.title?.toLowerCase().includes(query)
     const commandMatch = ext.commands.some(cmd =>
       cmd.title?.toLowerCase().includes(query) ||
       cmd.name?.toLowerCase().includes(query)
@@ -123,14 +123,14 @@ export function ExtensionsSettings() {
               <div style={{ flex: 2, display: 'flex', alignItems: 'center' }}>
                 {expandedExtensions.has(ext.name) ? <VscDiffRemoved /> : <VscDiffAdded />}
                 <VStack spacing={2} style={{ alignItems: 'flex-start', marginLeft: 12 }}>
-                  <Text color="title" size="small">{ext.pkg.title || ext.name}</Text>
+                  <Text color="title" size="small">{ext.title || ext.name}</Text>
                   <Text color="subtitle" size="small" style={{ fontSize: '12px' }}>
                     {ext.commands.length} command{ext.commands.length !== 1 ? 's' : ''}
                   </Text>
                 </VStack>
               </div>
               <div style={contentStyle}>
-                <Text color="subtitle" size="small">{ext.pkg.type}</Text>
+                <Text color="subtitle" size="small">{ext.type}</Text>
               </div>
               <div style={contentStyle}>
                 <Text color="subtitle" size="small">-</Text>
@@ -167,9 +167,6 @@ export function ExtensionsSettings() {
                         <Text color="title" size="small">{cmd.title || cmd.name}</Text>
 
                       </VStack>
-                    </div>
-                    <div style={contentStyle}>
-                      <Text color="subtitle" size="small">{cmd.type}</Text>
                     </div>
                     <div style={contentStyle}>
                       {(() => { console.log('Extension config:', ext.config?.commands, cmd.name); return null })()}

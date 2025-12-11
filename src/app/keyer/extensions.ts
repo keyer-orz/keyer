@@ -161,7 +161,6 @@ function readExtensionPackage(extDir: string): ExtensionPackageInfo | null {
       version: pkg.version,
       main: pkg.main,
       dir: extDir,
-      commands: pkg.commands
     }
   } catch (error) {
     console.error(`❌ Failed to read package.json:`, error)

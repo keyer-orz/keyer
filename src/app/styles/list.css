@@ -18,13 +18,13 @@
   font-weight: 600;
   color: var(--color-subtitle);
   text-transform: uppercase;
-  padding: 8px 12px;
+  padding: 10px 12px;
   margin: 0;
   text-align: start;
 }
 
 .keyer-list-item {
-  padding: 10px 12px;
+  padding: 4px 6px;
   cursor: pointer;
   transition: background-color 0.15s ease;
   user-select: none;

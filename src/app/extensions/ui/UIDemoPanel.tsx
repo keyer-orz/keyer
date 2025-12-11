@@ -1,8 +1,20 @@
 import { useState } from 'react'
 import { Text, List, VStack, HStack, Input, Divider, ListGroup, Button, Switch, RadioGroup, RadioOption, Loading, Checkbox, CheckboxGroup, Drawer } from 'keyerext'
 import { ThemeSwitcher } from '../../components'
+import { Keyer } from '@/app/keyer'
 
-export default function UIDemo() {
+export function activeUIDemo() {
+    Keyer.command.registerApp({
+        icon: '✨',
+        name: 'emo_ui1',
+        title: 'UI Demo',
+        desc: 'UI demo panel',
+    }, () => {
+        return <UIDemo />
+    })
+}
+
+function UIDemo() {
     const [searchText, setSearchText] = useState('')
     const [selectedId, setSelectedId] = useState('item-1')
     const [notificationsEnabled, setNotificationsEnabled] = useState(true)

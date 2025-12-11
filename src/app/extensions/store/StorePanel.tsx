@@ -3,6 +3,18 @@ import { VStack, Input, useAutoFocusOnVisible, useEscapeHandler, type InputRef }
 import { useStore } from './useStore'
 import { ExtensionList } from './ExtensionList'
 import { ExtensionDetail } from './ExtensionDetail'
+import { Keyer } from '@/app/keyer'
+
+export function activeStore() {
+    Keyer.command.registerApp({
+        name: 'store',
+        title: 'Extensions Store',
+        desc: 'Browse and install extensions',
+        icon: '🏪',
+    }, () => {
+        return <StorePanel />
+    })
+}
 
 export default function StorePanel() {
     const inputRef = useRef<InputRef>(null)

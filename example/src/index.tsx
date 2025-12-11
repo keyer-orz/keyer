@@ -1,66 +1,20 @@
-import { HStack, ICommand, IExtension, IExtensionStore, Text, Keyer, useExtensionContext, VStack, Command } from "keyerext"
-import React from "react"
-import { DemoUI } from "./DemoUI";
-
+import { HStack, Keyer } from "keyerext"
 
 export function active() {
-    Keyer.command.register('hello2', () => {
+    Keyer.command.register({
+        icon: '🧪',
+        name: 'test1',
+        title: 'Test Command',
+        desc: 'This is a test command',
+    }, () => {
         console.log('Hello from test extension!')
         return null
     })
-}
 
-Keyer.store.set("11", "11")
-
-
-export default class Ext implements IExtension {
-    store?: IExtensionStore;
-    enabledPreview = true;
-
-    constructor() {
-    }
-
-    load(): ICommand[] {
-        return [
-            {
-                icon: '😂',
-                name: 'test',
-                title: 'Test Command',
-                desc: 'This is a test command',
-            },
-            {
-                icon: '📋',
-                name: 'context',
-                title: 'Extension Context Demo',
-                desc: 'Show extension context information',
-            }
-        ]
-    }
-
-    preview(input: string): React.ReactElement | null {
+    Keyer.command.preview("calculate", (input: string) => {
         if (input === '1+1=') {
             return <HStack style={{ paddingLeft: 20 }}><div style={{ fontSize: 36 }}>2</div></HStack>
         }
         return null
-    }
-
-    run(name: string): React.ReactElement | null {
-        console.log('run command:', name)
-        if (name == 'hello') {
-            Keyer.clipboard.writeText("hello")
-        }
-        if (name == 'cmd-window') {
-            Keyer.exec.window('ping www.baidu.com')
-            return null
-        }
-        if (name == 'cmd-shell') {
-            Keyer.exec.terminal('ping www.baidu.com')
-            return null
-        }
-        if (name == 'context') {
-            return <DemoUI />
-        }
-        this.store?.set('last-run-command', name)
-        return <div>11</div>
-    }
+    })
 }

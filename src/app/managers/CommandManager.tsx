@@ -1,36 +1,62 @@
 import { ReactElement } from 'react'
-import { Command, Extension } from '@/shared/extension'
-import { configManager } from '../utils/config'
 import { CommandResult, ExtensionContextType, Keyer } from 'keyerext'
+import { Extension, Command, Preview } from '@/app/managers/Extension'
 class CommandManager {
   private extensions: Map<string, Extension> = new Map()
-  private commands: Command[] = []
+  private previews: Preview[] = []
+  private appCommands: Command[] = []
 
-  register(meta: Extension) {
-    this.extensions.set(meta.name, meta)
+  register(ext: Extension) {
+    this.extensions.set(ext.name, ext)
+    ext.active()
   }
 
-  registerCommand(cid: string, handler:() => CommandResult) {
-    this.commands.push({
+  registerPreview(cid: string, hander: (input: string) => React.ReactElement | null) {
+    this.previews.push({
       id: cid,
-      ctx: {
-        dir: ''
-      },
-      handler,
-      title:cid,
-      name: cid
+      handler: hander
     })
   }
 
+  registerCommand(cmd: Command, handler: () => CommandResult) {
+    const cmdId = cmd.id
+    console.log('Register command:', cmdId)
+    if (cmdId == undefined) { return }
+    if (cmdId.indexOf('#') === -1) { return }
+
+    const [extName, __] = cmdId.split('#')
+    if (extName.startsWith("@system")) {
+      console.log('Register command for extension:', extName)
+      cmd.handler = handler
+      cmd.id = cmd.id || cmd.name
+      cmd.ctx = cmd.ctx || { dir: '.' }
+      this.appCommands.push(cmd)
+      return
+    }
+    const ext = this.extensions.get(extName)
+    if (!ext) { return }
+
+    cmd.handler = handler
+    cmd.id = cmd.id || cmd.name
+    cmd.ctx = cmd.ctx || { dir: '.' }
+    ext.addCommand(cmd)
+  }
+
+  get commands(): Command[] {
+    const ext_commands = Array.from(this.extensions.values())
+      .flatMap(ext => ext.commands)
+      .filter(cmd => cmd.disabled != undefined || cmd.disabled != true)
+    return [...this.appCommands, ...ext_commands]
+  }
+
   reloadCommands() {
-    this.commands = this.commands.filter(c => c.handler)
-    this.extensions.forEach(meta => {
-      if (meta.config?.disabled) {
+    this.extensions.forEach(ext => {
+      if (ext.config?.disabled) {
         return
       }
-      const commands = meta.commands
+      const commands = ext.commands
       commands.forEach(cmd => this.commands.push(cmd))
-      meta.config?.commands && Object.entries(meta.config.commands).forEach(([cmdId, cmdConfig]) => {
+      ext.config?.commands && Object.entries(ext.config.commands).forEach(([cmdId, cmdConfig]) => {
         if (!cmdConfig.disabled && (cmdConfig.shortcut?.length || 0) > 0) {
           Keyer.shortcuts.registerCommand(cmdId, cmdConfig.shortcut || '')
         }
@@ -39,29 +65,23 @@ class CommandManager {
   }
 
   getExtension(name: string): Extension | undefined {
-    console.log(this.extensions)
     return this.extensions.get(name)
   }
-  
+
   getAllExtensions(): Extension[] {
     return Array.from(this.extensions.values())
   }
 
-  getAllCommands(): Command[] {
-    return this.commands.filter(cmd => !configManager.getCmdConfig(cmd.id!).disabled)
-  }
-
   preview(query: string): ReactElement[] {
     return (
-      Array.from(this.extensions.values())
-        .filter(e => e.ext && typeof e.ext.preview === 'function')
-        .map(e => e.ext!.preview!(query))
+      this.previews
+        .map(e => e.handler(query))
         .filter(el => el !== null) as ReactElement[]
     )
   }
 
   search(query: string): Command[] {
-    const filtered = this.commands.filter(cmd => !configManager.getCmdConfig(cmd.id!).disabled)
+    const filtered = this.commands
     if (!query || query.trim() === '') {
       return filtered.filter(cmd => cmd.id != "@system#main")
     }
@@ -71,56 +91,37 @@ class CommandManager {
       const titleMatch = cmd.title?.toLowerCase().includes(lowerQuery)
       const nameMatch = cmd.name?.toLowerCase().includes(lowerQuery)
       const descMatch = cmd.desc?.toLowerCase().includes(lowerQuery)
-      const extTitleMatch = cmd.extTitle?.toLowerCase().includes(lowerQuery)
-
-      return titleMatch || nameMatch || descMatch || extTitleMatch
+      return titleMatch || nameMatch || descMatch
     }).filter(cmd => cmd.id != "@system#main")
   }
 
-  execute(commandName: string): { element: ReactElement; windowSize?: { width: number; height: number }; ctx: ExtensionContextType } | null {
-    const [extId, cmdName] = commandName.split('#')
-    const commandInfo = this.commands.find(it => it.id === commandName)
-    if (!commandInfo) {
-      console.warn(`Command "${commandName}" not found`)
+  execute(cmdId: string): { element: JSX.Element; windowSize?: { width: number; height: number }; ctx: ExtensionContextType } | null {
+    const command = this.commands.find(it => it.id === cmdId)
+    if (!command) {
+      console.warn(`Command "${cmdId}" not found`)
       return null
     }
 
-    if (commandInfo.handler) {
-      const element = commandInfo.handler()
-      if (element === null) {
-        return null
-      }
-      if (element && typeof element === 'object' && 'windowSize' in element) {
-        return {
-          element: (element as any).element,
-          windowSize: (element as any).windowSize,
-          ctx: commandInfo.ctx,
-        }
-      }
-      return {
-        element: element as ReactElement,
-        ctx: commandInfo.ctx,
-      }
+    if (command.handler === undefined) {
+      console.warn(`Command "${cmdId}" has no handler`)
+      return null
     }
 
-    try {
-      const ext = this.extensions.get(extId)
-      if (!ext?.ext) {
-        console.warn(`Extension "${extId}" not loaded yet`)
-        return null
-      }
-      const element = ext.ext.run(cmdName)
-      if (!element) {
-        return null
-      }
-      // 如果 element 是字典
-      return {
-        element,
-        ctx: commandInfo.ctx,
-      }
-    } catch (error) {
-      console.error(`Error executing command "${commandName}":`, error)
+    const res = command.handler()
+    if (res === null) {
       return null
+    }
+   
+    if (res && typeof res === 'object' && 'size' in res) {
+      return {
+        element: (res as any).component,
+        windowSize: (res as any).windowSize,
+        ctx: command.ctx,
+      }
+    }
+    return {
+      element: res as JSX.Element,
+      ctx: command.ctx,
     }
   }
 }

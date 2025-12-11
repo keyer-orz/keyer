@@ -19,7 +19,7 @@ export function ExtensionDetail({ extension, onClose }: ExtensionDetailProps) {
         }
         if (localExt) {
             status.isInstalled = true
-            status.canUpgrade = localExt.pkg.version !== ext.version
+            status.canUpgrade = localExt.version !== ext.version
         }
         if (status.isInstalled) {
             if (status.canUpgrade) {

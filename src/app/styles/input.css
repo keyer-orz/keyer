@@ -1,18 +1,18 @@
 /* Input Component */
 .keyer-input {
-  padding: 12px;
+  padding: 12px 8px;
   margin: 4px;
   font-size: 18px;
   color: var(--color-title);
   background-color: var(--color-input-bg);
   border: none;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   outline: none;
   font-family: var(--font-mono);
 }
 
 .keyer-input:focus {
-  border-bottom-color: var(--color-border);
+  border-bottom-color: 1px solid var(--color-border);
 }
 
 .keyer-input::placeholder {

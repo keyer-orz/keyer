@@ -1,5 +1,6 @@
-import { IRenderAPI } from "keyerext";
-import { Command } from "./extension"
+import { _ICommandAPI } from "@/app/keyer/command";
+import { Command } from "@/app/managers/Extension";
+import { CommandResult, IRenderAPI } from "keyerext";
 
 export interface ExtensionPackageInfo {
   name: string
@@ -10,7 +11,6 @@ export interface ExtensionPackageInfo {
   main: string
   dir: string
   type?: "store" | "local" | "app" | "dev"
-  commands?: Command[]
 }
 
 export interface ExtensionCreateOptions {
@@ -39,5 +39,6 @@ export interface _IRenderAPI extends IRenderAPI {
     uninstallUserExtension: (extPath: string) => Promise<boolean>
     install: (url: string, name: string, options?: ExtensionDownloadOptions) => Promise<boolean>
     uninstall: (name: string) => Promise<boolean>
-  }
+  },
+  command: IRenderAPI['command'] & _ICommandAPI
 }

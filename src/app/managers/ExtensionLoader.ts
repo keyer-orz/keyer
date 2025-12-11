@@ -1,5 +1,5 @@
-import { CommandResult, IExtension } from 'keyerext'
-import { Extension } from '@/shared/extension'
+import { CommandResult, ICommand } from 'keyerext'
+import { Command, Extension } from '@/app/managers/Extension'
 import * as path from 'path'
 import * as fs from 'fs'
 import Module from 'module'
@@ -9,8 +9,7 @@ import { Keyer } from '@/app/keyer'
 import { ExtensionPackageInfo } from '@/shared/render-api'
 import { ExtensionStore } from './ExtensionStore'
 import { commandManager } from './CommandManager'
-import SystemExts from '@/app/extensions'
-import { configManager } from '../utils/config'
+import active from '@/app/extensions'
 
 /**
  * 注册所有扩展
@@ -21,12 +20,12 @@ export async function registerExtensions() {
   console.log('🚀 Registering extensions...')
 
   //1. 注册App内插件
-  commandManager.register(SystemExts)
+  active()
 
   // 2. 加载本地扩展
   try {
     const localExtensions = await loadLocalExtensions()
-    
+
     // 注册每个本地扩展
     for (const ext of localExtensions) {
       commandManager.register(ext)
@@ -73,19 +72,8 @@ async function loadLocalExtensions(): Promise<Extension[]> {
   return extensions
 }
 
-/**
- * 加载单个扩展（CommonJS 格式）
- * keyerext 是 ESM，使用动态 import() 加载
- * @param pkgInfo 从主进程扫描得到的扩展包信息
- * @returns 扩展元数据，如果加载失败返回 null
- */
 async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension | null> {
   try {
-    const extConfig = configManager.getExtesionConfig(pkgInfo.name)
-    if (extConfig.disabled) {
-      return new Extension(pkgInfo, undefined)
-    }
-
     // 构建扩展文件的完整路径
     const mainPath = path.join(pkgInfo.dir, pkgInfo.main)
 
@@ -98,13 +86,24 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension |
     const Keyerext = await import('keyerext')
 
     const ExtensionKeyer = new Proxy(Keyer, {
-      get(target, prop) { 
+      get(target, prop) {
         if (prop === 'command') {
           return {
             ...target.command,
-            register: async (cmd: string, handler: () => CommandResult): Promise<void> => {
+            register: async (cmd: ICommand, handler: () => CommandResult): Promise<void> => {
+              const _cmd: Command = {
+                ...cmd,
+                id: `${pkgInfo.name}#${cmd.name}`,
+                extTitle: pkgInfo.title || "",
+                ctx: {
+                  dir: pkgInfo.dir
+                }
+              }
+              return target.command._register(_cmd, handler)
+            },
+            preview: async (cmd: string, handler: (input: string) => React.ReactElement | null): Promise<void> => {
               const namespacedCmd = `${pkgInfo.name}#${cmd}`
-              return target.command.register(namespacedCmd, handler)
+              return target.command.preview(namespacedCmd, handler)
             }
           }
         }
@@ -150,19 +149,9 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension |
         return (Module as any)._load(id, pluginModule, false)
       } as any
 
-      // 编译并执行插件代码
       // @ts-ignore - _compile 是内部 API
       pluginModule._compile(pluginCode, mainPath)
-
-      const ExtensionClass = pluginModule.exports.default
-
-      const extension: IExtension = new ExtensionClass()
-      const store = new ExtensionStore(pkgInfo.name)
-      extension.store = store
-      
-      const ext = new Extension(pkgInfo, extension)
-      ext.config = extConfig
-      return ext
+      return new Extension(pkgInfo, pluginModule.exports.active, pluginModule.exports.deactive)
     } finally {
       // 恢复原始的 _load 方法
       ; (Module as any)._load = originalLoad

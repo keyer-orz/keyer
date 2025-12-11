@@ -1,7 +1,22 @@
 import React, { useState } from 'react'
-import { HStack, Text, List } from 'keyerext'
+import { HStack, Text, List, WindowSize } from 'keyerext'
 import { ExtensionsSettings } from './ExtensionsSettings'
 import { GeneralSettings } from './GeneralSettings'
+import { Keyer } from '@/app/keyer'
+
+export function activeSetting() {
+    Keyer.command.registerApp({
+        name: "setting",
+        title: "Setting",
+        desc: "Open the setting page",
+        icon: "⚙️",
+    }, () => {
+        return {
+            component: <SettingPanel />,
+            size: WindowSize.Large
+        }
+    })
+}
 
 interface SettingsSection {
     id: string

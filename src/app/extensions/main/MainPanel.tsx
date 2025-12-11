@@ -1,8 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
 import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
-import { Command } from '@/shared/extension'
+import { Command } from '@/app/managers/Extension'
 import { ExtensionProvider } from '@/app/contexts/ExtensionContext'
+import { Keyer } from '@/app/keyer'
+
+export function activeMain() {
+    Keyer.command.registerApp({
+        name: 'main',
+    }, () => {
+        return <MainPanel />
+    })
+}
 
 export default function MainPanel() {
     const [searchText, setSearchText] = useState('')
@@ -51,12 +60,11 @@ export default function MainPanel() {
         return (
             <HStack spacing={12}>
                 <ExtensionProvider ctx={cmd.ctx}>
-                    <Image src={cmd.icon || "👵"} width={32} height={32} />
+                    <Image src={cmd.icon || cmd.name} width={32} height={32} />
                 </ExtensionProvider>
                 <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
                     <Text color="title" size="medium">{cmd.title}</Text>
                     <Text color="subtitle" style={{ flex: 1 }} size="small">{cmd.extTitle}</Text>
-                    <Text color="subtitle" size="small">{cmd.type}</Text>
                 </HStack>
             </HStack>
         )

@@ -1,13 +1,24 @@
 import { useState } from 'react'
-import { 
-  VStack, 
-  HStack, 
-  Text, 
-  Input, 
-  Button, 
-  useNavigation 
+import {
+  VStack,
+  HStack,
+  Text,
+  Input,
+  Button,
+  useNavigation
 } from 'keyerext'
 import { Keyer } from '@/app/keyer'
+
+export function activeCreateExtension() {
+  Keyer.command.registerApp({
+    name: 'create_ext',
+    title: 'Create Extension',
+    desc: 'Create a new extension from template',
+    icon: '✨',
+  }, () => {
+    return <CreateExtPanel />
+  })
+}
 
 interface ExtensionFormData {
   name: string
@@ -55,7 +66,7 @@ export default function CreateExtPanel() {
     }
 
     setIsCreating(true)
-    
+
     try {
       await Keyer.extensions.create({
         name: formData.name,
@@ -63,7 +74,7 @@ export default function CreateExtPanel() {
         desc: formData.desc,
         targetDir: formData.targetDir
       })
-      
+
       alert(`Extension "${formData.title}" created successfully!`)
       pop()
     } catch (error) {
@@ -75,12 +86,12 @@ export default function CreateExtPanel() {
   }
 
   return (
-    <VStack className='plugin' style={{padding: '10px'}}>
+    <VStack className='plugin' style={{ padding: '10px' }}>
       <Text size="large">Create New Extension</Text>
       <VStack style={{ gap: '16px', marginTop: '20px', flex: 1 }}>
         <HStack>
-          <Text style={{flex: 1}}>Extension Name *</Text>
-          <Input style={{flex: 2}}
+          <Text style={{ flex: 1 }}>Extension Name *</Text>
+          <Input style={{ flex: 2 }}
             placeholder="my-awesome-extension (kebab-case)"
             value={formData.name}
             onChange={(value) => updateField('name', value)}
@@ -88,8 +99,8 @@ export default function CreateExtPanel() {
         </HStack>
 
         <HStack>
-          <Text style={{flex: 1}}>Extension Title *</Text>
-          <Input style={{flex: 2}}
+          <Text style={{ flex: 1 }}>Extension Title *</Text>
+          <Input style={{ flex: 2 }}
             placeholder="My Awesome Extension"
             value={formData.title}
             onChange={(value) => updateField('title', value)}
@@ -97,8 +108,8 @@ export default function CreateExtPanel() {
         </HStack>
 
         <HStack>
-          <Text style={{flex: 1}}>Description</Text>
-          <Input style={{flex: 2}}
+          <Text style={{ flex: 1 }}>Description</Text>
+          <Input style={{ flex: 2 }}
             placeholder="What does this extension do?"
             value={formData.desc}
             onChange={(value) => updateField('desc', value)}
@@ -106,13 +117,13 @@ export default function CreateExtPanel() {
         </HStack>
 
         <HStack>
-          <Text style={{flex: 1}}>Target Directory *</Text>
+          <Text style={{ flex: 1 }}>Target Directory *</Text>
           <HStack style={{ flex: 2 }}>
             <Text
-              style={{ 
-                flex: 1, 
-                padding: '8px', 
-                backgroundColor: 'var(--color-background-secondary)', 
+              style={{
+                flex: 1,
+                padding: '8px',
+                backgroundColor: 'var(--color-background-secondary)',
                 borderRadius: '4px',
                 minHeight: '20px',
                 color: formData.targetDir ? 'var(--color-text)' : 'var(--color-text-secondary)'
@@ -127,8 +138,8 @@ export default function CreateExtPanel() {
 
       <HStack style={{ gap: '12px', marginTop: '30px', justifyContent: 'flex-end' }}>
         <Button onClick={pop}>Cancel</Button>
-        <Button 
-          type="primary" 
+        <Button
+          type="primary"
           onClick={createExtension}
           disabled={isCreating || !formData.name || !formData.title || !formData.targetDir}
         >

@@ -2,6 +2,17 @@ import { useState } from 'react'
 import { VStack, HStack, Text, Button, Loading, useNavigation } from 'keyerext'
 import { Keyer } from '@/app/keyer'
 
+export function activeInstallExtension() {
+  Keyer.command.registerApp({
+    name: "install",
+    title: "安装插件",
+    desc: "从本地路径安装插件",
+    icon: "📦",
+  }, () => {
+    return <InstallExtension />
+  })
+}
+
 export function InstallExtension() {
   const { pop } = useNavigation()
   const [selectedPath, setSelectedPath] = useState('')
@@ -65,10 +76,10 @@ export function InstallExtension() {
         <Text color="subtitle">选择插件文件夹</Text>
         <HStack style={{ gap: '8px', width: '100%' }}>
           <Text
-            style={{ 
-              flex: 1, 
-              padding: '8px 12px', 
-              background: 'var(--color-bg-secondary)', 
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              background: 'var(--color-bg-secondary)',
               borderRadius: '6px',
               fontSize: '14px',
               color: selectedPath ? 'var(--color-text-title)' : 'var(--color-text-subtitle)'
