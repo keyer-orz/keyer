@@ -1,33 +1,27 @@
 {
   "icon": "🚀",
-  "name": "demo",
-  "title": "Demo",
-  "desc": "Demo plugin",
+  "name": "example",
+  "title": "Example",
+  "desc": "Example plugin",
   "version": "1.0.0",
   "main": "dist/index.js",
   "commands": [
     {
       "name": "hello",
-      "title": "Say Hello",
+      "title": "Hello",
       "icon": "assets/icon.png",
-      "desc": "A demo command that says hello",
-      "windowSize": { "width": 600, "height": 400 }
-    },
-    {
-      "name": "cmd-window",
-      "title": "Cmd Window",
-      "icon": "👋",
       "desc": "A demo command that says hello"
     },
     {
-      "name": "cmd-shell",
-      "title": "Cmd Shell",
-      "icon": "👋",
+      "name": "cmd_action",
+      "title": "CmdAction",
+      "icon": "assets/icon.png",
       "desc": "A demo command that says hello"
     }
   ],
   "scripts": {
-    "build": "tsc --watch"
+    "build": "keyerext-build",
+    "dev": "tsc --watch"
   },
   "devDependencies": {
     "keyerext": "file:../../keyerext",

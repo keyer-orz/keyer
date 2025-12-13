@@ -70,14 +70,12 @@ export function createMainWindow(): BrowserWindow {
     }
   })
 
-  // 窗口操作现在通过新的IPC系统处理 (window-module.ts)
-
   // 加载页面
   if (VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(VITE_DEV_SERVER_URL)
     mainWindow.webContents.openDevTools()
   } else {
-    mainWindow.loadFile(path.join(path.join(process.env.APP_ROOT!, 'dist'), 'index.html'))
+    mainWindow.loadFile(path.join(process.env.APP_ROOT!, 'dist', 'index.html'))
   }
 
   return mainWindow

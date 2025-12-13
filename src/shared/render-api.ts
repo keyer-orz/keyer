@@ -1,6 +1,5 @@
 import { _ICommandAPI } from "@/app/keyer/command";
-import { Command } from "@/app/managers/Extension";
-import { CommandResult, IRenderAPI } from "keyerext";
+import { ICommand, IRenderAPI } from "keyerext";
 
 export interface ExtensionPackageInfo {
   name: string
@@ -11,6 +10,7 @@ export interface ExtensionPackageInfo {
   main: string
   dir: string
   type?: "store" | "local" | "app" | "dev"
+  commands: ICommand[]
 }
 
 export interface ExtensionCreateOptions {

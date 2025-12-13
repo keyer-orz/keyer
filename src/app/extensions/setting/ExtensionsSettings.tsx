@@ -61,7 +61,7 @@ export function ExtensionsSettings() {
     const query = searchQuery.toLowerCase()
     const nameMatch = ext.name.toLowerCase().includes(query)
     const titleMatch = ext.title?.toLowerCase().includes(query)
-    const commandMatch = ext.commands.some(cmd =>
+    const commandMatch = ext.allCommands.some(cmd =>
       cmd.title?.toLowerCase().includes(query) ||
       cmd.name?.toLowerCase().includes(query)
     )
@@ -125,7 +125,7 @@ export function ExtensionsSettings() {
                 <VStack spacing={2} style={{ alignItems: 'flex-start', marginLeft: 12 }}>
                   <Text color="title" size="small">{ext.title || ext.name}</Text>
                   <Text color="subtitle" size="small" style={{ fontSize: '12px' }}>
-                    {ext.commands.length} command{ext.commands.length !== 1 ? 's' : ''}
+                    {ext.allCommands.length} command{ext.allCommands.length !== 1 ? 's' : ''}
                   </Text>
                 </VStack>
               </div>
@@ -148,7 +148,7 @@ export function ExtensionsSettings() {
                   backgroundColor: 'var(--color-bg-secondary)',
                 }}
               >
-                {ext.commands.filter(cmd => cmd.title?.toLowerCase().includes(searchQuery)).map((cmd) => (
+                {ext.allCommands.filter(cmd => cmd.title?.toLowerCase().includes(searchQuery)).map((cmd) => (
                   <div
                     key={cmd.id}
                     style={{

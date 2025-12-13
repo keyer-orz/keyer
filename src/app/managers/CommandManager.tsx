@@ -1,6 +1,7 @@
 import { ReactElement } from 'react'
 import { CommandResult, ExtensionContextType, Keyer } from 'keyerext'
 import { Extension, Command, Preview } from '@/app/managers/Extension'
+import { runCommand } from './ExtensionLoader'
 class CommandManager {
   private extensions: Map<string, Extension> = new Map()
   private previews: Preview[] = []
@@ -8,7 +9,6 @@ class CommandManager {
 
   register(ext: Extension) {
     this.extensions.set(ext.name, ext)
-    ext.active()
   }
 
   registerPreview(cid: string, hander: (input: string) => React.ReactElement | null) {
@@ -44,7 +44,7 @@ class CommandManager {
 
   get commands(): Command[] {
     const ext_commands = Array.from(this.extensions.values())
-      .flatMap(ext => ext.commands)
+      .flatMap(ext => ext.allCommands)
       .filter(cmd => cmd.disabled != undefined || cmd.disabled != true)
     return [...this.appCommands, ...ext_commands]
   }
@@ -54,7 +54,7 @@ class CommandManager {
       if (ext.config?.disabled) {
         return
       }
-      const commands = ext.commands
+      const commands = ext.allCommands
       commands.forEach(cmd => this.commands.push(cmd))
       ext.config?.commands && Object.entries(ext.config.commands).forEach(([cmdId, cmdConfig]) => {
         if (!cmdConfig.disabled && (cmdConfig.shortcut?.length || 0) > 0) {
@@ -101,17 +101,18 @@ class CommandManager {
       console.warn(`Command "${cmdId}" not found`)
       return null
     }
-
+    var res;
     if (command.handler === undefined) {
-      console.warn(`Command "${cmdId}" has no handler`)
-      return null
+      res = runCommand(command)
+    } else {
+      res = command.handler()
     }
+    console.log('Command result:', res)
 
-    const res = command.handler()
     if (res === null) {
       return null
     }
-   
+
     if (res && typeof res === 'object' && 'size' in res) {
       return {
         element: (res as any).component,

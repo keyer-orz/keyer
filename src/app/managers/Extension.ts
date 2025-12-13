@@ -1,6 +1,7 @@
 import { ICommand, ExtensionContextType, CommandResult } from 'keyerext'
 import { ExtensionPackageInfo } from '@/shared/render-api'
 import { configManager, ExtensionConfig } from '@/app/utils/config';
+import { activeExtension } from './ExtensionLoader';
 
 export type Context = {
     dir: string // ext dir
@@ -10,6 +11,7 @@ export type Context = {
 export type Command = ICommand & {
     id?: string
     ctx: ExtensionContextType
+    extName: string
     extTitle: string
     handler?: () => CommandResult
 
@@ -29,18 +31,26 @@ export class Extension {
     icon?: string
     version?: string
     main: string = ""
+    private commands: ICommand[] = []
     type?: "store" | "local" | "app" | "dev"
 
     dir: string = ""
-    commands: Command[] = []
+    allCommands: Command[] = []
 
-    private _active?: () => void;
-    private _deactive?: () => void;
-
-    constructor(pkg: ExtensionPackageInfo, active: () => void, deactive: () => void) {
+    constructor(pkg: ExtensionPackageInfo) {
         Object.assign(this, pkg)
-        this._active = active
-        this._deactive = deactive
+
+        this.commands.forEach(cmd => {
+            this.addCommand({
+                ...cmd,
+                id: `${this.name}#${cmd.name}`,
+                ctx: {
+                    dir: this.dir
+                },
+                extName: this.name,
+                extTitle: this.title || ""
+            })
+        })
     }
 
     private _config?: ExtensionConfig
@@ -52,21 +62,18 @@ export class Extension {
     }
 
     addCommand(cmd: Command) {
-        if (this.commands.find(c => c.id === cmd.id)) {
+        console.log("Register command:", cmd)
+        if (this.allCommands.find(c => c.id === cmd.id)) {
             return
         }
         cmd = {
             ...cmd,
             ...this.config?.commands?.[cmd.id || '']
         }
-        this.commands.push(cmd)
+        this.allCommands.push(cmd)
     }
 
     active() {
-        this._active?.()
-    }
-
-    deactive() {
-        this._deactive?.()
+       activeExtension(this)
     }
 }

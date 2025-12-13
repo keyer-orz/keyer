@@ -1,4 +1,3 @@
-import { CommandResult, ICommand } from 'keyerext'
 import { Command, Extension } from '@/app/managers/Extension'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -10,6 +9,82 @@ import { ExtensionPackageInfo } from '@/shared/render-api'
 import { ExtensionStore } from './ExtensionStore'
 import { commandManager } from './CommandManager'
 import active from '@/app/extensions'
+import { ExtensionCommand } from '../keyer/command'
+import * as Keyerext from 'keyerext';
+
+
+class ExtensionConfig {
+  _keyer: any
+  pkgInfo: ExtensionPackageInfo
+
+  constructor(pkgInfo: ExtensionPackageInfo) {
+    this.pkgInfo = pkgInfo
+  }
+
+  get keyer() {
+    if (!this._keyer) {
+      this._keyer = new Proxy(Keyer, {
+        get: (target, prop) => {
+          if (prop === 'command') return new ExtensionCommand(this.pkgInfo)
+          if (prop === 'store') return new ExtensionStore(this.pkgInfo.name)
+          return target[prop as keyof typeof Keyer]
+        }
+      })
+    }
+    return this._keyer
+  }
+}
+
+const extensionMap = new Map<string, ExtensionConfig>()
+// 文件到扩展配置的缓存，避免重复遍历查找
+const fileToConfigCache = new Map<string, ExtensionConfig | null>()
+
+const originalLoad = (Module as any)._load
+let isGlobalInterceptorSet = false
+
+function setupGlobalModuleInterceptor() {
+  if (isGlobalInterceptorSet) return
+
+    ; (Module as any)._load = function (request: string, parent: any) {
+      if (request !== 'react' && request !== 'react/jsx-runtime' && request !== 'keyerext') {
+        return originalLoad.apply(this, arguments)
+      }
+
+      const filename = parent?.filename
+      if (!filename) {
+        return originalLoad.apply(this, arguments)
+      }
+
+      let config = fileToConfigCache.get(filename)
+      
+      if (config === undefined) {
+        config = null
+        for (const [extDir, extConfig] of extensionMap.entries()) {
+          if (filename.startsWith(extDir)) {
+            config = extConfig
+            break
+          }
+        }
+        fileToConfigCache.set(filename, config)
+      }
+
+      if (config) {
+        if (request === 'react') return React
+        if (request === 'react/jsx-runtime') return require('react/jsx-runtime')
+        if (request === 'keyerext') {
+          return {
+            ...Keyerext,
+            Keyer: config.keyer
+          }
+        }
+      }
+
+      return originalLoad.apply(this, arguments)
+    }
+
+  isGlobalInterceptorSet = true
+  Log.log('✅ Global module interceptor set up')
+}
 
 /**
  * 注册所有扩展
@@ -26,10 +101,12 @@ export async function registerExtensions() {
   try {
     const localExtensions = await loadLocalExtensions()
 
-    // 注册每个本地扩展
+    // 注册并激活每个本地扩展
     for (const ext of localExtensions) {
       commandManager.register(ext)
-      console.log('✅ Registered extension:', ext.name)
+      // 激活扩展（加载并执行扩展代码）
+      ext.active()
+      console.log('✅ Registered and activated extension:', ext.name)
     }
   } catch (error) {
     console.error('❌ Failed to load local extensions:', error)
@@ -47,6 +124,9 @@ export async function registerExtensions() {
  */
 async function loadLocalExtensions(): Promise<Extension[]> {
   const extensions: Extension[] = []
+
+  // 在加载扩展前设置全局拦截器
+  setupGlobalModuleInterceptor()
 
   try {
     // 从主进程获取所有扩展元数据列表（包括内置和用户安装的）
@@ -81,83 +161,61 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension |
       Log.warn(`Main file not found: ${mainPath}`)
       return null
     }
-
-    // 动态导入 keyerext（ESM）
-    const Keyerext = await import('keyerext')
-
-    const ExtensionKeyer = new Proxy(Keyer, {
-      get(target, prop) {
-        if (prop === 'command') {
-          return {
-            ...target.command,
-            register: async (cmd: ICommand, handler: () => CommandResult): Promise<void> => {
-              const _cmd: Command = {
-                ...cmd,
-                id: `${pkgInfo.name}#${cmd.name}`,
-                extTitle: pkgInfo.title || "",
-                ctx: {
-                  dir: pkgInfo.dir
-                }
-              }
-              return target.command._register(_cmd, handler)
-            },
-            preview: async (cmd: string, handler: (input: string) => React.ReactElement | null): Promise<void> => {
-              const namespacedCmd = `${pkgInfo.name}#${cmd}`
-              return target.command.preview(namespacedCmd, handler)
-            }
-          }
-        }
-        if (prop === 'store') {
-          return new ExtensionStore(pkgInfo.name)
-        }
-        return target[prop as keyof typeof Keyer]
-      }
-    })
-
-    // 创建注入了扩展专属 Keyer 的 keyerext 模块
-    const KeyerextWithExtName = {
-      ...Keyerext,
-      Keyer: ExtensionKeyer
-    }
-
-    // 全局拦截 Module._load，确保扩展的所有文件都能正确加载依赖
-    const originalLoad = (Module as any)._load
-    const extensionDir = pkgInfo.dir
-
-      ; (Module as any)._load = function (request: string, parent: any) {
-        // 只拦截来自当前扩展目录的模块加载
-        if (parent?.filename?.startsWith(extensionDir)) {
-          if (request === 'react') return React
-          if (request === 'react/jsx-runtime') return require('react/jsx-runtime')
-          if (request === 'keyerext') return KeyerextWithExtName
-        }
-        return originalLoad.apply(this, arguments)
-      }
-
-    try {
-      // 读取并执行扩展代码（CommonJS）
-      const pluginCode = fs.readFileSync(mainPath, 'utf-8')
-      const pluginModule = new Module(mainPath, module)
-
-      // 设置路径以便插件能找到自己的 node_modules
-      pluginModule.paths = (Module as any)._nodeModulePaths(path.dirname(mainPath))
-      pluginModule.filename = mainPath
-
-      // 覆盖 require 方法，注入共享依赖
-      pluginModule.require = function (id: string) {
-        // 使用全局 _load，它会处理拦截
-        return (Module as any)._load(id, pluginModule, false)
-      } as any
-
-      // @ts-ignore - _compile 是内部 API
-      pluginModule._compile(pluginCode, mainPath)
-      return new Extension(pkgInfo, pluginModule.exports.active, pluginModule.exports.deactive)
-    } finally {
-      // 恢复原始的 _load 方法
-      ; (Module as any)._load = originalLoad
-    }
+    
+    // 注册扩展配置到全局映射（用于模块拦截）
+    extensionMap.set(pkgInfo.dir, new ExtensionConfig(pkgInfo))
+    
+    // 创建扩展实例（不立即加载代码，延迟到 active() 时）
+    return new Extension(pkgInfo)
   } catch (error) {
     Log.error(`❌ Failed to load extension module "${pkgInfo.name}":`, error instanceof Error ? error.stack || error.message : String(error))
+    return null
+  }
+}
+
+export function activeExtension(extension: Extension) {
+  try {
+    const mainPath = path.join(extension.dir, 'dist', 'index.js')
+    if (!fs.existsSync(mainPath)) {
+      return
+    }
+    
+    const pluginModule = loadModule(mainPath)
+    pluginModule?.exports.active?.()
+    Log.log(`✅ Activated extension: ${extension.name}`)
+  } catch (error) {
+    Log.error(`❌ Failed to activate extension "${extension.name}":`, error instanceof Error ? error.stack || error.message : String(error))
+  }
+}
+
+function loadModule(filePath: string) {
+  if (!fs.existsSync(filePath)) {
+    Log.error(`Command file not found: ${filePath}`)
+    return null
+  }
+
+  const pluginCode = fs.readFileSync(filePath, 'utf-8')
+  const pluginModule = new Module(filePath, module)
+
+  pluginModule.paths = (Module as any)._nodeModulePaths(path.dirname(filePath))
+  pluginModule.filename = filePath
+
+  pluginModule.require = function (id: string) {
+    return (Module as any)._load(id, pluginModule, false)
+  } as any
+
+  // @ts-ignore - _compile 是内部 API
+  pluginModule._compile(pluginCode, filePath)
+  return pluginModule
+}
+
+export function runCommand(cmd: Command) {
+  try {
+    const mainPath = path.join(cmd.ctx.dir, 'dist', `${cmd.name}.js`)
+    const pluginModule = loadModule(mainPath)
+    return pluginModule?.exports.default?.()
+  } catch (error) {
+    Log.error(`❌ Failed to run command "${cmd.name}":`, error instanceof Error ? error.stack || error.message : String(error))
     return null
   }
 }

@@ -154,12 +154,8 @@ function readExtensionPackage(extDir: string): ExtensionPackageInfo | null {
     }
 
     return {
-      name: pkg.name,
+      ...pkg,
       title: pkg.title || pkg.name,
-      desc: pkg.desc,
-      icon: pkg.icon,
-      version: pkg.version,
-      main: pkg.main,
       dir: extDir,
     }
   } catch (error) {
