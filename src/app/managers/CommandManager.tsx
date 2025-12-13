@@ -1,9 +1,10 @@
 import { ReactElement } from 'react'
 import { CommandMode, CommandResult, ExtensionContextType } from 'keyerext'
 import { Extension, Command } from '@/app/managers/Extension'
-import { loadModule, runCommand } from './ExtensionLoader'
+import { runCommand } from './ExtensionLoader'
 import path from 'node:path'
 import { Keyer } from '../keyer'
+import { loadModule } from '@/shared/loader'
 
 class CommandManager {
   private extensions: Map<string, Extension> = new Map()
@@ -114,7 +115,7 @@ class CommandManager {
     }
     var res;
     if (command.mode === CommandMode.Window) {
-      Keyer.window.create(`${command.ext.dir}/dist/${command.name}.js`)
+      Keyer.window.create(command)
       return null
     }
     if (command.handler === undefined) {

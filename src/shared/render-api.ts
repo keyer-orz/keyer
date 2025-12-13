@@ -7,10 +7,10 @@ export interface ExtensionPackageInfo {
   desc?: string
   icon?: string
   version?: string
-  main: string
+  main?: string
   dir: string
   type?: "store" | "local" | "app" | "dev"
-  commands: ICommand[]
+  commands?: ICommand[]
 }
 
 export interface ExtensionCreateOptions {

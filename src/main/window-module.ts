@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron'
 import { VITE_DEV_SERVER_URL } from './shared'
 import path from 'node:path'
-import { _IMainAPI } from '@/shared/main-api'
+import { _IMainAPI, CommandData } from '@/shared/main-api'
 
 export const windowHandler: _IMainAPI['window'] = {
   show: async () => {
@@ -30,7 +30,7 @@ export const windowHandler: _IMainAPI['window'] = {
     }
   },
 
-  create: async (commandScriptPath: string) => {
+  create: async (command: CommandData) => {
     const isDev = !!VITE_DEV_SERVER_URL
 
     // 创建一个新的独立窗口，不影响主窗口
@@ -45,32 +45,24 @@ export const windowHandler: _IMainAPI['window'] = {
       },
     })
 
-    // 监听窗口失去焦点时自动隐藏
-    newWindow.on('blur', () => {
-      if (!newWindow.isDestroyed()) {
-        newWindow.hide()
-        newWindow.setVisibleOnAllWorkspaces(false)
-      }
-    })
-
     // 页面加载完成后显示
     newWindow.webContents.on('did-finish-load', () => {
       if (!newWindow.isDestroyed()) {
         newWindow.show()
         newWindow.focus()
       }
+      newWindow.webContents.send('command.init', command)
     })
 
     // 加载页面，通过 URL 参数传递 commandScriptPath
-    const encodedPath = encodeURIComponent(commandScriptPath)
     if (VITE_DEV_SERVER_URL) {
-      newWindow.loadURL(`${VITE_DEV_SERVER_URL}/command_index.html?script=${encodedPath}`)
+      newWindow.loadURL(`${VITE_DEV_SERVER_URL}/command_index.html`)
       if (isDev) {
         newWindow.webContents.openDevTools()
       }
     } else {
       const htmlPath = path.join(process.env.APP_ROOT!, 'dist', 'command_index.html')
-      newWindow.loadFile(htmlPath, { query: { script: encodedPath } })
+      newWindow.loadFile(htmlPath)
     }
   }
 }
