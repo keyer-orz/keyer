@@ -10,11 +10,4 @@ export function active() {
         console.log('Hello from test extension!')
         return null
     })
-
-    Keyer.command.preview("calculate", (input: string) => {
-        if (input === '1+1=') {
-            return <HStack style={{ paddingLeft: 20 }}><div style={{ fontSize: 36 }}>2</div></HStack>
-        }
-        return null
-    })
 }

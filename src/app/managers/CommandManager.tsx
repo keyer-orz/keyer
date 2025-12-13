@@ -22,7 +22,7 @@ class CommandManager {
       console.log('Register command for extension:', extName)
       cmd.handler = handler
       cmd.id = cmd.id || cmd.name
-      cmd.ctx = cmd.ctx || { dir: '.' }
+      cmd.ext = cmd.ext || { dir: '.' }
       this.appCommands.push(cmd)
       return
     }
@@ -31,7 +31,7 @@ class CommandManager {
 
     cmd.handler = handler
     cmd.id = cmd.id || cmd.name
-    cmd.ctx = cmd.ctx || { dir: '.' }
+    cmd.ext = cmd.ext || { dir: '.' }
     ext.addCommand(cmd)
   }
 
@@ -83,7 +83,7 @@ class CommandManager {
 
   runPreview(cmd: Command, input: string): ReactElement | null {
     if (cmd.code == undefined) {
-      cmd.code = loadModule(path.join(cmd.ctx.dir, 'dist', cmd.name + '.js'))
+      cmd.code = loadModule(path.join(cmd.ext.dir, 'dist', cmd.name + '.js'))
     }
     const handler = cmd.code.exports.default as (input: string) => ReactElement | null
     return handler?.(input)
@@ -126,12 +126,12 @@ class CommandManager {
       return {
         element: (res as any).component,
         windowSize: (res as any).windowSize,
-        ctx: command.ctx,
+        ctx: command.ext,
       }
     }
     return {
       element: res as JSX.Element,
-      ctx: command.ctx,
+      ctx: command.ext,
     }
   }
 }

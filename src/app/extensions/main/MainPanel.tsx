@@ -59,12 +59,12 @@ export default function MainPanel() {
         const cmd = item.data
         return (
             <HStack spacing={12}>
-                <ExtensionProvider ctx={cmd.ctx}>
+                <ExtensionProvider ctx={cmd.ext}>
                     <Image src={cmd.icon || cmd.name} width={32} height={32} />
                 </ExtensionProvider>
                 <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
                     <Text color="title" size="medium">{cmd.title}</Text>
-                    <Text color="subtitle" style={{ flex: 1 }} size="small">{cmd.extTitle}</Text>
+                    <Text color="subtitle" style={{ flex: 1 }} size="small">{cmd.ext.title}</Text>
                 </HStack>
             </HStack>
         )

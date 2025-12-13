@@ -213,7 +213,7 @@ export function loadModule(filePath: string) {
 
 export function runCommand(cmd: Command) {
   try {
-    const mainPath = path.join(cmd.ctx.dir, 'dist', `${cmd.name}.js`)
+    const mainPath = path.join(cmd.ext.dir, 'dist', `${cmd.name}.js`)
     const pluginModule = loadModule(mainPath)
     return pluginModule?.exports.default?.()
   } catch (error) {

@@ -160,7 +160,7 @@ export function ExtensionsSettings() {
                     }}
                   >
                     <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <ExtensionProvider ctx={cmd.ctx!}>
+                      <ExtensionProvider ctx={cmd.ext}>
                         <Image src={cmd.icon || ""} width={32} height={32} style={{ marginLeft: 20 }} />
                       </ExtensionProvider>
                       <VStack spacing={2} style={{ alignItems: 'flex-start' }}>

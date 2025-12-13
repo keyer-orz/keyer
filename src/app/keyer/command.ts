@@ -5,6 +5,7 @@ import { CommandResult, IRenderAPI, ICommand } from 'keyerext';
 import { commandManager } from '../managers/CommandManager'
 import { Command } from '@/app/managers/Extension';
 import { ExtensionPackageInfo } from '@/shared/render-api';
+import { title } from 'process';
 
 export interface _ICommandAPI {
   _register(cmd: Command, handler: () => CommandResult): Promise<void>
@@ -24,9 +25,11 @@ export const commandImpl: IRenderAPI['command'] & _ICommandAPI = {
     const _cmd: Command = {
       ...cmd,
       id: `@system#${cmd.name}`,
-      extTitle: 'Keyer',
-      extName: "keyer",
-      ctx: { dir: '.' }
+      ext: {
+        dir: '.',
+        name: "keyer",
+        title: "Keyer"
+      }
     }
     console.log(_cmd)
     commandManager.registerCommand(_cmd, handler)
@@ -45,10 +48,10 @@ export class ExtensionCommand implements ICommandAPI {
     const _cmd: Command = {
       ...cmd,
       id: `${this.extPkg.name}#${cmd.name}`,
-      extTitle: this.extPkg.title || "",
-      extName: this.extPkg.name,
-      ctx: {
-        dir: this.extPkg.dir
+      ext: {
+        dir: this.extPkg.dir,
+        title: this.extPkg.title || "",
+        name: this.extPkg.name,
       }
     }
     return commandImpl._register(_cmd, handler)

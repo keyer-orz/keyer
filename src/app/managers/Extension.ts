@@ -1,4 +1,4 @@
-import { ICommand, ExtensionContextType, CommandResult } from 'keyerext'
+import { ICommand, CommandResult } from 'keyerext'
 import { ExtensionPackageInfo } from '@/shared/render-api'
 import { configManager, ExtensionConfig } from '@/app/utils/config';
 import { activeExtension } from './ExtensionLoader';
@@ -10,9 +10,12 @@ export type Context = {
 // 扩展属性
 export type Command = ICommand & {
     id?: string
-    ctx: ExtensionContextType
-    extName: string
-    extTitle: string
+    ext: {
+        dir: string
+        name: string
+        title: string
+    }
+
     handler?: () => CommandResult
 
     disabled?: boolean
@@ -41,11 +44,11 @@ export class Extension {
             this.addCommand({
                 ...cmd,
                 id: `${this.name}#${cmd.name}`,
-                ctx: {
-                    dir: this.dir
-                },
-                extName: this.name,
-                extTitle: this.title || ""
+                ext: {
+                    dir: this.dir,
+                    name: this.name,
+                    title: this.title || ""
+                }
             })
         })
     }
@@ -71,6 +74,6 @@ export class Extension {
     }
 
     active() {
-       activeExtension(this)
+        activeExtension(this)
     }
 }
