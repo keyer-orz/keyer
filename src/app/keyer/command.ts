@@ -1,7 +1,6 @@
 /**
  * 命令注册实现
  */
-
 import { CommandResult, IRenderAPI, ICommand } from 'keyerext';
 import { commandManager } from '../managers/CommandManager'
 import { Command } from '@/app/managers/Extension';
@@ -15,10 +14,6 @@ export interface _ICommandAPI {
 export const commandImpl: IRenderAPI['command'] & _ICommandAPI = {
   async register(cmd: ICommand, _: () => CommandResult): Promise<void> {
     console.error(`Use _register or registerApp instead of register directly. Command: ${cmd.name}`)
-  },
-
-  async preview(cmd: string, handler: (input: string) => React.ReactElement | null): Promise<void> {
-    commandManager.registerPreview(cmd, handler)
   },
 
   async _register(cmd: Command, handler: () => CommandResult): Promise<void> {
@@ -57,10 +52,5 @@ export class ExtensionCommand implements ICommandAPI {
       }
     }
     return commandImpl._register(_cmd, handler)
-  }
-
-  async preview(cmd: string, handler: (input: string) => React.ReactElement | null): Promise<void> {
-    const namespacedCmd = `${this.extPkg.name}#${cmd}`
-    return commandImpl.preview(namespacedCmd, handler)
   }
 }

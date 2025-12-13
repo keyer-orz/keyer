@@ -21,11 +21,6 @@ export type Command = ICommand & {
     code?: any
 };
 
-export type Preview = {
-    id?: string
-    handler: (input: string) => React.ReactElement | null
-};
-
 export class Extension {
     name: string = ""
     title?: string

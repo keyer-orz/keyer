@@ -1,6 +1,6 @@
 import { ReactElement } from 'react'
 import { CommandResult, ExtensionContextType, Keyer } from 'keyerext'
-import { Extension, Command, Preview } from '@/app/managers/Extension'
+import { Extension, Command } from '@/app/managers/Extension'
 import { loadModule, runCommand } from './ExtensionLoader'
 import path from 'node:path'
 class CommandManager {
@@ -9,13 +9,6 @@ class CommandManager {
 
   register(ext: Extension) {
     this.extensions.set(ext.name, ext)
-  }
-
-  registerPreview(cid: string, hander: (input: string) => React.ReactElement | null) {
-    // this.previews.push({
-    //   id: cid,
-    //   handler: hander
-    // })
   }
 
   registerCommand(cmd: Command, handler: () => CommandResult) {
