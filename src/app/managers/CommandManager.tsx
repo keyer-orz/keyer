@@ -1,10 +1,10 @@
 import { ReactElement } from 'react'
 import { CommandResult, ExtensionContextType, Keyer } from 'keyerext'
 import { Extension, Command, Preview } from '@/app/managers/Extension'
-import { runCommand } from './ExtensionLoader'
+import { loadModule, runCommand } from './ExtensionLoader'
+import path from 'node:path'
 class CommandManager {
   private extensions: Map<string, Extension> = new Map()
-  private previews: Preview[] = []
   private appCommands: Command[] = []
 
   register(ext: Extension) {
@@ -12,10 +12,10 @@ class CommandManager {
   }
 
   registerPreview(cid: string, hander: (input: string) => React.ReactElement | null) {
-    this.previews.push({
-      id: cid,
-      handler: hander
-    })
+    // this.previews.push({
+    //   id: cid,
+    //   handler: hander
+    // })
   }
 
   registerCommand(cmd: Command, handler: () => CommandResult) {
@@ -47,6 +47,14 @@ class CommandManager {
       .flatMap(ext => ext.allCommands)
       .filter(cmd => cmd.disabled != undefined || cmd.disabled != true)
     return [...this.appCommands, ...ext_commands]
+      .filter(e => e.mode !== 'inline')
+  }
+
+  get previews(): Command[] {
+    const ext_commands = Array.from(this.extensions.values())
+      .flatMap(ext => ext.allCommands)
+      .filter(cmd => cmd.mode === 'inline' && (cmd.disabled == undefined || cmd.disabled != true))
+    return [...ext_commands]
   }
 
   reloadCommands() {
@@ -75,9 +83,17 @@ class CommandManager {
   preview(query: string): ReactElement[] {
     return (
       this.previews
-        .map(e => e.handler(query))
+        .map(e => this.runPreview(e, query))
         .filter(el => el !== null) as ReactElement[]
     )
+  }
+
+  runPreview(cmd: Command, input: string): ReactElement | null {
+    if (cmd.code == undefined) {
+      cmd.code = loadModule(path.join(cmd.ctx.dir, 'dist', cmd.name + '.js'))
+    }
+    const handler = cmd.code.exports.default as (input: string) => ReactElement | null
+    return handler?.(input)
   }
 
   search(query: string): Command[] {

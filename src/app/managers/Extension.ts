@@ -17,6 +17,8 @@ export type Command = ICommand & {
 
     disabled?: boolean
     shortcut?: string;
+
+    code?: any
 };
 
 export type Preview = {

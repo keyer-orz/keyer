@@ -188,11 +188,13 @@ export function activeExtension(extension: Extension) {
   }
 }
 
-function loadModule(filePath: string) {
+export function loadModule(filePath: string) {
   if (!fs.existsSync(filePath)) {
     Log.error(`Command file not found: ${filePath}`)
     return null
   }
+
+  console.log("LoadModule filePath:", filePath)
 
   const pluginCode = fs.readFileSync(filePath, 'utf-8')
   const pluginModule = new Module(filePath, module)

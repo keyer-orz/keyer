@@ -13,10 +13,23 @@
       "desc": "A demo command that says hello"
     },
     {
+      "name": "cmd_view",
+      "title": "View",
+      "icon": "assets/icon.png",
+      "desc": "A demo command that shows a view"
+    },
+    {
       "name": "cmd_action",
       "title": "CmdAction",
       "icon": "assets/icon.png",
       "desc": "A demo command that says hello"
+    },
+     {
+      "name": "inline_action",
+      "title": "InlineAction",
+      "icon": "assets/icon.png",
+      "desc": "make a preview action command",
+      "mode": "inline"
     }
   ],
   "scripts": {
