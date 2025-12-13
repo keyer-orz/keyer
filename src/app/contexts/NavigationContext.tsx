@@ -152,7 +152,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     return () => {
       ipcRenderer.removeListener('navigate-to-page', handler)
     } 
-  }, [])
+  }, [push])
 
   // ==================== Render ====================
 
