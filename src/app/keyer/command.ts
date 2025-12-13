@@ -5,7 +5,6 @@ import { CommandResult, IRenderAPI, ICommand } from 'keyerext';
 import { commandManager } from '../managers/CommandManager'
 import { Command } from '@/app/managers/Extension';
 import { ExtensionPackageInfo } from '@/shared/render-api';
-import { title } from 'process';
 
 export interface _ICommandAPI {
   _register(cmd: Command, handler: () => CommandResult): Promise<void>
