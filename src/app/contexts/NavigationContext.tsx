@@ -121,8 +121,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        console.log('⌨️  ESC')
-
         const currentPage = stack[stack.length - 1]
         if (!currentPage) return
 
@@ -130,16 +128,12 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
         if (handler) {
           // 页面自定义处理
-          console.log('🔍 Found escape handler for:', currentPage.pageName)
           const shouldPop = handler()
-          console.log('🎯 Handler result:', shouldPop ? 'allow pop' : 'prevent pop')
 
           if (shouldPop) {
             pop()
           }
         } else {
-          // 默认行为：直接出栈
-          console.log('✅ Default ESC behavior: pop')
           pop()
         }
       }
@@ -152,33 +146,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
   // ==================== Electron Shortcut Integration ====================
 
   useEffect(() => {
-    const handleNavigate = (pageName: string) => {
-      console.log('📨 Shortcut triggered:', pageName)
-
-      setStack((prev) => {
-        // 如果当前栈中只有一个页面，且就是要导航的页面，直接复用
-        if (prev.length === 1 && prev[0].pageName === pageName) {
-          console.log('♻️  Reuse existing page:', pageName)
-          // 显示窗口（可能是隐藏状态），并确保尺寸正确
-          const targetSize = prev[0].windowSize || { width: 800, height: 500 }
-          Keyer.window.resize(targetSize)
-          Keyer.window.show()
-          return prev
-        }
-        // 否则，创建新页面并替换整个栈
-        console.log("111")
-        const result = commandManager.execute(pageName)
-        if (!result) {
-          return []
-        }
-        // 总是调整窗口尺寸：使用配置的尺寸或默认尺寸
-        const targetSize = result.windowSize || { width: 800, height: 500 }
-        Keyer.window.resize(targetSize)
-        Keyer.window.show()
-        return [{ pageName, element: result.element, windowSize: result.windowSize, ctx: result.ctx }]
-      })
-    }
-    const handler = (_event: any, pageName: string) => handleNavigate(pageName)
+    setStack([])
+    const handler = (_event: any, pageName: string) => push(pageName)
     ipcRenderer.on('navigate-to-page', handler)
     return () => {
       ipcRenderer.removeListener('navigate-to-page', handler)
