@@ -101,7 +101,7 @@ export function ExtensionDetail({ extension, onClose }: ExtensionDetailProps) {
                                 Description
                             </Text>
                             <Text color="subtitle" size="medium" style={{ lineHeight: 1.5 }}>
-                                {extension.description}
+                                {extension.desc}
                             </Text>
                         </VStack>
 

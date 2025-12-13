@@ -1,7 +1,7 @@
 export interface StoreExtension {
     name: string
     title: string
-    description: string
+    desc: string
     version: string
     author: string
     icon?: string

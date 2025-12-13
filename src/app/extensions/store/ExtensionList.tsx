@@ -70,7 +70,7 @@ export function ExtensionList({
                         <Text color="subtitle" size="small">v{ext.version}</Text>
                     </HStack>
                     <Text color="subtitle" size="small" style={{ lineHeight: 1.4 }}>
-                        {ext.description}
+                        {ext.desc}
                     </Text>
                     <HStack spacing={8} style={{ marginTop: 4 }}>
                         <Text color="subtitle" size="small">by {ext.author}</Text>

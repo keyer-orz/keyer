@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { StoreExtension, ExtensionStatus, StoreState } from './types'
 import { fetchStoreData as fetchStoreDataAPI } from './api'
-import { Keyer } from '@/app/keyer'
-import { commandManager } from '@/app/managers/CommandManager'
 
 export function useStore() {
     const [state, setState] = useState<StoreState>({
@@ -52,7 +50,7 @@ export function useStore() {
         const query = state.searchQuery.toLowerCase()
         return ext.name.toLowerCase().includes(query) ||
             ext.title.toLowerCase().includes(query) ||
-            ext.description.toLowerCase().includes(query) ||
+            ext.desc.toLowerCase().includes(query) ||
             ext.tags?.some(tag => tag.toLowerCase().includes(query))
     })
 
