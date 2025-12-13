@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, ReactNode } from 'react'
+import { useState, useCallback, useEffect, useMemo, ReactNode } from 'react'
 import { NavigationContext, PageStackItem } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { Keyer } from '@/app/keyer'
@@ -94,6 +94,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       if (prev.length === 0) return prev
 
       const currentPage = prev[prev.length - 1]
+      
+      // 如果 handler 相同，不更新（避免不必要的渲染）
+      if (currentPage.escapeHandler === handler) {
+        return prev
+      }
 
       const newStack = [...prev]
       newStack[newStack.length - 1] = { ...currentPage, escapeHandler: handler }
@@ -109,6 +114,11 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       if (prev.length === 0) return prev
 
       const currentPage = prev[prev.length - 1]
+      
+      // 如果已经没有 handler，不更新
+      if (!currentPage.escapeHandler) {
+        return prev
+      }
 
       const newStack = [...prev]
       newStack[newStack.length - 1] = { ...currentPage, escapeHandler: undefined }
@@ -145,8 +155,13 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   // ==================== Electron Shortcut Integration ====================
 
+  // 初始化：只在挂载时清空 stack
   useEffect(() => {
     setStack([])
+  }, [])
+
+  // 监听 IPC 事件
+  useEffect(() => {
     const handler = (_event: any, pageName: string) => push(pageName)
     ipcRenderer.on('navigate-to-page', handler)
     return () => {
@@ -158,17 +173,17 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
   const currentPage = stack.length > 0 ? stack[stack.length - 1] : null
 
+  const contextValue = useMemo(() => ({
+    push,
+    pop,
+    currentPage,
+    stack,
+    registerEscapeHandler,
+    unregisterEscapeHandler
+  }), [push, pop, currentPage, stack, registerEscapeHandler, unregisterEscapeHandler])
+
   return (
-    <NavigationContext.Provider
-      value={{
-        push,
-        pop,
-        currentPage,
-        stack,
-        registerEscapeHandler,
-        unregisterEscapeHandler
-      }}
-    >
+    <NavigationContext.Provider value={contextValue}>
       {children}
     </NavigationContext.Provider>
   )

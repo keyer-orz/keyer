@@ -33,11 +33,12 @@ function AppContent() {
 
   // 扩展注册完成后 push 主页面
   useEffect(() => {
-    if (isReady && !mainPushed) {
+    if (isReady && !mainPushed && stack.length === 0) {
+      console.log('📌 Pushing main page')
       push('@system#main')
       setMainPushed(true)
     }
-  }, [isReady, mainPushed, push])
+  }, [isReady, mainPushed, push, stack.length])
 
   if (!isReady) {
     return (

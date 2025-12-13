@@ -32,7 +32,8 @@ export default defineConfig({
     })
   ],
   optimizeDeps: {
-    include: ['keyerext']
+    include: ['keyerext'],
+    force: true  
   },
   resolve: {
     dedupe: ['react', 'react-dom'], // 确保 React 单例
@@ -41,6 +42,10 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173
-  }
+    port: 5173,
+    hmr: {
+      overlay: true
+    }
+  },
+  cacheDir: 'node_modules/.vite'
 })
