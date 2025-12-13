@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { VStack, Input, useAutoFocusOnVisible, useEscapeHandler, type InputRef } from 'keyerext'
+import { VStack, Input, useAutoFocusOnVisible, type InputRef, useNavigation } from 'keyerext'
 import { useStore } from './useStore'
 import { ExtensionList } from './ExtensionList'
 import { ExtensionDetail } from './ExtensionDetail'
@@ -31,8 +31,8 @@ export default function StorePanel() {
     } = useStore()
 
     useAutoFocusOnVisible(inputRef)
-
-    useEscapeHandler(() => {
+    const { escapeHandler } = useNavigation()
+    escapeHandler(() => {
         if (selectedExtension) {
             setSelectedExtension(null)
             return false
