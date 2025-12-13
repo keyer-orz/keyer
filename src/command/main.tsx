@@ -5,6 +5,7 @@ import '../app/styles/App.css'
 import { ipcRenderer } from 'electron';
 import { CommandData } from '@/shared/main-api';
 import { ExtensionConfig, extensionMap, loadModule, setupGlobalModuleInterceptor } from '@/shared/loader';
+import { configManager } from '@/app/utils/config';
 
 setupGlobalModuleInterceptor()
 
@@ -13,6 +14,11 @@ function App() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const savedTheme = configManager.get('theme')
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme)
+    }
+    
     ipcRenderer.on('command.init', (_, command: CommandData) => {
       try {
         console.log('command.init', command)
