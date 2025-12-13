@@ -31,6 +31,14 @@ export default defineConfig({
       renderer: {}
     })
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        command: resolve(__dirname, 'command_index.html')
+      }
+    }
+  },
   optimizeDeps: {
     include: ['keyerext'],
     force: true  

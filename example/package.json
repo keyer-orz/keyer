@@ -30,6 +30,13 @@
       "icon": "assets/icon.png",
       "desc": "make a preview action command",
       "mode": "inline"
+    },
+    {
+      "name": "window_action",
+      "title": "WindowAction",
+      "icon": "assets/icon.png",
+      "desc": "make a preview action command",
+      "mode": "window"
     }
   ],
   "scripts": {

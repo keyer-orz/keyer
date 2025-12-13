@@ -63,11 +63,11 @@ function AppContent() {
 
   return (
     <>
-      {stack.map(item => {
+      {stack.map((item, index) => {
         return (
           <div
             className="main"
-            key={item.pageName}
+            key={`${item.pageName}-${index}`}
             style={{ display: item === currentPage ? 'flex' : 'none' }}
           >
             <ExtensionProvider ctx={item.ctx!}>

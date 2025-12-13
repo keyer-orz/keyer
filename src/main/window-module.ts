@@ -28,6 +28,50 @@ export const windowHandler: _IMainAPI['window'] = {
       mainWindow.setSize(size.width, size.height)
       mainWindow.center()
     }
+  },
+
+  create: async (commandScriptPath: string) => {
+    const isDev = !!VITE_DEV_SERVER_URL
+
+    // 创建一个新的独立窗口，不影响主窗口
+    const newWindow = new BrowserWindow({
+      width: 800,
+      height: 660,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        sandbox: false,
+        allowRunningInsecureContent: false
+      },
+    })
+
+    // 监听窗口失去焦点时自动隐藏
+    newWindow.on('blur', () => {
+      if (!newWindow.isDestroyed()) {
+        newWindow.hide()
+        newWindow.setVisibleOnAllWorkspaces(false)
+      }
+    })
+
+    // 页面加载完成后显示
+    newWindow.webContents.on('did-finish-load', () => {
+      if (!newWindow.isDestroyed()) {
+        newWindow.show()
+        newWindow.focus()
+      }
+    })
+
+    // 加载页面，通过 URL 参数传递 commandScriptPath
+    const encodedPath = encodeURIComponent(commandScriptPath)
+    if (VITE_DEV_SERVER_URL) {
+      newWindow.loadURL(`${VITE_DEV_SERVER_URL}/command_index.html?script=${encodedPath}`)
+      if (isDev) {
+        newWindow.webContents.openDevTools()
+      }
+    } else {
+      const htmlPath = path.join(process.env.APP_ROOT!, 'dist', 'command_index.html')
+      newWindow.loadFile(htmlPath, { query: { script: encodedPath } })
+    }
   }
 }
 
