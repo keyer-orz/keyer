@@ -6,25 +6,28 @@ import { ipcRenderer } from 'electron';
 import { CommandData } from '@/shared/main-api';
 import { ExtensionConfig, extensionMap, loadModule, setupGlobalModuleInterceptor } from '@/shared/loader';
 import { configManager } from '@/app/utils/config';
+import { ExtensionProvider } from '@/app/contexts/ExtensionContext';
 
 setupGlobalModuleInterceptor()
 
 function App() {
   const [Component, setComponent] = useState<React.ComponentType | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [command, setCommand] = useState<CommandData | null>(null)
 
   useEffect(() => {
     const savedTheme = configManager.get('theme')
     if (savedTheme) {
       document.documentElement.setAttribute('data-theme', savedTheme)
     }
-    
+
     ipcRenderer.on('command.init', (_, command: CommandData) => {
       try {
         console.log('command.init', command)
         extensionMap.set(command.ext.dir, new ExtensionConfig({
           ...command.ext,
         }))
+        setCommand(command)
         const module = loadModule(path.join(command.ext.dir, 'dist', `${command.name}.js`))
         const LoadedComponent = module?.exports.default
         if (LoadedComponent) {
@@ -55,7 +58,9 @@ function App() {
     )
   }
 
-  return <Component />
+  return <ExtensionProvider ctx={command?.ext!}>
+    <Component />
+  </ExtensionProvider>
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

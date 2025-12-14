@@ -83,7 +83,7 @@ export default function MainPanel() {
     const renderHeader = useCallback(() => {
         if (previews.length === 0) return null
         return (
-            <VStack spacing={8} style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
+            <VStack spacing={8} style={{ borderBottom: '1px solid var(--border-color)' }}>
                 {previews.map((preview, idx) => (
                     <VStack key={idx} spacing={8}>
                         <Text color="subtitle" size="small">{preview.cmd.title}</Text>

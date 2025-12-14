@@ -7,33 +7,28 @@
   "main": "dist/index.js",
   "commands": [
     {
-      "name": "hello",
-      "title": "Hello",
-      "icon": "assets/icon.png",
-      "desc": "A demo command that says hello"
-    },
-    {
       "name": "cmd_view",
-      "title": "View",
+      "title": "cmd_view",
       "icon": "assets/icon.png",
-      "desc": "A demo command that shows a view"
+      "desc": "A demo command that shows a view",
+      "mode": "view"
     },
     {
-      "name": "cmd_action",
-      "title": "CmdAction",
+      "name": "cmd_simple",
+      "title": "cmd_simple",
       "icon": "assets/icon.png",
       "desc": "A demo command that says hello"
     },
      {
-      "name": "inline_action",
-      "title": "InlineAction",
+      "name": "cmd_inline",
+      "title": "cmd_inline",
       "icon": "assets/icon.png",
       "desc": "make a preview action command",
       "mode": "inline"
     },
     {
-      "name": "window_action",
-      "title": "WindowAction",
+      "name": "cmd_window",
+      "title": "cmd_window",
       "icon": "assets/icon.png",
       "desc": "make a preview action command",
       "mode": "window"
