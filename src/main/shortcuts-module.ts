@@ -13,6 +13,10 @@ export const shortcutsHandler: _IMainAPI['shortcuts'] = {
 
   unregister: async (shortcut: string) => {
     return unregister(shortcut)
+  },
+
+  unregisterAll: async () => {
+    unregisterAllShortcuts()
   }
 }
 

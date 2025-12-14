@@ -33,9 +33,8 @@ export async function registerExtensions() {
   } catch (error) {
     console.error('❌ Failed to load local extensions:', error)
   }
-
   // 3. 重新加载所有命令
-  commandManager.reloadCommands()
+  await commandManager.reloadCommands()
   console.log('✅ Extension registration complete')
 }
 
@@ -88,7 +87,7 @@ async function loadExtension(pkgInfo: ExtensionPackageInfo): Promise<Extension |
 
 export function activeExtension(extension: Extension) {
   try {
-    const mainPath = path.join(extension.dir, 'dist', 'index.js')
+    const mainPath = extension.mainPath
     if (!fs.existsSync(mainPath)) {
       return
     }
@@ -100,7 +99,6 @@ export function activeExtension(extension: Extension) {
     Log.error(`❌ Failed to activate extension "${extension.name}":`, error instanceof Error ? error.stack || error.message : String(error))
   }
 }
-
 
 export function runCommand(cmd: Command) {
   try {

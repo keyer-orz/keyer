@@ -2,6 +2,7 @@ import { ICommand, CommandResult, ExtensionContextType } from 'keyerext'
 import { ExtensionPackageInfo } from '@/shared/render-api'
 import { configManager, ExtensionConfig } from '@/app/utils/config';
 import { activeExtension } from './ExtensionLoader';
+import path from 'path';
 
 export type Context = {
     dir: string // ext dir
@@ -19,6 +20,11 @@ export type Command = ICommand & {
 
     code?: any
 };
+
+export type PreviewResult = {
+    cmd: Command
+    result: JSX.Element | null
+}
 
 export class Extension {
     name: string = ""
@@ -69,6 +75,10 @@ export class Extension {
         this.allCommands.push(cmd)
     }
 
+
+    get mainPath() {
+        return path.join(this.dir, this.main)
+    }
     active() {
         activeExtension(this)
     }

@@ -36,7 +36,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       }]
 
       backHandlersRef.current = () => { return true }
-      console.log("update push backHandlersRef", backHandlersRef.current)
 
       if (newStack.length > 0) {
         const targetSize = result.windowSize || { width: 800, height: 500 }
@@ -56,7 +55,6 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     setStack(prev => {
       if (prev.length === 0) return prev
       backHandlersRef.current = () => { return true }
-      console.log("update pop backHandlersRef", backHandlersRef.current)
 
       const newStack = prev.slice(0, -1)
       if (newStack.length === 0) {

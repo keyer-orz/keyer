@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import './styles/App.css'
-import { Keyer, useNavigation } from 'keyerext'
+import { useNavigation } from 'keyerext'
 import { NavigationProvider } from './contexts/NavigationContext'
 import { ExtensionProvider } from './contexts/ExtensionContext'
 import { registerExtensions } from './managers/ExtensionLoader'
@@ -21,8 +21,6 @@ function AppContent() {
       if (savedTheme) {
         document.documentElement.setAttribute('data-theme', savedTheme)
       }
-
-      Keyer.shortcuts.registerApp(configManager.get('globalShortcut'))
 
       registerExtensions().then(() => {
         console.log('✅ Extensions registered, app is ready')

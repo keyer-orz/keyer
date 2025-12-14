@@ -3,7 +3,6 @@
   height: 1px;
   background-color: var(--color-divider);
   border: none;
-  margin: 16px 0;
 }
 
 .keyer-divider-vertical {
@@ -11,5 +10,4 @@
   height: auto;
   align-self: stretch;
   background-color: var(--color-divider);
-  margin: 0 16px;
 }

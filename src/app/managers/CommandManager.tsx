@@ -1,10 +1,11 @@
 import { ReactElement } from 'react'
 import { CommandMode, CommandResult, ExtensionContextType } from 'keyerext'
-import { Extension, Command } from '@/app/managers/Extension'
+import { Extension, Command, PreviewResult } from '@/app/managers/Extension'
 import { runCommand } from './ExtensionLoader'
 import path from 'node:path'
 import { Keyer } from '../keyer'
 import { loadModule } from '@/shared/loader'
+import { configManager } from '../utils/config'
 
 class CommandManager {
   private extensions: Map<string, Extension> = new Map()
@@ -43,23 +44,23 @@ class CommandManager {
       .flatMap(ext => ext.allCommands)
       .filter(cmd => cmd.disabled != undefined || cmd.disabled != true)
     return [...this.appCommands, ...ext_commands]
-      .filter(e => e.mode !== 'inline')
+      .filter(e => e.mode !== CommandMode.Inline)
   }
 
   get previews(): Command[] {
     const ext_commands = Array.from(this.extensions.values())
       .flatMap(ext => ext.allCommands)
-      .filter(cmd => cmd.mode === 'inline' && (cmd.disabled == undefined || cmd.disabled != true))
+      .filter(cmd => cmd.mode === CommandMode.Inline && (cmd.disabled == undefined || cmd.disabled != true))
     return [...ext_commands]
   }
 
-  reloadCommands() {
+  async reloadCommands() {
+    await Keyer.shortcuts.unregisterAll()
+    await Keyer.shortcuts.registerApp(configManager.get('globalShortcut'))
     this.extensions.forEach(ext => {
       if (ext.config?.disabled) {
         return
       }
-      const commands = ext.allCommands
-      commands.forEach(cmd => this.commands.push(cmd))
       ext.config?.commands && Object.entries(ext.config.commands).forEach(([cmdId, cmdConfig]) => {
         if (!cmdConfig.disabled && (cmdConfig.shortcut?.length || 0) > 0) {
           Keyer.shortcuts.registerCommand(cmdId, cmdConfig.shortcut || '')
@@ -76,11 +77,11 @@ class CommandManager {
     return Array.from(this.extensions.values())
   }
 
-  preview(query: string): ReactElement[] {
+  preview(query: string): PreviewResult[] {
     return (
       this.previews
-        .map(e => this.runPreview(e, query))
-        .filter(el => el !== null) as ReactElement[]
+        .map(e => ({cmd: e, result: this.runPreview(e, query)}))
+        .filter(el => el.result !== null)
     )
   }
 

@@ -4,7 +4,7 @@ export function active() {
     Keyer.command.register({
         icon: '🧪',
         name: 'test1',
-        title: 'Test Command',
+        title: 'register Command',
         desc: 'This is a test command',
     }, () => {
         console.log('Hello from test extension!')
