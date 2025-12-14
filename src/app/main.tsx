@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import '@/app/styles/App.css'
+import '@/styles/App.css'
 import { Keyer } from './keyer'
 import { setKeyer } from 'keyerext'
 

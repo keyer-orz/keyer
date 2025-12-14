@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import path from 'path';
-import '../app/styles/App.css'
+import '@/styles/App.css'
 import { ipcRenderer } from 'electron';
 import { CommandData } from '@/shared/main-api';
 import { ExtensionConfig, extensionMap, loadModule, setupGlobalModuleInterceptor } from '@/shared/loader';

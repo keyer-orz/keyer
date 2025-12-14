@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react'
-import './styles/App.css'
 import { useNavigation } from 'keyerext'
 import { NavigationProvider } from './contexts/NavigationContext'
 import { ExtensionProvider } from './contexts/ExtensionContext'
