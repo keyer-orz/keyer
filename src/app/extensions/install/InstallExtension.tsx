@@ -69,7 +69,7 @@ export function InstallExtension() {
   }
 
   return (
-    <VStack className="install-extension" style={{ padding: '20px', gap: '16px' }}>
+    <VStack style={{ padding: '20px', gap: '16px' }}>
       <Text size="large" color="title">安装插件</Text>
 
       <VStack style={{ gap: '12px', width: '100%' }}>

@@ -49,7 +49,7 @@ export default function StorePanel() {
     })
 
     return (
-        <VStack className='plugin'>
+        <VStack>
             {/* Search */}
             <Input
                 ref={inputRef}
