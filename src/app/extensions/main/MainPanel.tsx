@@ -69,7 +69,7 @@ export default function MainPanel() {
         return (
             <HStack spacing={12}>
                 <ExtensionProvider ctx={cmd.ext}>
-                    <Image src={cmd.icon || cmd.name} width={32} height={32} />
+                    <Image src={cmd.icon || cmd.name} width={26} height={26} />
                 </ExtensionProvider>
                 <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
                     <Text color="title" size="medium" style={{ flex: 1 }}>{cmd.title}</Text>
