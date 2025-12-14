@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { HStack, Text, List, WindowSize } from 'keyerext'
+import { HStack, Text, List, WindowSize, Divider } from 'keyerext'
 import { ExtensionsSettings } from './ExtensionsSettings'
 import { GeneralSettings } from './GeneralSettings'
 import { Keyer } from '@/app/keyer'
@@ -48,33 +48,26 @@ export default function SettingPanel() {
     const currentSection = SETTINGS_SECTIONS.find(s => s.id === selectedSection)
 
     return (
-        <HStack>
-            {/* Sidebar */}
-            <div style={{
-                width: '140px',
-                borderRight: '1px solid var(--color-border)',
-                display: 'flex',
-                flexDirection: 'column'
-            }}>
-                <List
-                    items={items}
-                    selectedId={selectedSection}
-                    onClick={(id) => setSelectedSection(id)}
-                    onSelect={(id) => setSelectedSection(id)}
-                    renderItem={(item) => (
-                        <HStack>
-                            <Text>{item.data.title}</Text>
-                        </HStack>
-                    )}
-                />
-            </div>
-
-            {/* Content */}
+        <HStack style={{ alignItems: 'start' }}>
+            <List
+                style={{ width: 140 }}
+                items={items}
+                selectedId={selectedSection}
+                onClick={(id) => setSelectedSection(id)}
+                onSelect={(id) => setSelectedSection(id)}
+                renderItem={(item) => (
+                    <HStack>
+                        <Text>{item.data.title}</Text>
+                    </HStack>
+                )}
+            />
+            <Divider vertical />
             <div style={{
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                height: '100%'
             }}>
                 {currentSection?.component}
             </div>

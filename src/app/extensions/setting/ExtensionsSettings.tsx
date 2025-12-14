@@ -22,7 +22,7 @@ export function ExtensionsSettings() {
 
   useEffect(() => {
     const allExtensions = commandManager.getAllExtensions()
-    setExtensions(allExtensions.filter(e => e.name !== '@system') )
+    setExtensions(allExtensions.filter(e => e.name !== '@system'))
   }, [])
 
   const toggleExtension = (extName: string) => {
@@ -70,7 +70,7 @@ export function ExtensionsSettings() {
   })
 
   return (
-    <VStack spacing={24} style={{ padding: '24px', flex: 1, overflow: 'overlay' }}>
+    <VStack style={{ height: '100%' }}>
       {/* Search Bar */}
       <Input
         placeholder="Search..."
@@ -95,7 +95,7 @@ export function ExtensionsSettings() {
       </HStack>
 
       {/* Extension List */}
-      <VStack spacing={0} style={{ alignItems: 'stretch', overflow: 'auto' }}>
+      <VStack spacing={0} style={{ alignItems: 'stretch', flex: 1, overflow: 'auto' }}>
         {filteredExtensions.map((ext) => (
           <VStack
             key={ext.name}
