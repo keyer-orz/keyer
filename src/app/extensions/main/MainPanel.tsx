@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, Divider, ListGroup } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
-import { Command, PreviewResult } from '@/app/managers/Extension'
+import { Command } from '@/app/managers/Extension'
 import { ExtensionProvider } from '@/app/contexts/ExtensionContext'
 import { Keyer } from '@/app/keyer'
 
@@ -85,9 +85,10 @@ export default function MainPanel() {
         return (
             <VStack spacing={8} style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
                 {previews.map((preview, idx) => (
-                    <HStack key={idx} spacing={8}>
-                        <Text color="title" size="small">{preview.result}</Text>
-                    </HStack>
+                    <VStack key={idx} spacing={8}>
+                        <Text color="subtitle" size="small">{preview.cmd.title}</Text>
+                        <>{preview.result}</>
+                    </VStack>
                 ))}
             </VStack>
         )
@@ -118,7 +119,7 @@ export default function MainPanel() {
             onEnter={handleExecuteCommand}
         />
         <Divider />
-        <HStack style={{ height: 60, padding: '0 12px', alignItems: 'center' }}>
+        <HStack style={{ height: 40, padding: '0 12px', alignItems: 'center' }}>
             <Text color="title" size="medium" style={{ flex: 1 }}>{selectedCommand?.desc}</Text>
         </HStack>
     </VStack>
