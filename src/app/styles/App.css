@@ -44,6 +44,13 @@ body {
   align-items: stretch;
 }
 
+.main > * {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  box-sizing: border-box;
+}
+
 /* Scrollbar Styles */
 /* For Webkit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {

@@ -48,7 +48,7 @@ export default function SettingPanel() {
     const currentSection = SETTINGS_SECTIONS.find(s => s.id === selectedSection)
 
     return (
-        <HStack style={{ height: '100%', alignItems: 'stretch' }}>
+        <HStack>
             {/* Sidebar */}
             <div style={{
                 width: '140px',

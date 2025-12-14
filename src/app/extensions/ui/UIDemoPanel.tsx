@@ -64,7 +64,7 @@ function UIDemo() {
 
 
     return (
-        <div style={{ padding: '24px', maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{padding: 10}}>
             <VStack spacing={24} style={{ alignItems: 'stretch' }}>
                 {/* Header */}
                 <HStack spacing={16} style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -520,10 +520,10 @@ function UIDemo() {
                 {/* Drawer 抽屉组件演示 */}
                 <VStack spacing={16} style={{ alignItems: 'stretch' }}>
                     <Text color="title" size="large">Drawer 抽屉组件</Text>
-                    
+
                     <VStack spacing={12} style={{ alignItems: 'flex-start' }}>
                         <Text color="subtitle" size="medium">从左侧或右侧滑出的抽屉面板，支持模态遮罩和动画效果。</Text>
-                        
+
                         <HStack spacing={12}>
                             <Button
                                 type="primary"
@@ -582,13 +582,13 @@ function UIDemo() {
                     <Divider />
                     <VStack spacing={12} style={{ alignItems: 'flex-start' }}>
                         <Text color="title" size="medium">菜单选项</Text>
-                        <Button type="default" size="normal" onClick={() => {}}>
+                        <Button type="default" size="normal" onClick={() => { }}>
                             标签页1
                         </Button>
-                        <Button type="default" size="normal" onClick={() => {}}>
+                        <Button type="default" size="normal" onClick={() => { }}>
                             标签页2
                         </Button>
-                        <Button type="default" size="normal" onClick={() => {}}>
+                        <Button type="default" size="normal" onClick={() => { }}>
                             标签页3
                         </Button>
                     </VStack>
@@ -651,9 +651,9 @@ function UIDemo() {
                                 ]}
                             />
                         </VStack>
-                        <Button 
-                            type="primary" 
-                            size="normal" 
+                        <Button
+                            type="primary"
+                            size="normal"
                             onClick={() => setRightDrawerOpen(false)}
                         >
                             保存并关闭

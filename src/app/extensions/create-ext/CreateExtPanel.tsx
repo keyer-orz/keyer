@@ -86,7 +86,7 @@ export default function CreateExtPanel() {
   }
 
   return (
-    <VStack style={{ padding: '10px' }}>
+    <VStack>
       <Text size="large">Create New Extension</Text>
       <VStack style={{ gap: '16px', marginTop: '20px', flex: 1 }}>
         <HStack>

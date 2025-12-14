@@ -100,7 +100,7 @@ export default function MainPanel() {
         return commands.find(cmd => cmd.id === selectedId)
     }, [selectedId, commands])
 
-    return <VStack spacing={0} style={{height: '100%'}}>
+    return <VStack spacing={0}>
         {/* Search Input */}
         <Input
             ref={inputRef}
