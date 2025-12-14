@@ -7,6 +7,8 @@ import { CommandData } from '@/shared/main-api';
 import { ExtensionConfig, extensionMap, loadModule, setupGlobalModuleInterceptor } from '@/shared/loader';
 import { configManager } from '@/app/utils/config';
 import { ExtensionProvider } from '@/app/contexts/ExtensionContext';
+import { toastManager } from '@/app/keyer/toast';
+import { ToastContainer } from 'keyerext';
 
 setupGlobalModuleInterceptor()
 
@@ -14,6 +16,12 @@ function App() {
   const [Component, setComponent] = useState<React.ComponentType | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [command, setCommand] = useState<CommandData | null>(null)
+
+  const [toasts, setToasts] = useState<any[]>([])
+
+  useEffect(() => {
+    toastManager.subscribe(setToasts)
+  }, [])
 
   useEffect(() => {
     const savedTheme = configManager.get('theme')
@@ -60,6 +68,7 @@ function App() {
 
   return <ExtensionProvider ctx={command?.ext!}>
     <Component />
+    <ToastContainer toasts={toasts} onClose={(id) => toastManager.close(id)} />
   </ExtensionProvider>
 }
 

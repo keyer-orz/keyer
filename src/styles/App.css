@@ -12,6 +12,7 @@
 @import './loading.css';
 @import './checkbox.css';
 @import './image.css';
+@import './toast.css';
 
 html {
   width: 100%;

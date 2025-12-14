@@ -12,6 +12,7 @@ import { _IRenderAPI } from '@/shared/render-api';
 import { clipboardImpl } from './clipboard';
 import { commandImpl } from './command';
 import { extensionsImpl } from './extensions';
+import { toastImpl } from './toast';
 import { ExtensionStore } from '../managers/ExtensionStore';
 
 // 支持嵌套 namespace 的 Proxy
@@ -33,7 +34,8 @@ const RenderAPI: _IRenderAPI = {
   clipboard: clipboardImpl,
   command: commandImpl,
   extensions: extensionsImpl as any,
-  store: new ExtensionStore("")
+  store: new ExtensionStore(""),
+  toast: toastImpl
 }
 
 /**

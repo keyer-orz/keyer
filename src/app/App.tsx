@@ -1,14 +1,20 @@
 import { useEffect, useState, useRef } from 'react'
-import { useNavigation } from 'keyerext'
+import { ToastContainer, useNavigation } from 'keyerext'
 import { NavigationProvider } from './contexts/NavigationContext'
 import { ExtensionProvider } from './contexts/ExtensionContext'
 import { registerExtensions } from './managers/ExtensionLoader'
 import { configManager } from './utils/config'
+import { toastManager } from './keyer/toast'
 
 function AppContent() {
   const { currentPage, stack, push } = useNavigation()
   const [isReady, setIsReady] = useState(false)
   const [mainPushed, setMainPushed] = useState(false)
+  const [toasts, setToasts] = useState<any[]>([])
+
+  useEffect(() => {
+    toastManager.subscribe(setToasts)
+  }, [])
 
   // 保证 registerExtensions 只执行一次
   const hasRegistered = useRef(false)
@@ -73,6 +79,7 @@ function AppContent() {
           </div>
         )
       })}
+      <ToastContainer toasts={toasts} onClose={(id) => toastManager.close(id)} />
     </>
   )
 }
