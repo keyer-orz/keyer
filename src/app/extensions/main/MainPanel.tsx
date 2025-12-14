@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Text, VStack, HStack, Input, List, Image, useInputEscapeHandler, useAutoFocusOnVisible, useNavigation, type InputRef, type ListItem, Divider, ListGroup } from 'keyerext'
 import { commandManager } from '@/app/managers/CommandManager'
 import { Command, PreviewResult } from '@/app/managers/Extension'
@@ -15,73 +15,89 @@ export function activeMain() {
 
 export default function MainPanel() {
     const [searchText, setSearchText] = useState('')
-    const [selectedId, setSelectedId] = useState<ListItem | undefined>(undefined)
+    const [selectedId, setSelectedId] = useState<string | undefined>(undefined)
     const inputRef = useRef<InputRef>(null)
     const { push } = useNavigation()
-
-    const [treeData, setTreeData] = useState<ListGroup[]>([])
 
     useInputEscapeHandler(inputRef)
     useAutoFocusOnVisible(inputRef)
 
-    // Load all commands on mount and update when search text changes
-    useEffect(() => {
-        const results = commandManager.search(searchText)
-        const previews = commandManager.preview(searchText)
-        console.log(previews)
-        const treeData: ListGroup[] = [
-            {
-                title: '',
-                items: previews.map(preview => ({
-                    id: `preview:${preview.cmd.id!}`,
-                    data: preview
-                }))
-            },
-            {
-                title: 'Results',
-                items: results.map(cmd => ({
-                    id: `cmd:${cmd.id!}`,
-                    data: cmd
-                }))
-            }
-        ]
-        setTreeData(treeData)
-
+    // 使用 useMemo 缓存搜索结果
+    const commands = useMemo(() => {
+        return commandManager.search(searchText)
     }, [searchText])
+
+    // 使用 useMemo 缓存 preview 结果
+    const previews = useMemo(() => {
+        return commandManager.preview(searchText)
+    }, [searchText])
+
+    // 使用 useMemo 缓存 tree data
+    const treeData = useMemo<ListGroup[]>(() => {
+        return [{
+            title: 'Results',
+            items: commands.map(cmd => ({
+                id: cmd.id!,
+                data: cmd
+            }))
+        }]
+    }, [commands])
+
+    // 自动选中第一项
+    useEffect(() => {
+        if (commands.length > 0 && !selectedId) {
+            setSelectedId(commands[0].id)
+        } else if (commands.length === 0) {
+            setSelectedId(undefined)
+        }
+    }, [commands, selectedId])
 
 
     // Handle command execution
-    const handleExecuteCommand = (_id: string, cmd: Command) => {
+    const handleExecuteCommand = useCallback((_id: string, cmd: Command) => {
         console.log('Executing command:', cmd.id)
         push(cmd.id!)
-    }
+    }, [push])
 
     // Handle selection change
-    const handleSelect = (id: string, data: Command) => {
-        setSelectedId({ id, data })
-    }
+    const handleSelect = useCallback((id: string) => {
+        setSelectedId(id)
+    }, [])
 
-    const renderItem = (item: ListItem<Command | PreviewResult>) => {
-        if (item.id.startsWith('preview:')) {
-            const res = item.data as PreviewResult
-            return <HStack spacing={8} style={{ marginBottom: 8 }}>
-                <div>{res.result}</div>
-            </HStack>
-        } else {
-            const cmd = item.data as Command
-            return (
-                <HStack spacing={12}>
-                    <ExtensionProvider ctx={cmd.ext}>
-                        <Image src={cmd.icon || cmd.name} width={32} height={32} />
-                    </ExtensionProvider>
-                    <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
-                        <Text color="title" size="medium" style={{ flex: 1 }}>{cmd.title}</Text>
-                        <Text color="subtitle" size="small">{cmd.ext.title}</Text>
-                    </HStack>
+    const renderItem = useCallback((item: ListItem<Command>) => {
+        const cmd = item.data
+        return (
+            <HStack spacing={12}>
+                <ExtensionProvider ctx={cmd.ext}>
+                    <Image src={cmd.icon || cmd.name} width={32} height={32} />
+                </ExtensionProvider>
+                <HStack spacing={8} style={{ alignItems: 'center', flex: 1 }}>
+                    <Text color="title" size="medium" style={{ flex: 1 }}>{cmd.title}</Text>
+                    <Text color="subtitle" size="small">{cmd.ext.title}</Text>
                 </HStack>
-            )
-        }
-    }
+            </HStack>
+        )
+    }, [])
+
+    // 渲染固定头部 - Preview
+    const renderHeader = useCallback(() => {
+        if (previews.length === 0) return null
+        return (
+            <VStack spacing={8} style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
+                {previews.map((preview, idx) => (
+                    <HStack key={idx} spacing={8}>
+                        <Text color="title" size="small">{preview.result}</Text>
+                    </HStack>
+                ))}
+            </VStack>
+        )
+    }, [previews])
+
+    // 获取选中命令的描述
+    const selectedCommand = useMemo(() => {
+        if (!selectedId) return null
+        return commands.find(cmd => cmd.id === selectedId)
+    }, [selectedId, commands])
 
     return <VStack className='plugin' spacing={0}>
         {/* Search Input */}
@@ -92,17 +108,18 @@ export default function MainPanel() {
             onChange={setSearchText}
             autoFocus
         />
-
         <List
+            style={{ flex: 1 }}
             items={treeData}
             renderItem={renderItem}
-            selectedId={selectedId?.id}
+            renderHeader={renderHeader}
+            selectedId={selectedId}
             onSelect={handleSelect}
             onEnter={handleExecuteCommand}
         />
         <Divider />
-        <HStack style={{ padding: 12 }}>
-            <Text color="title" size="medium" style={{ flex: 1 }}>{selectedId?.data.desc}</Text>
+        <HStack style={{ height: 60, padding: '0 12px', alignItems: 'center' }}>
+            <Text color="title" size="medium" style={{ flex: 1 }}>{selectedCommand?.desc}</Text>
         </HStack>
     </VStack>
 }
