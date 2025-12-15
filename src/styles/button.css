@@ -18,8 +18,14 @@
   outline: none;
 }
 
-.keyer-button-normal {
+.keyer-button-big {
   padding: 10px 16px;
+  font-size: 16px;
+}
+
+.keyer-button-normal {
+  padding: 8px 14px;
+  font-size: 14px;
 }
 
 .keyer-button-small {

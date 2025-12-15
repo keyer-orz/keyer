@@ -8,11 +8,16 @@ interface _WindowAPI {
   create: (command: CommandData) => Promise<void>
 }
 
+interface _FileAPI {
+  selectFile: (extensions?: string[]) => Promise<string | undefined>
+}
+
 interface _ShortcutAPI {
   unregisterAll: () => Promise<void>
 }
 
 export interface _IMainAPI extends IMainAPI {
     window: IMainAPI['window'] & _WindowAPI
+    file: IMainAPI['file'] & _FileAPI
     shortcuts: IMainAPI['shortcuts'] & _ShortcutAPI
 }

@@ -5,7 +5,8 @@ import {
   Text,
   Input,
   Button,
-  useNavigation
+  useNavigation,
+  FileSelector
 } from 'keyerext'
 import { Keyer } from '@/app/keyer'
 
@@ -40,18 +41,6 @@ export default function CreateExtPanel() {
   const updateField = (field: keyof ExtensionFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
-
-  const selectTargetDirectory = async () => {
-    try {
-      const result = await Keyer.file.selectDirectory()
-      if (result) {
-        setFormData(prev => ({ ...prev, targetDir: result }))
-      }
-    } catch (error) {
-      console.error('Failed to select directory:', error)
-    }
-  }
-
   const createExtension = async () => {
     if (!formData.name || !formData.title || !formData.targetDir) {
       alert('Please fill in all required fields')
@@ -118,21 +107,7 @@ export default function CreateExtPanel() {
 
         <HStack>
           <Text style={{ flex: 1 }}>Target Directory *</Text>
-          <HStack style={{ flex: 2 }}>
-            <Text
-              style={{
-                flex: 1,
-                padding: '8px',
-                backgroundColor: 'var(--color-background-secondary)',
-                borderRadius: '4px',
-                minHeight: '20px',
-                color: formData.targetDir ? 'var(--color-text)' : 'var(--color-text-secondary)'
-              }}
-            >
-              {formData.targetDir || 'Select where to create the extension'}
-            </Text>
-            <Button type='primary' size='small' onClick={selectTargetDirectory}>Browse</Button>
-          </HStack>
+           <FileSelector onChange={(path) => updateField('targetDir', path)} mode="directory" />
         </HStack>
       </VStack>
 

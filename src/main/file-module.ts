@@ -34,6 +34,28 @@ export const fileHandler: _IMainAPI['file'] = {
     return result.canceled ? undefined : result.filePaths[0]
   },
 
+  selectFile: async (extensions?: string[]) => {
+    const { dialog, BrowserWindow } = require('electron')
+    const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0]
+    
+    const filters = extensions && extensions.length > 0 ? [
+      {
+        name: 'Files',
+        extensions: extensions
+      },
+      {
+        name: 'All Files',
+        extensions: ['*']
+      }
+    ] : undefined
+    
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile'],
+      filters
+    })
+    return result.canceled ? undefined : result.filePaths[0]
+  },
+
   extract: async (archivePath: string, targetPath: string) => {
     try {
       const tar = await import('tar')
