@@ -138,11 +138,13 @@ export function ShortcutRecorder({ value, onChange, onClear, placeholder = '--',
 
   return (
     <HStack style={{
-      padding: '4px',
       fontSize: '14px',
+      height: '32px',
+      alignItems: 'center',
+      padding: '0 4px',
       color: disabled ? 'var(--color-disabled)' : 'var(--color-title)',
       backgroundColor: 'var(--color-input-bg)',
-      border: `2px solid ${isRecording ? 'var(--color-title)' : 'var(--color-border)'}`,
+      border: `2px solid ${isRecording ? 'var(--color-selected)' : 'var(--color-border)'}`,
       opacity: disabled ? 0.5 : 1,
       cursor: disabled ? 'not-allowed' : 'pointer',
       pointerEvents: disabled ? 'none' : 'auto',

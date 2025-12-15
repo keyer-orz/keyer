@@ -11,7 +11,7 @@
 }
 
 .keyer-input:focus {
-  border-bottom-color: var(--color-border);
+  border-bottom-color: var(--color-highlight);
 }
 
 .keyer-input::placeholder {

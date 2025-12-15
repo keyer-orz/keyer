@@ -80,7 +80,7 @@ class CommandManager {
   preview(query: string): PreviewResult[] {
     return (
       this.previews
-        .map(e => ({cmd: e, result: this.runPreview(e, query)}))
+        .map(e => ({ cmd: e, result: this.runPreview(e, query) }))
         .filter(el => el.result !== null)
     )
   }
@@ -124,8 +124,6 @@ class CommandManager {
     } else {
       res = command.handler()
     }
-    console.log('Command result:', res)
-
     if (res === null) {
       return null
     }
