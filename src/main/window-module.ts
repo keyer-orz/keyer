@@ -38,7 +38,7 @@ export const windowHandler: _IMainAPI['window'] = {
     const mainWindow = getMainWindow()
     if (mainWindow) {
       mainWindow.setSize(size.width, size.height)
-      mainWindow.center()
+      // 不要调用 center()，保持用户设置的位置
     }
   },
 
@@ -152,6 +152,11 @@ export function createMainWindow(): BrowserWindow {
       allowRunningInsecureContent: false
     },
   })
+
+  // 如果没有保存的位置，则居中显示
+  if (!savedPosition) {
+    mainWindow.center()
+  }
 
   // 监听窗口移动事件，保存位置
   let savePositionTimer: NodeJS.Timeout | null = null
