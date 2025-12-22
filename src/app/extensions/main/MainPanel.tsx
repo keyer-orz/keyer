@@ -4,7 +4,7 @@ import { commandManager } from '@/app/managers/CommandManager'
 import { Command } from '@/app/managers/Extension'
 import { ExtensionProvider } from '@/app/contexts/ExtensionContext'
 import { Keyer } from '@/app/keyer'
-import { VscSettingsGear } from 'react-icons/vsc'
+import { VscSettingsGear, VscMove } from 'react-icons/vsc'
 
 export function activeMain() {
     Keyer.command.registerApp({
@@ -122,7 +122,16 @@ export default function MainPanel() {
         <Divider />
         <HStack style={{ height: 40, padding: '0 12px', alignItems: 'center' }}>
             <Text color="title" size="medium" style={{ flex: 1 }}>{selectedCommand?.desc}</Text>
-            <VscSettingsGear onClick={() => push("@system#setting")} />
+            <div style={{
+                WebkitAppRegion: 'drag',
+                cursor: 'move',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '4px'
+            } as React.CSSProperties}>
+                <VscMove size={20} style={{ cursor: 'move' }} />
+            </div>
+            <VscSettingsGear onClick={() => push("@system#setting")} style={{ cursor: 'pointer' }} />
         </HStack>
     </VStack>
 }

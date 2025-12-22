@@ -1,10 +1,19 @@
 import { BrowserWindow } from 'electron'
-import { VITE_DEV_SERVER_URL } from './shared'
+import { VITE_DEV_SERVER_URL, store } from './shared'
 import path from 'node:path'
 import { _IMainAPI, CommandData } from '@/shared/main-api'
 
 // 缓存每个 command 对应的窗口
 const commandWindowCache = new Map<string, BrowserWindow>()
+
+// 窗口位置存储的 key
+const WINDOW_POSITION_KEY = 'mainWindow.position'
+
+// 窗口位置类型
+interface WindowPosition {
+  x: number
+  y: number
+}
 
 export const windowHandler: _IMainAPI['window'] = {
   show: async () => {
@@ -94,6 +103,26 @@ export const windowHandler: _IMainAPI['window'] = {
   }
 }
 
+/**
+ * 保存主窗口位置
+ */
+function saveMainWindowPosition() {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return
+  }
+  
+  const [x, y] = mainWindow.getPosition()
+  store.set(WINDOW_POSITION_KEY, { x, y })
+}
+
+/**
+ * 获取保存的主窗口位置
+ */
+function getSavedMainWindowPosition(): WindowPosition | null {
+  const position = store.get(WINDOW_POSITION_KEY) as WindowPosition | undefined
+  return position || null
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 
@@ -105,17 +134,35 @@ let mainWindow: BrowserWindow | null = null
 export function createMainWindow(): BrowserWindow {
   const isDev = !!VITE_DEV_SERVER_URL
 
+  // 获取保存的窗口位置
+  const savedPosition = getSavedMainWindowPosition()
+
   mainWindow = new BrowserWindow({
     width: 800,
     height: 500,
+    x: savedPosition?.x,
+    y: savedPosition?.y,
     show: isDev, // 开发模式下默认显示，生产模式隐藏
     frame: false,
+    movable: true, // 允许拖动
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       sandbox: false,
       allowRunningInsecureContent: false
     },
+  })
+
+  // 监听窗口移动事件，保存位置
+  let savePositionTimer: NodeJS.Timeout | null = null
+  mainWindow.on('move', () => {
+    // 使用防抖，避免频繁保存
+    if (savePositionTimer) {
+      clearTimeout(savePositionTimer)
+    }
+    savePositionTimer = setTimeout(() => {
+      saveMainWindowPosition()
+    }, 500)
   })
 
   // 页面加载完成后处理
