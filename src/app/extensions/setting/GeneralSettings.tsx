@@ -15,10 +15,11 @@ export function GeneralSettings() {
     setShortcut(currentShortcut || '')
   }, [])
 
-  const handleShortcutChange = (newShortcut: string) => {
+  const handleShortcutChange = (newShortcut: string | undefined) => {
+    if (newShortcut === undefined) return
+    Keyer.shortcuts.unregister(shortcut)
     setShortcut(newShortcut)
     configManager.set('globalShortcut', newShortcut)
-    // 通知主线程刷新快捷键注册
     Keyer.shortcuts.registerApp(newShortcut)
   }
 
