@@ -3,6 +3,9 @@ import { VITE_DEV_SERVER_URL } from './shared'
 import path from 'node:path'
 import { _IMainAPI, CommandData } from '@/shared/main-api'
 
+// 缓存每个 command 对应的窗口
+const commandWindowCache = new Map<string, BrowserWindow>()
+
 export const windowHandler: _IMainAPI['window'] = {
   show: async () => {
     const mainWindow = getMainWindow()
@@ -32,6 +35,22 @@ export const windowHandler: _IMainAPI['window'] = {
 
   create: async (command: CommandData) => {
     const isDev = !!VITE_DEV_SERVER_URL
+    const commandKey = `${command.ext.name}#${command.name}`
+
+    // 检查缓存中是否已存在该 command 的窗口
+    let existingWindow = commandWindowCache.get(commandKey)
+    
+    // 如果窗口存在且未被销毁，则显示并聚焦该窗口
+    if (existingWindow && !existingWindow.isDestroyed()) {
+      existingWindow.show()
+      if (existingWindow.isMinimized()) {
+        existingWindow.restore()
+      }
+      existingWindow.focus()
+      // 重新发送 command 初始化数据
+      existingWindow.webContents.send('command.init', command)
+      return
+    }
 
     // 创建一个新的独立窗口，不影响主窗口
     const newWindow = new BrowserWindow({
@@ -43,6 +62,14 @@ export const windowHandler: _IMainAPI['window'] = {
         sandbox: false,
         allowRunningInsecureContent: false
       },
+    })
+
+    // 将新窗口添加到缓存
+    commandWindowCache.set(commandKey, newWindow)
+
+    // 窗口关闭时从缓存中移除
+    newWindow.on('closed', () => {
+      commandWindowCache.delete(commandKey)
     })
 
     // 页面加载完成后显示
