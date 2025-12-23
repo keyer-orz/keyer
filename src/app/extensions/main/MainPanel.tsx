@@ -106,6 +106,7 @@ export default function MainPanel() {
         <Input
             ref={inputRef}
             value={searchText}
+            size="large"
             placeholder="Search for commands..."
             onChange={setSearchText}
             autoFocus

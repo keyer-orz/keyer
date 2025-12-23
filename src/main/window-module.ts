@@ -65,6 +65,9 @@ export const windowHandler: _IMainAPI['window'] = {
     const newWindow = new BrowserWindow({
       width: 800,
       height: 660,
+      fullscreenable: false, // 禁用全屏按钮
+      simpleFullscreen: false, // 禁用简单全屏模式
+      resizable: false, // 可选：禁止调整窗口大小
       webPreferences: {
         nodeIntegration: true,
         contextIsolation: false,
@@ -145,6 +148,9 @@ export function createMainWindow(): BrowserWindow {
     show: isDev, // 开发模式下默认显示，生产模式隐藏
     frame: false,
     movable: true, // 允许拖动
+    fullscreenable: false, // 禁用全屏按钮
+    simpleFullscreen: false, // 禁用简单全屏模式
+    resizable: false, // 可选：禁止调整窗口大小
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { VStack, HStack, Text, Button, Loading, useNavigation } from 'keyerext'
+import { VStack, HStack, Text, Button, Loading, useNavigation, FileSelector } from 'keyerext'
 import { Keyer } from '@/app/keyer'
 
 export function activeInstallExtension() {
@@ -23,14 +23,6 @@ export function InstallExtension() {
     error?: string
     info?: any
   } | null>(null)
-
-  const handleSelectFolder = async () => {
-    const path = await Keyer.file.selectDirectory()
-    if (path) {
-      setSelectedPath(path)
-      setValidation(null)
-    }
-  }
 
   const handleValidate = async () => {
     if (!selectedPath) return
@@ -69,30 +61,9 @@ export function InstallExtension() {
   }
 
   return (
-    <VStack>
+    <VStack style={{ padding: 20 }}>
       <Text size="large" color="title">安装插件</Text>
-
-      <VStack style={{ gap: '12px', width: '100%' }}>
-        <Text color="subtitle">选择插件文件夹</Text>
-        <HStack style={{ gap: '8px', width: '100%' }}>
-          <Text
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              background: 'var(--color-bg-secondary)',
-              borderRadius: '6px',
-              fontSize: '14px',
-              color: selectedPath ? 'var(--color-text-title)' : 'var(--color-text-subtitle)'
-            }}
-          >
-            {selectedPath || '点击选择插件目录...'}
-          </Text>
-          <Button onClick={handleSelectFolder}>
-            选择文件夹
-          </Button>
-        </HStack>
-      </VStack>
-
+      <FileSelector onChange={(path) => setSelectedPath(path)} mode="directory" />
       {selectedPath && !validation && (
         <Button
           type="primary"

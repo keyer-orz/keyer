@@ -75,7 +75,7 @@ export default function CreateExtPanel() {
   }
 
   return (
-    <VStack>
+    <VStack style={{ padding: 20 }}>
       <Text size="large">Create New Extension</Text>
       <VStack style={{ gap: '16px', marginTop: '20px', flex: 1 }}>
         <HStack>
@@ -106,8 +106,8 @@ export default function CreateExtPanel() {
         </HStack>
 
         <HStack>
-          <Text style={{ flex: 1 }}>Target Directory *</Text>
-           <FileSelector onChange={(path) => updateField('targetDir', path)} mode="directory" />
+          <Text style={{ flex: 1 }}>Directory *</Text>
+          <FileSelector onChange={(path) => updateField('targetDir', path)} mode="directory" />
         </HStack>
       </VStack>
 
