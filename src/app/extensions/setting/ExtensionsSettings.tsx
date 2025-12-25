@@ -75,6 +75,7 @@ export function ExtensionsSettings() {
       <Input
         placeholder="Search..."
         value={searchQuery}
+        size='large'
         onChange={(e) => setSearchQuery(e)}
       />
 
